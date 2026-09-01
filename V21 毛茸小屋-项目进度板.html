@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>毛茸小屋 · 项目进度板</title>
+<style>
+  :root{
+    --bg:#FFF1F5;
+    --panel:#FFFFFF; --surface:#FFF7FA; --pink-soft:#FFE3ED;
+    --line:#FFD9E4; --line-strong:#FFC0D4;
+    --pink:#FF8FB8; --accent:#CC3D72;        /* 深玫瑰：文字安全主色 */
+    --mint:#5FAF85; --mint-soft:#E4F6EA;
+    --sun:#E9A93C; --blue-t:#4E7FA6;
+    --ink:#6B4550; --muted:#BB8CA0;
+    --font-body:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    --shadow-1:0 3px 12px rgba(233,110,152,.13);
+    --shadow-2:0 10px 30px rgba(233,110,152,.22);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(600px 320px at 8% -60px, rgba(255,190,214,.45), transparent 70%),
+      radial-gradient(520px 300px at 96% 104%, rgba(255,205,225,.40), transparent 70%),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--ink);font-family:var(--font-body);
+    min-height:100vh;-webkit-font-smoothing:antialiased;
+  }
+  /* 花边糖霜顶 */
+  .scallop{
+    position:absolute;top:0;left:0;right:0;height:16px;z-index:0;opacity:.75;
+    background:radial-gradient(circle at 12px -7px, #FFFFFF 14px, transparent 15px) repeat-x;
+    background-size:24px 18px;background-position:center top;
+  }
+  button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+  input,textarea,select{font-family:inherit;}
+  :focus-visible{outline:2px dashed var(--accent);outline-offset:2px;border-radius:10px;}
+
+  .wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:34px 18px 60px;}
+
+  /* ── 页头卡片（带小耳朵 + 蝴蝶结） ── */
+  header.top{
+    position:relative;
+    background:var(--panel);border:1.5px solid var(--line-strong);border-radius:26px;
+    padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow-1);
+    display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;
+  }
+  header.top::before,header.top::after{
+    content:"";position:absolute;top:-11px;width:34px;height:26px;
+    background:var(--panel);border:1.5px solid var(--line-strong);border-bottom:none;
+    border-radius:17px 17px 0 0;
+  }
+  header.top::before{left:26px;}
+  header.top::after{right:26px;}
+  .title-block h1{
+    font-size:clamp(23px,4vw,31px);font-weight:800;color:var(--ink);
+    letter-spacing:.02em;display:inline-flex;align-items:center;gap:10px;
+  }
+  .title-block h1 .bow{width:34px;height:23px;flex:none;transform:translateY(-1px);}
+  .title-block .sub{color:var(--muted);font-size:13px;margin-top:5px;}
+  .sparkle{position:absolute;color:var(--pink);}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;}
+  .stat{
+    background:var(--surface);border:1.5px solid var(--line);border-radius:999px;
+    padding:7px 14px;font-size:12.5px;font-weight:700;box-shadow:var(--shadow-1);
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .stat b{color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat i{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  /* 进度条 */
+  .progress-wrap{margin-bottom:18px;background:var(--panel);border:1.5px solid var(--line-strong);border-radius:22px;padding:14px 18px;box-shadow:var(--shadow-1);}
+  .progress-head{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:8px;font-weight:600;}
+  .progress-head b{color:var(--accent);font-variant-numeric:tabular-nums;}
+  .bar{height:12px;border-radius:99px;background:var(--pink-soft);overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#FFAFC9,#FF7FA8);transition:width .4s ease;}
+
+  /* ── 主布局 ── */
+  .board{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start;}
+  @media(max-width:880px){.board{grid-template-columns:1fr;}}
+
+  /* ── 待办卡片 ── */
+  .group-card{background:var(--panel);border:1.5px solid var(--line);border-radius:22px;box-shadow:var(--shadow-1);margin-bottom:14px;overflow:hidden;}
+  .group-head{
+    display:flex;align-items:center;gap:10px;padding:13px 18px;
+    background:linear-gradient(rgba(255,247,250,.9),rgba(255,247,250,.4));
+    border-bottom:1.5px dashed var(--line);cursor:pointer;user-select:none;
+  }
+  .group-head .g-dot{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.06);}
+  .group-head h2{font-size:14.5px;font-weight:800;flex:1;color:var(--ink);}
+  .group-head .g-count{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .group-head .g-arrow{color:var(--muted);transition:transform .2s ease;font-size:11px;}
+  .group-card.folded .g-arrow{transform:rotate(-90deg);}
+  .group-card.folded .todo-list{display:none;}
+  .todo-list{list-style:none;padding:8px 10px 10px;}
+  .todo{display:flex;align-items:flex-start;gap:12px;padding:10px 8px;border-radius:14px;transition:background .15s;}
+  .todo:hover{background:var(--surface);}
+  .todo input[type=checkbox]{
+    appearance:none;-webkit-appearance:none;flex:none;
+    width:26px;height:26px;margin-top:1px;border-radius:50%;
+    border:2px solid var(--line-strong);background:#fff;cursor:pointer;position:relative;
+    transition:background .15s ease,border-color .15s ease;
+  }
+  .todo input[type=checkbox]:checked{
+    background:radial-gradient(circle at 32% 28%, #FF9EBB, var(--accent));
+    border-color:var(--accent);
+  }
+  .todo input[type=checkbox]:checked::after{
+    content:"";position:absolute;inset:0;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M12 21s-7.5-4.9-10-9.5C.4 8.6 2.4 4.5 6.2 4.5c2.2 0 3.9 1.2 4.8 3 1-1.8 3.6-3 5.8-3 3.8 0 5.8 4.1 4.2 7-2.5 4.6-9 9.5-9 9.5z'/%3E%3C/svg%3E") center/15px no-repeat;
+  }
+  .todo .t-body{flex:1;min-width:0;}
+  .todo .t-label{font-size:14px;line-height:1.45;font-weight:700;cursor:pointer;color:var(--ink);}
+  .todo .t-hint{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.55;}
+  .todo.done .t-label{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(204,61,114,.45);font-weight:500;}
+  .todo.done .t-hint{opacity:.65;}
+  .who{
+    display:inline-flex;align-items:center;font-size:10.5px;font-weight:800;
+    border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:1px;letter-spacing:.04em;
+  }
+  .who.you{background:var(--pink-soft);color:var(--accent);}
+  .who.me{background:#E3F1FA;color:var(--blue-t);}
+
+  /* ── 版本架 ── */
+  .shelf{background:var(--panel);border:1.5px solid var(--line);border-radius:22px;box-shadow:var(--shadow-1);margin-bottom:14px;overflow:hidden;}
+  .shelf-head{display:flex;align-items:center;gap:9px;padding:13px 18px;border-bottom:1.5px dashed var(--line);}
+  .shelf-head .s-icon{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;flex:none;}
+  .shelf-head h2{font-size:14.5px;font-weight:800;flex:1;}
+  .shelf-head .s-count{font-size:11.5px;color:var(--muted);}
+  .shelf.ok .shelf-head .s-icon{background:var(--mint-soft);}
+  .shelf.tweak .shelf-head .s-icon{background:var(--pink-soft);}
+  .shelf-head svg{width:15px;height:15px;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .shelf.ok svg{stroke:var(--mint);}
+  .shelf.tweak svg{stroke:var(--accent);}
+  .shelf-list{padding:10px 12px;display:flex;flex-direction:column;gap:9px;min-height:64px;}
+  .shelf-empty{
+    font-size:12.5px;color:var(--muted);text-align:center;padding:16px 10px;
+    border:2px dashed var(--line-strong);border-radius:16px;line-height:1.7;background:var(--surface);
+  }
+
+  .ver{
+    display:flex;align-items:center;gap:10px;background:var(--surface);
+    border:1.5px solid var(--line);border-radius:16px;padding:10px 12px;
+    transition:border-color .15s ease, box-shadow .15s ease, transform .12s ease;
+  }
+  .ver:hover{border-color:var(--line-strong);box-shadow:var(--shadow-1);}
+  .ver .v-main{flex:1;min-width:0;cursor:pointer;}
+  .ver .v-name{font-size:13.5px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--ink);}
+  .ver .v-note{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5;}
+  .ver .v-date{font-size:10.5px;color:var(--muted);opacity:.85;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .ver .lock{width:13px;height:13px;stroke:var(--wood,#B08BB0);stroke-width:2;fill:none;}
+  .v-btns{display:flex;flex-direction:column;gap:5px;flex:none;}
+  .v-btn{
+    font-size:11px;font-weight:800;border-radius:999px;padding:5px 11px;
+    border:1.5px solid var(--line-strong);color:#A66483;background:#fff;
+    transition:transform .12s ease,background .12s ease,color .12s ease;min-width:56px;text-align:center;
+  }
+  .v-btn:hover{border-color:var(--pink);}
+  .v-btn:active{transform:translateY(1px);}
+  .v-btn.open{background:var(--pink-soft);color:var(--accent);border-color:transparent;}
+  .shelf.ok .v-btn.move{color:var(--mint);border-color:rgba(95,175,133,.45);}
+  .shelf.tweak .v-btn.move{color:var(--accent);border-color:rgba(204,61,114,.35);}
+  .v-btn.del{color:#A66483;}
+  .v-btn.del.armed{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .v-btn.del:disabled{opacity:.38;cursor:not-allowed;}
+
+  /* ── 添加版本 ── */
+  .adder{background:var(--panel);border:1.5px solid var(--line);border-radius:22px;box-shadow:var(--shadow-1);padding:16px 18px;}
+  .adder h2{font-size:14.5px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--ink);}
+  .adder h2 .plus-ico{
+    width:24px;height:24px;border-radius:999px;background:var(--pink-soft);
+    display:grid;place-items:center;color:var(--accent);font-weight:900;font-size:15px;
+  }
+  .field{margin-bottom:10px;}
+  .field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px;font-weight:700;}
+  .field input,.field select,.field textarea{
+    width:100%;border:1.5px solid var(--line);border-radius:12px;background:#fff;
+    padding:9px 12px;font-size:13px;color:var(--ink);
+  }
+  .field input::placeholder,.field textarea::placeholder{color:#E3B6C6;}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,143,184,.18);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .btn-add{
+    width:100%;min-height:44px;border-radius:999px;background:var(--pink);color:#fff;
+    font-size:13.5px;font-weight:800;letter-spacing:.05em;
+    text-shadow:0 1px 2px rgba(180,60,100,.25);
+    box-shadow:0 5px 14px rgba(255,143,184,.45);transition:transform .12s ease;
+  }
+  .btn-add:active{transform:translateY(1px);}
+  .form-err{color:var(--accent);font-size:12px;margin-top:6px;display:none;font-weight:700;}
+
+  /* ── 页脚工具 ── */
+  .foot-tools{margin-top:22px;background:var(--panel);border:1.5px solid var(--line);border-radius:22px;padding:14px 18px;box-shadow:var(--shadow-1);}
+  .foot-tools h3{font-size:13px;font-weight:800;margin-bottom:8px;color:var(--ink);}
+  .foot-tools p{font-size:12px;color:var(--muted);line-height:1.75;margin-bottom:10px;}
+  .backup-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .bk-btn{font-size:12px;font-weight:800;border:1.5px solid var(--line-strong);border-radius:999px;padding:8px 16px;background:#fff;color:#A66483;}
+  .bk-btn:active{transform:translateY(1px);}
+  #backupArea{display:none;width:100%;margin-top:10px;border:1.5px solid var(--line);border-radius:12px;padding:10px;font-size:11px;font-family:Consolas,monospace;color:var(--ink);min-height:90px;background:#fff;}
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);
+    background:rgba(107,69,80,.95);color:#FFF3F7;border-radius:999px;padding:10px 20px;
+    font-size:13px;box-shadow:var(--shadow-2);opacity:0;pointer-events:none;
+    transition:opacity .2s ease,transform .2s ease;z-index:50;max-width:86%;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+<div class="scallop" aria-hidden="true"></div>
+<div class="wrap">
+
+  <header class="top">
+    <div class="title-block">
+      <h1>
+        <svg class="bow" viewBox="0 0 48 32" aria-hidden="true">
+          <path d="M23 16 L8 7 Q2 11 2 16 Q2 21 8 25 Z" fill="#FF9EBB"/>
+          <path d="M25 16 L40 7 Q46 11 46 16 Q46 21 40 25 Z" fill="#FF9EBB"/>
+          <path d="M21 19 L14 29 L19 27 L22 30 Z" fill="#FF8FB8"/>
+          <path d="M27 19 L34 29 L29 27 L26 30 Z" fill="#FF8FB8"/>
+          <circle cx="24" cy="16" r="5" fill="#CC3D72"/>
+        </svg>
+        毛茸小屋 · 项目进度板
+      </h1>
+      <div class="sub">勾一项亮一项 · 心动的版本上架收藏，还在打磨的放另一边慢慢来</div>
+      <span class="sparkle" style="top:14px;right:120px;" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/></svg></span>
+      <span class="sparkle" style="bottom:16px;right:60px;opacity:.6;" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/></svg></span>
+    </div>
+    <div class="stats">
+      <span class="stat"><i style="background:var(--mint)"></i>已完成 <b id="stDone">0</b>/<b id="stTotal">0</b></span>
+      <span class="stat"><i style="background:var(--pink)"></i>OK 版 <b id="stOk">0</b></span>
+      <span class="stat"><i style="background:var(--accent)"></i>待调整 <b id="stTweak">0</b></span>
+    </div>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-head"><span>素材与界面总进度</span><b id="pctText">0%</b></div>
+    <div class="bar"><i id="pctBar" style="width:0%"></i></div>
+  </div>
+
+  <div class="board">
+    <!-- 待办清单 -->
+    <section id="todoArea" aria-label="待办清单"></section>
+
+    <!-- 版本架 -->
+    <aside>
+      <div class="shelf ok" id="shelfOk">
+        <div class="shelf-head">
+          <span class="s-icon"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+          <h2>OK 版本架</h2>
+          <span class="s-count" id="okCount">0 个</span>
+        </div>
+        <div class="shelf-list" id="okList"></div>
+      </div>
+
+      <div class="shelf tweak" id="shelfTweak">
+        <div class="shelf-head">
+          <span class="s-icon"><svg viewBox="0 0 24 24"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M2 14h4m4-5h4m4 8h4"/></svg></span>
+          <h2>待调整架</h2>
+          <span class="s-count" id="tweakCount">0 个</span>
+        </div>
+        <div class="shelf-list" id="tweakList"></div>
+      </div>
+
+      <div class="adder">
+        <h2><span class="plus-ico">+</span>添加新版本</h2>
+        <div class="field">
+          <label for="fName">版本名称（必填）</label>
+          <input id="fName" type="text" placeholder="例如：V2 装修界面">
+        </div>
+        <div class="field">
+          <label for="fPath">文件名（同文件夹内，点击可直接打开）</label>
+          <input id="fPath" type="text" placeholder="例如：V2 毛茸小屋-可交互原型.html">
+        </div>
+        <div class="field">
+          <label for="fNote">备注</label>
+          <input id="fNote" type="text" placeholder="例如：走路动画已接入，待调速度">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="fShelf">放进哪个架</label>
+            <select id="fShelf">
+              <option value="tweak">待调整架</option>
+              <option value="ok">OK 版本架</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fDate">日期</label>
+            <input id="fDate" type="date">
+          </div>
+        </div>
+        <button class="btn-add" id="btnAdd">加到版本架</button>
+        <div class="form-err" id="formErr">请至少填写版本名称</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 备份工具 -->
+  <div class="foot-tools">
+    <h3>数据备份与恢复</h3>
+    <p>勾选与版本架数据保存在这台设备的浏览器里。换电脑 / 换浏览器前，点「导出数据」复制保存；到了新设备粘贴进下方文本框点「恢复数据」即可。另外说明：版本条目的「移除」只把它清出清单，<b>不会删除文件夹里的真实文件</b>。</p>
+    <div class="backup-row">
+      <button class="bk-btn" id="btnExport">导出数据</button>
+      <button class="bk-btn" id="btnImport">恢复数据</button>
+    </div>
+    <textarea id="backupArea" placeholder="导出的数据会显示在这里；恢复时把之前复制的数据粘贴到这里，再点「恢复数据」。" aria-label="备份文本区"></textarea>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ═══════════ 待办清单定义 ═══════════ */
+  const TODO_GROUPS = [
+    {
+      id:"g-anim", name:"A · 角色动画素材（你来给）", color:"#FF8FB8",
+      items:[
+        { id:"stand", label:"标准站姿图 ×1", hint:"走路与通用动作的基准帧，一张即可" },
+        { id:"idle", label:"待机 idle 帧序列", hint:"建议 2–4 帧：呼吸、眨眼、小晃动" },
+        { id:"walk", label:"行走 walk 帧序列", hint:"建议 4–6 帧，含左右朝向；我先出帧动画播放器，图一到就接" },
+        { id:"sit", label:"坐姿帧序列", hint:"建议 2–3 帧，沙发/地垫共用" },
+        { id:"acts", label:"专属动作帧（睡觉/看书/烤火等）", hint:"每种 2–4 帧，可以先从最常用的 2 种做起" }
+      ]
+    },
+    {
+      id:"g-furni", name:"B · 家具与装修素材（你来给）", color:"#FFB68A",
+      items:[
+        { id:"furni-spec", label:"家具切图规范确认", hint:"透明底 PNG + 统一命名；具体规范见下方说明" },
+        { id:"furni-a", label:"家具风格组 A", hint:"整组切图：沙发/柜/桌/窗饰/地毯等" },
+        { id:"furni-b", label:"家具风格组 B", hint:"与 A 形成明显风格差异" },
+        { id:"furni-c", label:"家具风格组 C", hint:"第三套，支撑装修切换的新鲜感" }
+      ]
+    },
+    {
+      id:"g-dress", name:"C · 换装素材（你来给）", color:"#7FC79B",
+      items:[
+        { id:"dress-spec", label:"换装分层规范确认", hint:"同一尺寸画布 + 相同锚点，保证任意搭配不错位" },
+        { id:"dress-1", label:"换装套组一（日常）" },
+        { id:"dress-2", label:"换装套组二（节日/特别）" },
+        { id:"dress-3", label:"换装套组三（自定义）" }
+      ]
+    },
+    {
+      id:"g-ui", name:"D · 界面开发（我来做）", color:"#8EC5E8",
+      items:[
+        { id:"player", label:"角色帧动画播放器", hint:"CSS steps 帧动画引擎，拿到帧序列即插即动，无需真 GIF" },
+        { id:"ui-decor", label:"装修界面", hint:"家具槽位 + 风格组切换 + 预览" },
+        { id:"ui-dress", label:"换装界面", hint:"分层合成 + 套组搭配预览" },
+        { id:"ui-diary", label:"日记界面", hint:"角色口吻日志列表 + 详情" },
+        { id:"ui-album", label:"相册界面", hint:"拍立得卡片流 + 收藏 + 查看大图" },
+        { id:"ui-cal", label:"日历待办界面", hint:"月视图 + 重要日子 + 待办打卡" }
+      ]
+    },
+    {
+      id:"g-misc", name:"E · 项目杂项（补充待办）", color:"#F2C94C",
+      items:[
+        { id:"name", label:"角色名字 & 小屋名字定稿", hint:"现在叫「毛茸小屋」，随时可改" },
+        { id:"pwa", label:"PWA 图标与应用名", hint:"做成「添加到主屏幕」的 App 感所需" },
+        { id:"sound", label:"音效 / BGM 素材（可选）", hint:"环境声：炉火、翻书、雨天等；没有也完全不阻塞" },
+        { id:"deploy", label:"部署上线正式链接", hint:"静态托管几分钟能拿到公网可玩地址" }
+      ]
+    }
+  ];
+
+  /* ═══════════ 数据层 ═══════════ */
+  const KEY = "furryhome-progressboard-v1";
+  let data = { todos:{}, versions:[] };
+  const PRESET = [
+    { id:"v1-proto", name:"V1 可交互原型", path:"V1 毛茸小屋-可交互原型.html",
+      note:"初始版本 · 有瑕疵待调整（按你的要求先放待调整架，不删除）", shelf:"tweak", date:"2026-08-27", locked:true },
+    { id:"v1-canvas", name:"V1 无限画布", path:"V1 毛茸小屋-无限画布.html",
+      note:"初始版本 · 随原型一起调整", shelf:"tweak", date:"2026-08-27", locked:true },
+    { id:"v2-proto", name:"V2 可交互原型", path:"V2 毛茸小屋-可交互原型.html",
+      note:"已接入站姿 + 打招呼帧动画（待你验收，满意就上架 OK）", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v2-canvas", name:"V2 无限画布", path:"V2 毛茸小屋-无限画布.html",
+      note:"随原型同步更新角色画面", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v4-proto", name:"V4 可交互原型", path:"V4 毛茸小屋-可交互原型.html",
+      note:"方向行走动画上线（左3右4帧），永远白天（已按需求移除昼夜系统）", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v4-canvas", name:"V4 无限画布", path:"V4 毛茸小屋-无限画布.html",
+      note:"随 V4 原型同步升版", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v5-proto", name:"V5 可交互原型", path:"V5 毛茸小屋-可交互原型.html",
+      note:"修复帧切换闪烁：硬切+预解码（待你验收）", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v5-canvas", name:"V5 无限画布", path:"V5 毛茸小屋-无限画布.html",
+      note:"随 V5 原型同步升版", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v6-proto", name:"V6 可交互原型", path:"V6 毛茸小屋-可交互原型.html",
+      note:"思考/跳跃/沙发坐姿帧接入 + 物理活动范围（跳上家具、沙发只坐不站）", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v6-canvas", name:"V6 无限画布", path:"V6 毛茸小屋-无限画布.html",
+      note:"随 V6 原型同步升版", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v7-proto", name:"V7 可交互原型", path:"V7 毛茸小屋-可交互原型.html",
+      note:"坐姿头部比例按站姿对齐 + 思考放慢 + 去除身后模糊阴影", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v7-canvas", name:"V7 无限画布", path:"V7 毛茸小屋-无限画布.html",
+      note:"随 V7 原型同步升版", shelf:"tweak", date:"2026-08-27", locked:false },
+    { id:"v8-proto", name:"V8 可交互原型", path:"V8 毛茸小屋-可交互原型.html",
+      note:"举杯/写日记坐姿放大：头部行宽对齐站姿 345px 基准", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v8-canvas", name:"V8 无限画布", path:"V8 毛茸小屋-无限画布.html",
+      note:"随 V8 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v9-proto", name:"V9 可交互原型", path:"V9 毛茸小屋-可交互原型.html",
+      note:"滚轮/双指缩放视野 + 新背景更大地板 + 流畅帧引擎 + 写日记帧放大 + 二郎腿下移", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v9-canvas", name:"V9 无限画布", path:"V9 毛茸小屋-无限画布.html",
+      note:"随 V9 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v10-proto", name:"V10 可交互原型", path:"V10 毛茸小屋-可交互原型.html",
+      note:"行走修复（回归定位系统）+ 活动范围只留沙发与地面 + 新背景 + 破图兜底", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v10-canvas", name:"V10 无限画布", path:"V10 毛茸小屋-无限画布.html",
+      note:"随 V10 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v11-proto", name:"V11 可交互原型", path:"V11 毛茸小屋-可交互原型.html",
+      note:"行走改 rAF 位移插值（根治原地走）+ 角色放大一倍 + 缩放上限至桌脚 + 坐姿仅留二郎腿", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v11-canvas", name:"V11 无限画布", path:"V11 毛茸小屋-无限画布.html",
+      note:"随 V11 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v12-proto", name:"V12 可交互原型", path:"V12 毛茸小屋-可交互原型.html",
+      note:"移除缩放功能（固定视野）+ 二郎腿右上平移 4px", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v12-canvas", name:"V12 无限画布", path:"V12 毛茸小屋-无限画布.html",
+      note:"随 V12 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v13-proto", name:"V13 可交互原型", path:"V13 毛茸小屋-可交互原型.html",
+      note:"二郎腿帧再右上偏移 5px（累计 9px），贴合沙发坐感", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v13-canvas", name:"V13 无限画布", path:"V13 毛茸小屋-无限画布.html",
+      note:"随 V13 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v14-proto", name:"V14 可交互原型", path:"V14 毛茸小屋-可交互原型.html",
+      note:"二郎腿再右上偏移 10px（累计 19px），继续贴合沙发", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v14-canvas", name:"V14 无限画布", path:"V14 毛茸小屋-无限画布.html",
+      note:"随 V14 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v15-proto", name:"V15 可交互原型", path:"V15 毛茸小屋-可交互原型.html",
+      note:"二郎腿位置改为配置驱动（累计19px 右上已写入沙发坐标）+ 新文件名破缓存", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v15-canvas", name:"V15 无限画布", path:"V15 毛茸小屋-无限画布.html",
+      note:"随 V15 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v16-proto", name:"V16 可交互原型", path:"V16 毛茸小屋-可交互原型.html",
+      note:"二郎腿再右上 5px（累计 24px），配置驱动即改即生效", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v16-canvas", name:"V16 无限画布", path:"V16 毛茸小屋-无限画布.html",
+      note:"随 V16 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v17-proto", name:"V17 可交互原型", path:"V17 毛茸小屋-可交互原型.html",
+      note:"二郎腿再右上 5px（累计 29px）", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v17-canvas", name:"V17 无限画布", path:"V17 毛茸小屋-无限画布.html",
+      note:"随 V17 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v19-proto", name:"V19 可交互原型", path:"V19 毛茸小屋-可交互原型.html",
+      note:"坐姿四件套+状态气泡+坐走均衡（补落盘）", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v19-canvas", name:"V19 无限画布", path:"V19 毛茸小屋-无限画布.html",
+      note:"随 V19 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v20-proto", name:"V20 可交互原型", path:"V20 毛茸小屋-可交互原型.html",
+      note:"四坐姿各5秒+专属微动效+二郎腿收尾跳下", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v20-canvas", name:"V20 无限画布", path:"V20 毛茸小屋-无限画布.html",
+      note:"随 V20 原型同步升版", shelf:"tweak", date:"2026-08-28", locked:false },
+    { id:"v21-proto", name:"V21 可交互原型", path:"V21 毛茸小屋-可交互原型.html",
+      note:"所有坐姿位置整体右上移 8px（坐点 x 67.5→69.6 / y 62.6→61.6，配置驱动）", shelf:"tweak", date:"2026-08-30", locked:false }
+  ];
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(raw){ const s = JSON.parse(raw); if(s && typeof s==="object"){ data.todos = s.todos||{}; data.versions = Array.isArray(s.versions)?s.versions:[]; } }
+    }catch(e){}
+    PRESET.forEach(p => { if(!data.versions.some(v => v.id===p.id)) data.versions.push(Object.assign({},p)); });
+  }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){} }
+
+  /* ═══════════ 工具 ═══════════ */
+  const $ = id => document.getElementById(id);
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+  let toastT=null;
+  function toast(msg){
+    const t=$("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2000);
+  }
+
+  /* ═══════════ 待办渲染 ═══════════ */
+  function renderTodos(){
+    const area=$("todoArea");
+    area.innerHTML="";
+    let done=0,total=0;
+    TODO_GROUPS.forEach(g=>{
+      const card=document.createElement("div");
+      card.className="group-card";
+      const gDone=g.items.filter(it=>data.todos[it.id]).length;
+      done+=gDone; total+=g.items.length;
+      card.innerHTML=`
+        <div class="group-head" role="button" tabindex="0" aria-label="折叠分组 ${esc(g.name)}">
+          <span class="g-dot" style="background:${g.color}"></span>
+          <h2>${esc(g.name)}</h2>
+          <span class="g-count">${gDone}/${g.items.length}</span>
+          <span class="g-arrow">▾</span>
+        </div>
+        <ul class="todo-list"></ul>`;
+      const list=card.querySelector(".todo-list");
+      g.items.forEach(it=>{
+        const li=document.createElement("li");
+        li.className="todo"+(data.todos[it.id]?" done":"");
+        const whoTag = g.id==="g-ui" ? '<span class="who me">我</span>' : '<span class="who you">你</span>';
+        li.innerHTML=`
+          <input type="checkbox" id="cb-${it.id}" ${data.todos[it.id]?"checked":""} aria-label="${esc(it.label)}">
+          <div class="t-body">
+            <label class="t-label" for="cb-${it.id}">${esc(it.label)}${whoTag}</label>
+            ${it.hint?`<div class="t-hint">${esc(it.hint)}</div>`:""}
+          </div>`;
+        li.querySelector("input").addEventListener("change",e=>{
+          data.todos[it.id]=e.target.checked; save();
+          li.classList.toggle("done",e.target.checked);
+          refreshStats();
+        });
+        list.appendChild(li);
+      });
+      const head=card.querySelector(".group-head");
+      const fold=()=>card.classList.toggle("folded");
+      head.addEventListener("click",fold);
+      head.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); fold(); } });
+      area.appendChild(card);
+    });
+    refreshStats(done,total);
+  }
+  function refreshStats(d,t){
+    let done=d,total=t;
+    if(done===undefined){
+      done=0;total=0;
+      TODO_GROUPS.forEach(g=>g.items.forEach(it=>{ total++; if(data.todos[it.id]) done++; }));
+    }
+    $("stDone").textContent=done; $("stTotal").textContent=total;
+    const pct= total? Math.round(done/total*100):0;
+    $("pctText").textContent=pct+"%"; $("pctBar").style.width=pct+"%";
+    const okN=data.versions.filter(v=>v.shelf==="ok").length;
+    const twN=data.versions.filter(v=>v.shelf==="tweak").length;
+    $("stOk").textContent=okN; $("stTweak").textContent=twN;
+    $("okCount").textContent=okN+" 个"; $("tweakCount").textContent=twN+" 个";
+  }
+
+  /* ═══════════ 版本架渲染 ═══════════ */
+  const armed=new Map();
+  function renderShelves(){
+    ["ok","tweak"].forEach(shelf=>{
+      const list=$(shelf==="ok"?"okList":"tweakList");
+      list.innerHTML="";
+      const items=data.versions.filter(v=>v.shelf===shelf);
+      if(!items.length){
+        list.innerHTML=`<div class="shelf-empty">${shelf==="ok"?"还没有上架的版本<br>觉得哪个做得到位了，点「上架 OK」把它请过来吧":"待调整架空空如也，全都完美？"}</div>`;
+        return;
+      }
+      items.forEach(v=>{
+        const el=document.createElement("div");
+        el.className="ver";
+        const openBtn = v.path ? `<button class="v-btn open" data-act="open" title="打开文件">打开</button>` : "";
+        el.innerHTML=`
+          <div class="v-main" ${v.path?`data-act="open" role="button" tabindex="0" aria-label="打开 ${esc(v.name)}"`:""}>
+            <div class="v-name">
+              ${v.locked?'<svg class="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>':""}
+              ${esc(v.name)}
+            </div>
+            ${v.note?`<div class="v-note">${esc(v.note)}</div>`:""}
+            <div class="v-date">${esc(v.date||"")}</div>
+          </div>
+          <div class="v-btns">
+            ${openBtn}
+            <button class="v-btn move" data-act="move">${shelf==="ok"?"移去调整":"上架 OK"}</button>
+            <button class="v-btn del" data-act="del" ${v.locked?"disabled title=\"锁定的初始版本，按要求保留\"":""}>${v.locked?"移除":(armed.get(v.id)?"确认?":"移除")}</button>
+          </div>`;
+        el.addEventListener("click",e=>{
+          const btn=e.target.closest("[data-act]");
+          if(!btn) return;
+          const act=btn.dataset.act;
+          if(act==="open"){ if(v.path) window.open(v.path,"_blank"); return; }
+          if(act==="move"){
+            v.shelf = v.shelf==="ok" ? "tweak":"ok";
+            save(); renderShelves(); refreshStats();
+            toast(v.shelf==="ok" ? "「"+v.name+"」已上架 OK 版本架" : "「"+v.name+"」已移到待调整架");
+            return;
+          }
+          if(act==="del"){
+            if(v.locked) return;
+            if(!armed.get(v.id)){
+              armed.set(v.id,true); renderShelves();
+              setTimeout(()=>{ if(armed.get(v.id)){ armed.delete(v.id); renderShelves(); } },2600);
+              return;
+            }
+            data.versions=data.versions.filter(x=>x.id!==v.id);
+            armed.delete(v.id); save(); renderShelves(); refreshStats();
+            toast("已移出清单（文件本体未动）");
+          }
+        });
+        el.querySelector(".v-main")?.addEventListener("keydown",e=>{
+          if((e.key==="Enter"||e.key===" ") && v.path){ e.preventDefault(); window.open(v.path,"_blank"); }
+        });
+        list.appendChild(el);
+      });
+    });
+    refreshStats();
+  }
+
+  /* ═══════════ 添加版本 ═══════════ */
+  $("btnAdd").addEventListener("click",()=>{
+    const name=$("fName").value.trim();
+    if(!name){ $("formErr").style.display="block"; return; }
+    $("formErr").style.display="none";
+    data.versions.push({
+      id:"u-"+Date.now(),
+      name:name,
+      path:$("fPath").value.trim(),
+      note:$("fNote").value.trim(),
+      shelf:$("fShelf").value,
+      date:$("fDate").value||new Date().toISOString().slice(0,10),
+      locked:false
+    });
+    save(); renderShelves();
+    $("fName").value=""; $("fPath").value=""; $("fNote").value="";
+    toast("「"+name+"」已加入版本架");
+  });
+  ["fName","fPath"].forEach(id=>$(id).addEventListener("keydown",e=>{ if(e.key==="Enter") $("btnAdd").click(); }));
+
+  /* ═══════════ 备份 / 恢复 ═══════════ */
+  $("btnExport").addEventListener("click",()=>{
+    $("backupArea").style.display="block";
+    $("backupArea").value=JSON.stringify(data);
+    $("backupArea").select();
+    try{ document.execCommand("copy"); toast("数据已生成并尝试复制，记得粘贴保存"); }catch(e){ toast("数据已生成，请手动全选复制"); }
+  });
+  $("btnImport").addEventListener("click",()=>{
+    const raw=$("backupArea").value.trim();
+    if(!raw){ toast("先把之前导出的数据粘贴进文本框"); return; }
+    try{
+      const s=JSON.parse(raw);
+      if(!s || typeof s!=="object" || !Array.isArray(s.versions)) throw new Error("bad");
+      data=s; save(); renderTodos(); renderShelves();
+      toast("数据已恢复");
+    }catch(e){ toast("数据格式不对，恢复失败"); }
+  });
+
+  /* ═══════════ 启动 ═══════════ */
+  load();
+  $("fDate").value=new Date().toISOString().slice(0,10);
+  renderTodos();
+  renderShelves();
+})();
+</script>
+</body>
+</html>

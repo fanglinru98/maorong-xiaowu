@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>彻子小屋 · 可交互原型 V21</title>
+<!-- ==== PWA 全屏支持（说明见 PWA全屏使用说明.md） ==== -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#F2E2CE">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="毛茸小屋">
+<link rel="apple-touch-icon" href="icon-180.png">
+<script id="auto-designer-preview-contract" type="application/json">
+{
+  "artifactRole": "interactive-homepage",
+  "authoringViewport": { "width": 390, "height": 844 },
+  "deviceAdaptation": { "enabled": true, "strategy": "responsive", "supportedDevices": ["desktop", "tablet", "mobile"] },
+  "breakpoints": { "mobileMax": 767, "tabletMin": 768, "tabletMax": 1023, "desktopMin": 1024 },
+  "defaultDevice": "canvas"
+}
+</script>
+<style>
+  @font-face{
+    font-family:"ZCOOL KuaiLe";
+    src:url("fonts/ZCOOL-KuaiLe.ttf") format("truetype");
+    font-weight:400;font-style:normal;font-display:swap;
+  }
+  :root{
+    --bg:#F2E2CE;
+    --surface:#FAF0DC;
+    --wood:#A0734C;
+    --wood-deep:#7C5636;
+    --accent:#C95446;
+    --anchor:#5D6D7E;
+    --sage:#8DA35B;
+    --glow:#F4D03F;
+    --ink:#4A3628;
+    --muted:#96795F;
+    --line:#E3CFAF;
+    --panel:#FFFBF2;
+    --font-display:"ZCOOL KuaiLe","Yuanti SC","YouYuan","幼圆","Source Han Rounded SC","PingFang SC","Microsoft YaHei UI",sans-serif;
+    --font-body:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    --font-hand:"Kaiti SC","STKaiti","KaiTi","PingFang SC",serif;
+    --shadow-1:0 2px 10px rgba(74,54,40,.14);
+    --shadow-2:0 10px 34px rgba(74,54,40,.24);
+    --char-ar:420/554;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{width:100%;height:100%;}
+  body{
+    background:#241A11;
+    font-family:var(--font-body);
+    color:var(--ink);
+    display:grid;place-items:center;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+  button:focus-visible{outline:2px dashed var(--accent);outline-offset:3px;border-radius:12px;}
+
+  /* ── 屏幕容器 ─────────────────────────── */
+  .screen{
+    position:relative;
+    width:min(390px,100vw);
+    height:min(844px,100vh);
+    background:var(--bg);
+    overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  @media (min-width:420px) and (min-height:900px){
+    .screen{border-radius:36px;box-shadow:0 30px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);}
+  }
+
+  /* ── 房间场景（永远白天） ──────────────── */
+  .scene{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--zoom,1));width:100%;height:100%;background:url("assets/bg-new.png") center top / cover no-repeat;transform-origin:center center;will-change:transform;}
+  .scene-fallback{background:none !important;background-image:linear-gradient(#F2E2CE,#E8D3B4 70%,#8A6238) !important;}
+
+  /* ── 角色（双图层帧切换） ─────────────── */
+  .char-hit{
+    position:absolute;z-index:6;
+    height:27%;
+    aspect-ratio:var(--char-ar);
+    transform:translate(-50%,-90%);
+    padding:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .char-layer{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:contain;object-position:center bottom;display:block;
+    opacity:1;
+  }
+  .char-layer.is-under{opacity:0;}
+  .char-hit.react{animation:reactPop .55s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes reactPop{0%{scale:1;}38%{scale:1.07;translate:0 -5px;}100%{scale:1;}}
+  .calm .char-hit.react{animation:none;}
+  .calm .char-hit[class*="pose-"] .char-layer{animation:none !important;}
+
+  /* 坐姿微动效：每个姿势各自的呼吸感动作 */
+  .char-hit.pose-cross .char-layer{animation:poseCross 3.2s ease-in-out infinite;}
+  .char-hit.pose-achv .char-layer{animation:poseAchv 2.4s ease-in-out infinite;}
+  .char-hit.pose-love .char-layer{animation:poseLove 2.8s ease-in-out infinite;}
+  .char-hit.pose-diary .char-layer{animation:poseDiary 2.6s ease-in-out infinite;}
+  @keyframes poseCross{0%,100%{rotate:0deg;}50%{rotate:-1.4deg;translate:0 1px;}}
+  @keyframes poseAchv{0%,100%{scale:1;}50%{scale:1.025;}}
+  @keyframes poseLove{0%,100%{rotate:0deg;}50%{rotate:1.2deg;translate:1px 0;}}
+  @keyframes poseDiary{0%,100%{rotate:0deg;translate:0 0;}50%{rotate:.8deg;translate:0 2px;}}
+
+  /* 坐姿状态气泡（右上角，头部1/3大小） */
+  .sit-bubble{
+    position:absolute;right:-4%;top:-6%;
+    height:12%;width:auto;
+    opacity:0;pointer-events:none;
+    transition:opacity .2s ease;
+    z-index:7;
+  }
+  .sit-bubble.show{opacity:1;}
+
+  /* 台词气泡 */
+  .bubble{
+    position:absolute;left:50%;bottom:96%;transform:translateX(-50%) translateY(6px);
+    min-width:120px;max-width:230px;
+    background:var(--panel);border:1.5px solid var(--line);border-radius:14px;
+    padding:8px 12px;font-family:var(--font-display);font-size:14px;line-height:1.5;color:var(--ink);
+    box-shadow:var(--shadow-1);text-align:center;
+    opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;
+    z-index:7;white-space:normal;
+  }
+  .bubble.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .bubble::after{
+    content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);
+    border:7px solid transparent;border-top-color:var(--panel);
+  }
+  .bubble.act{color:var(--wood-deep);font-size:13.5px;}
+
+  /* 爱心粒子 */
+  .heart{position:absolute;z-index:8;width:16px;height:16px;pointer-events:none;animation:heartUp .9s ease-out forwards;}
+  .heart svg{width:100%;height:100%;fill:var(--accent);}
+  @keyframes heartUp{0%{opacity:0;transform:translateY(0) scale(.5);}18%{opacity:1;}100%{opacity:0;transform:translateY(-64px) scale(1.15);}}
+  .calm .heart{display:none;}
+
+  /* ── 顶部 HUD：屋名 + 心情 + 小太阳 ─────────────── */
+  .hud-top{
+    position:absolute;top:0;left:0;right:0;z-index:10;
+    display:flex;align-items:flex-start;justify-content:flex-start;
+    padding:calc(12px + env(safe-area-inset-top)) 16px 0;
+  }
+  .mood-chip{
+    display:inline-flex;align-items:center;gap:13px;
+    background:rgba(255,251,242,.96);border:1.5px solid var(--line);
+    border-radius:28px;padding:7px 24px 7px 6px;color:var(--ink);
+    box-shadow:var(--shadow-1);
+  }
+  .mood-chip .sun{width:54px;height:54px;flex:0 0 auto;display:grid;place-items:center;}
+  .mood-chip .sun .sun-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:center;box-shadow:0 0 0 2px #fff, 0 1px 4px rgba(74,54,40,.3);}
+  .mood-chip .chip-text{display:flex;flex-direction:column;gap:1px;line-height:1.1;}
+  .mood-chip .home-name{
+    font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:.03em;
+    color:var(--wood-deep);
+  }
+  .mood-chip .mood-line{
+    font-size:11px;font-weight:600;color:var(--muted);
+  }
+
+  /* ── 右侧功能列（竖排，顶对齐，无底框） ───────── */
+  .menu-right{
+    position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top) + 10px);z-index:10;
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .side-btn{
+    position:relative;width:64px;height:64px;
+    background:none;border:none;
+    display:grid;place-items:center;
+    transition:transform .15s ease, filter .15s ease;
+  }
+  .side-btn:active{transform:scale(.92);}
+  .side-btn .icon-img{width:64px;height:64px;object-fit:contain;object-position:center;pointer-events:none;}
+  .side-btn.is-settings .icon-img{width:64px;height:64px;}
+
+  /* ── 底部工具条 ─────────────────────────── */
+  .dock{
+    position:absolute;left:50%;bottom:calc(17px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    z-index:10;display:flex;gap:13px;
+    background:none;border:none;
+    padding:0;
+  }
+  .dock-btn{
+    position:relative;width:74px;height:64px;border-radius:16px;
+    display:grid;place-items:center;
+    transition:transform .15s ease, filter .15s ease;
+  }
+  .dock-btn:active{transform:translateY(1px);}
+  .dock-btn .icon-img{width:67px;height:65px;object-fit:contain;object-position:center;pointer-events:none;filter:drop-shadow(0 3px 8px rgba(74,54,40,.4));}
+
+  /* ── Toast ─────────────────────────── */
+  .toast{
+    position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(8px);
+    z-index:14;background:rgba(58,40,24,.92);color:#F5E3C8;
+    border-radius:999px;padding:9px 18px;font-size:13px;letter-spacing:.02em;
+    box-shadow:var(--shadow-2);opacity:0;pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;max-width:82%;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ── 新手提示 ─────────────────────────── */
+  .coach{
+    position:absolute;z-index:9;
+    background:rgba(255,251,242,.96);border:1.5px solid var(--line);border-radius:14px;
+    padding:8px 14px;font-family:var(--font-display);font-size:14px;color:var(--wood-deep);
+    text-shadow:0 1px 0 rgba(255,255,255,.4);box-shadow:var(--shadow-1);
+    animation:coachFloat 1.6s ease-in-out infinite;pointer-events:none;white-space:nowrap;
+    transition:left .2s ease-out,top .2s ease-out;
+  }
+  .coach::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);border:7px solid transparent;border-top-color:rgba(255,251,242,.96);}
+  @keyframes coachFloat{0%,100%{margin-top:0;}50%{margin-top:6px;}}
+  .calm .coach{animation:none;}
+
+  /* ── 设置面板 ─────────────────────────── */
+  .veil{position:absolute;inset:0;z-index:19;background:rgba(36,26,17,.44);opacity:0;pointer-events:none;transition:opacity .22s ease;}
+  .veil.show{opacity:1;pointer-events:auto;}
+  .sheet{
+    position:absolute;left:0;right:0;bottom:0;z-index:20;
+    background:var(--panel);border-radius:24px 24px 0 0;
+    padding:14px 20px calc(20px + env(safe-area-inset-bottom));
+    transform:translateY(105%);transition:transform .28s cubic-bezier(.32,.72,.28,1);
+    box-shadow:var(--shadow-2);max-height:72%;overflow-y:auto;
+  }
+  .sheet.show{transform:translateY(0);}
+  .sheet-grip{width:40px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 14px;}
+  .sheet h2{font-family:var(--font-display);font-size:18px;margin-bottom:12px;color:var(--ink);}
+  .set-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:13px 0;border-bottom:1px solid var(--line);font-size:14px;
+  }
+  .set-row:last-of-type{border-bottom:none;}
+  .set-row .lab{display:flex;flex-direction:column;gap:2px;}
+  .set-row .sub{font-size:11.5px;color:var(--muted);}
+  .switch{
+    position:relative;width:46px;height:27px;border-radius:99px;flex:none;
+    background:#D8C3A5;transition:background .18s ease;border:none;
+  }
+  .switch::after{
+    content:"";position:absolute;left:3px;top:3px;width:21px;height:21px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:left .18s ease;
+  }
+  .switch[aria-checked="true"]{background:var(--sage);}
+  .switch[aria-checked="true"]::after{left:22px;}
+  .switch:disabled{opacity:.45;cursor:not-allowed;}
+  .btn-danger{
+    margin-top:6px;width:100%;min-height:46px;border-radius:14px;
+    border:1.5px solid rgba(201,84,70,.45);color:var(--accent);
+    font-size:14px;font-weight:600;transition:background .15s ease;
+  }
+  .btn-danger:active{background:rgba(201,84,70,.1);}
+  .btn-danger.confirm{background:var(--accent);color:#fff;}
+  .about-box{
+    margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(224,205,175,.32);
+    font-size:12px;line-height:1.7;color:var(--muted);
+  }
+  .about-box code{font-family:Consolas,monospace;font-size:11px;color:var(--wood-deep);background:rgba(255,255,255,.6);padding:1px 5px;border-radius:4px;}
+
+  /* ── 截图拍立得 ─────────────────────────── */
+  .polaroid-wrap{
+    position:absolute;inset:0;z-index:30;display:grid;place-items:center;
+    background:rgba(36,26,17,.55);opacity:0;pointer-events:none;transition:opacity .22s ease;
+  }
+  .polaroid-wrap.show{opacity:1;pointer-events:auto;}
+  .polaroid{
+    background:#FFFDF8;border-radius:8px;padding:10px 10px 14px;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+    transform:rotate(-1.6deg) scale(.92);transition:transform .26s cubic-bezier(.34,1.4,.64,1);
+    width:min(232px,72vw);
+  }
+  .polaroid-wrap.show .polaroid{transform:rotate(-1.6deg) scale(1);}
+  .mini-scene{
+    position:relative;width:100%;aspect-ratio:390/700;
+    background:url("assets/bg-new.png") center top / cover no-repeat;
+    border-radius:4px;overflow:hidden;
+  }
+  .mini-char{position:absolute;height:16%;aspect-ratio:var(--char-ar);transform:translate(-50%,-90%);}
+  .stage{position:absolute;inset:0;overflow:hidden;}
+  .mini-char img{height:100%;width:auto;display:block;}
+  .polaroid .cap{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;padding:0 4px;
+  }
+  .polaroid .cap .date{font-family:var(--font-hand);font-size:14px;color:var(--ink);}
+  .polaroid .cap .mood{font-size:11px;color:var(--muted);}
+  .polaroid-actions{display:flex;gap:8px;margin-top:12px;}
+  .pl-btn{
+    flex:1;min-height:40px;border-radius:10px;font-size:13px;font-weight:600;
+    border:1.5px solid var(--line);color:var(--ink);background:#fff;
+  }
+  .pl-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .pl-btn:active{transform:translateY(1px);}
+
+  /* 快门白闪 */
+  .flash{position:absolute;inset:0;background:#fff;z-index:40;opacity:0;pointer-events:none;}
+  .flash.go{animation:flashAnim .32s ease-out forwards;}
+  @keyframes flashAnim{0%{opacity:0;}12%{opacity:.92;}100%{opacity:0;}}
+
+  /* ── 降级动效 ─────────────────────────── */
+  @media (prefers-reduced-motion: reduce){
+    .char-hit{transition-duration:0s !important;}
+    .char-hit.react{animation:none !important;}
+    .char-hit[class*="pose-"] .char-layer{animation:none !important;}
+    .heart{display:none;}
+    .coach{animation:none;}
+  }
+  .calm .char-hit{transition-duration:.35s !important;}
+</style>
+</head>
+<body>
+<div class="screen" id="screen">
+  <div class="stage" id="stage">
+    <div class="scene" id="scene" role="img" aria-label="复古木屋房间：左侧拱形窗与壁炉，中左书架柜，右侧米白沙发与圆茶几，右下台灯与小提琴"></div>
+  </div><!-- /stage -->
+
+  <!-- 角色（可点击，双图层帧切换） -->
+  <button class="char-hit" id="char" data-in-stage="1" aria-label="小屋的主人，点他会有反应" style="left:60%;top:74%;">
+    <img class="char-layer" id="imgA" src="assets/character/stand.png" alt="猫耳少年，标准站姿">
+    <img class="char-layer is-under" id="imgB" src="assets/character/greet-1.png" alt="" aria-hidden="true">
+    <img class="sit-bubble" id="sitBubble" src="" alt="" aria-hidden="true">
+    <span class="bubble" id="bubble" role="status" aria-live="polite"></span>
+  </button>
+
+  <!-- 顶部 HUD：屋名 + 心情 + 小太阳 -->
+  <header class="hud-top">
+    <span class="mood-chip" id="moodChip">
+      <span class="sun" aria-hidden="true"><img class="sun-avatar" src="icon/头像框.png" alt="彻子小屋的头像"></span>
+      <span class="chip-text">
+        <span class="home-name">彻子小屋</span>
+        <span class="mood-line"><span id="moodText">心情很好</span></span>
+      </span>
+    </span>
+  </header>
+
+  <!-- 左上角功能列 -->
+  <nav class="menu-right" aria-label="功能菜单">
+    <button class="side-btn" id="mAlbum" aria-label="相册">
+      <img class="icon-img" src="icon/相册.png" alt="相册" aria-hidden="true">
+    </button>
+    <button class="side-btn" id="mCalendar" aria-label="日历">
+      <img class="icon-img" src="icon/日历.png" alt="日历" aria-hidden="true">
+    </button>
+    <button class="side-btn" id="mDiary" aria-label="日记本">
+      <img class="icon-img" src="icon/日记.png" alt="日记本" aria-hidden="true">
+    </button>
+    <button class="side-btn is-settings" id="mSettings" aria-label="设置">
+      <img class="icon-img" src="icon/设置.png" alt="设置" aria-hidden="true">
+    </button>
+  </nav>
+
+  <!-- 底部工具条 -->
+  <div class="dock" role="toolbar" aria-label="主操作">
+    <button class="dock-btn" id="dDecor" aria-label="装修">
+      <img class="icon-img" src="icon/装修.png" alt="装修" aria-hidden="true">
+    </button>
+    <button class="dock-btn" id="dDress" aria-label="换装">
+      <img class="icon-img" src="icon/换装.png" alt="换装" aria-hidden="true">
+    </button>
+    <button class="dock-btn" id="dShot" aria-label="截图，生成拍立得卡片">
+      <img class="icon-img" src="icon/拍照.png" alt="截图" aria-hidden="true">
+    </button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="coach" id="coach" style="top:56%;" hidden>戳戳~</div>
+
+  <!-- 设置面板 -->
+  <div class="veil" id="veil"></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="设置" aria-hidden="true">
+    <div class="sheet-grip"></div>
+    <h2>设置</h2>
+    <div class="set-row">
+      <span class="lab">音效与环境声<span class="sub">二期接入，开关先就位</span></span>
+      <button class="switch" id="swSound" role="switch" aria-checked="false" aria-label="音效开关" disabled></button>
+    </div>
+    <div class="set-row">
+      <span class="lab">减弱动效<span class="sub">停用走路动画与爱心粒子</span></span>
+      <button class="switch" id="swCalm" role="switch" aria-checked="false" aria-label="减弱动效开关"></button>
+    </div>
+    <div class="set-row">
+      <span class="lab">今日互动<span class="sub">点他的次数会记进小本本</span></span>
+      <span id="tapCount" style="font-size:20px;font-weight:700;color:var(--wood-deep);font-variant-numeric:tabular-nums;">0</span>
+    </div>
+    <button class="btn-danger" id="btnClear">清空本地存档</button>
+    <div class="about-box">
+      原型 V21 · 四姿各5秒+专属微动效+二郎腿收尾后跳下（左 3 帧 / 右 4 帧）与打招呼动画，永远是白天。换素材：背景与角色在 <code>assets/</code> 与 <code>assets/character/</code>，同名覆盖即可；台词在脚本顶部 <code>REACTIONS</code> 里改。
+    </div>
+  </section>
+
+  <!-- 拍立得 -->
+  <div class="polaroid-wrap" id="plWrap" aria-hidden="true">
+    <div class="polaroid" role="dialog" aria-modal="true" aria-label="截图结果">
+      <div class="mini-scene" id="miniScene">
+        <div class="mini-char" id="miniChar"><img src="assets/character/stand.png" alt=""></div>
+      </div>
+      <div class="cap"><span class="date" id="plDate">—</span><span class="mood" id="plMood">—</span></div>
+      <div class="polaroid-actions">
+        <button class="pl-btn" id="plClose">收下</button>
+        <button class="pl-btn primary" id="plSave">存入相册</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flash" id="flash"></div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ═══════════════════════════════════════════════
+     素材与配置（换素材改这里）
+     ═══════════════════════════════════════════════ */
+  var SPRITES = {
+    stand: "assets/character/stand.png",
+    greet: ["assets/character/greet-1.png", "assets/character/greet-2.png"],
+    walkL: ["assets/character/walk-l-1.png", "assets/character/walk-l-2.png", "assets/character/walk-l-3.png"],
+    walkR: ["assets/character/walk-r-1.png", "assets/character/walk-r-2.png", "assets/character/walk-r-3.png", "assets/character/walk-r-4.png"],
+    think: ["assets/character/think-1.png", "assets/character/think-2.png"],
+    jumpL: "assets/character/jump-l.png",
+    jumpR: "assets/character/jump-r.png",
+    sit: {
+      cross:"assets/character/sit-cross-2.png",
+      achv:"assets/character/sit-achv-2.png",
+      love:"assets/character/sit-love.png",
+      diary:"assets/character/sit-diary-2.png"
+    },
+    bubbles: {
+      achv:"assets/character/bubble-achv.png",
+      love:"assets/character/bubble-love.png",
+      diary:"assets/character/bubble-diary.png"
+    },
+    legacy: "assets/character.png"
+  };
+  var POSE_META = {
+    cross:{ bubble:null, acts:["翘着腿哼小曲","晃着脚尖打拍子"] },
+    achv:{ bubble:"achv", acts:["举着奖杯自我陶醉","回味刚才的高光时刻"] },
+    love:{ bubble:"love", acts:["比了个心，然后假装没做过","偷偷把心意藏进抱枕里"] },
+    diary:{ bubble:"diary", acts:["低着头写日记","在页脚画了一只小猫"] }
+  };
+
+  /* 活动范围界定（物理逻辑）：
+     ground —— 地面热点，走路直达；
+     climb  —— 高处热点（沙发/窗台/棋盘橱柜），必须先走到跳点再播放跳跃衔接帧；
+     沙发是坐姿热点：跳上去后只出现坐姿（随机三选一），绝不站立。 */
+  var HOTSPOTS = [
+    { id:"sofa",    type:"climb", x:71.5, y:61.6, jumpFrom:{x:80.5,y:80.5}, dir:"right", sit:true,
+      sits:{ cross:{x:73.5,y:62}, achv:{x:80,y:58.5}, love:{x:71.5,y:59}, diary:{x:74.5,y:60.5} } },
+    { id:"table",   type:"ground", x:59, y:86, acts:["偷吃了一小块蛋糕","给唱片机换了一张碟","斟了小半杯红茶"] },
+    { id:"cushion", type:"ground", x:17, y:92, acts:["盘腿坐进软垫","抱着抱枕打了个哈欠","翻开红皮书看了两页"] },
+    { id:"violin",  type:"ground", x:80, y:86, acts:["调了调琴弦","拉了一段练习曲","用绒布擦拭琴身"] }
+  ];
+
+  /* 点击反应台词池（近 3 句不重复） */
+  var REACTIONS = {
+    morning:["早上好呀，今天也从窗台的阳光开始吧","起得比我早？难得难得"],
+    night:["这么晚还来看我呀，晚安前再坐一会吧","夜深了，壁炉我看着，你早点休息"],
+    tap:["你好呀！今天也来啦","嘿嘿，被发现了","这朵玫瑰……下回送你","要一起晒太阳吗","别戳啦，会害羞的","嗯？有什么事吗","你回来啦，我刚收拾好房间","刚在想，晚饭吃甜的还是咸的"],
+    rapid:["再戳就要收摸头费了哦","停停停，头要被点晕啦"],
+    happy:["心情好得想转个圈","有你常来看我，真好"]
+  };
+
+  /* ═══════════════════════════════════════════════
+     存档
+     ═══════════════════════════════════════════════ */
+  var SAVE_KEY = "furryhome-v2";
+  var state = { firstRun:true, taps:0, dayKey:"", album:[], calm:false, lastLines:[], lastSit:"" };
+  try {
+    var _raw = localStorage.getItem(SAVE_KEY);
+    if (!_raw) { var _old = localStorage.getItem("maorong-home-v1"); if (_old) { localStorage.setItem(SAVE_KEY, _old); _raw = _old; } }
+    if (_raw) { var s = JSON.parse(_raw); if (s && typeof s === "object") { for (var k in state) if (k in s) state[k] = s[k]; } }
+  } catch (e) {}
+  function persist(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e){} }
+  function todayKey(){ var d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+  if (state.dayKey !== todayKey()){ state.dayKey = todayKey(); state.taps = 0; persist(); }
+
+  /* ═══════════════════════════════════════════════
+     DOM
+     ═══════════════════════════════════════════════ */
+  var $ = function(id){ return document.getElementById(id); };
+  var charEl=$("char"), bubble=$("bubble"), coach=$("coach");
+  var screenEl=$("screen"), toastEl=$("toast");
+  var imgA=$("imgA"), imgB=$("imgB");
+
+  /* 素材兜底：新帧缺失时回落到旧立绘 */
+  var probe=new Image();
+  probe.onerror=function(){
+    SPRITES.stand=SPRITES.legacy;
+    SPRITES.greet=[SPRITES.legacy];
+    SPRITES.walkL=[SPRITES.legacy];
+    SPRITES.walkR=[SPRITES.legacy];
+    document.documentElement.style.setProperty("--char-ar","1025/1104");
+    charEl.style.aspectRatio="1025/1104";
+    imgA.src=SPRITES.stand;
+  };
+  probe.src=SPRITES.stand;
+  /* 预加载（不强制 decode，避免低内存设备解码失败） */
+  [SPRITES.greet, SPRITES.walkL, SPRITES.walkR, SPRITES.think].forEach(function(arr){
+    arr.forEach(function(u){ var i=new Image(); i.src=u; });
+  });
+  [SPRITES.jumpL, SPRITES.jumpR, SPRITES.sit.cross, SPRITES.sit.achv, SPRITES.sit.love, SPRITES.sit.diary, SPRITES.bubbles.achv, SPRITES.bubbles.love, SPRITES.bubbles.diary].forEach(function(u){ var i=new Image(); i.src=u; });
+
+  /* ═══════════════════════════════════════════════
+     时钟 / 心情（无昼夜滤镜，永远白天）
+     ═══════════════════════════════════════════════ */
+  var WEEK=["日","一","二","三","四","五","六"];
+  function tickClock(){
+    var d=new Date();
+    var el=$("hudDate"); if(el){ el.textContent=(d.getMonth()+1)+"月"+d.getDate()+"日 周"+WEEK[d.getDay()]+" · "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+  }
+  tickClock(); setInterval(tickClock, 30000);
+
+  var MOODS=[{min:0,t:"有点安静"},{min:3,t:"心情很好"},{min:8,t:"开心得冒泡"}];
+  function moodText(){ var t=MOODS[0].t; MOODS.forEach(function(m){ if(state.taps>=m.min) t=m.t; }); return t; }
+  function refreshMood(){ $("moodText").textContent=moodText(); $("tapCount").textContent=state.taps; }
+
+  /* ═══════════════════════════════════════════════
+     Toast / 气泡
+     ═══════════════════════════════════════════════ */
+  var toastTimer=null;
+  function toast(msg){
+    toastEl.textContent=msg; toastEl.classList.add("show");
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ toastEl.classList.remove("show"); },1800);
+  }
+  var bubbleTimer=null;
+  function say(text, isAction, ms){
+    bubble.textContent=text;
+    bubble.classList.toggle("act",!!isAction);
+    bubble.classList.add("show");
+    clearTimeout(bubbleTimer);
+    bubbleTimer=setTimeout(function(){ bubble.classList.remove("show"); }, ms||(isAction?2400:2000));
+  }
+
+  /* ═══════════════════════════════════════════════
+     双图层帧切换引擎
+     ═══════════════════════════════════════════════ */
+  var curLayer=imgA;
+  var curFrame=SPRITES.stand;
+  var seqTimer=null;
+  function setFrame(src){
+    if(src===curFrame) return;
+    var show=(curLayer===imgA)?imgB:imgA;
+    show.onerror=function(){
+      show.onerror=null;
+      if(src!==SPRITES.stand){ setFrame(SPRITES.stand); }
+    };
+    show.src=src;
+    show.classList.remove("is-under");
+    curLayer.classList.add("is-under");
+    curLayer=show; curFrame=src;
+  }
+  function standFrame(){ stopSeq(); applyPoseAnim(null); setFrame(SPRITES.stand); }
+  var sitBubbleEl=$("sitBubble");
+  function showSitBubble(key){
+    if(!key){ sitBubbleEl.classList.remove("show"); sitBubbleEl.removeAttribute("src"); return; }
+    sitBubbleEl.src=SPRITES.bubbles[key];
+    sitBubbleEl.classList.add("show");
+  }
+  function applyPoseAnim(key){
+    ["pose-cross","pose-achv","pose-love","pose-diary"].forEach(function(c){ charEl.classList.remove(c); });
+    if(key) charEl.classList.add("pose-"+key);
+  }
+  function stopSeq(){ if(seqTimer){ cancelAnimationFrame(seqTimer); seqTimer=null; } }
+  /* 序列播放：基于 rAF 的帧切换（流畅不跳帧） */
+  function playSeq(frames, speed, until){
+    stopSeq();
+    var i=0, last=0;
+    function tick(ts){
+      if(until && until()){ standFrame(); return; }
+      if(!last || ts-last>=speed){
+        setFrame(frames[i%frames.length]); i++;
+        last=ts;
+      }
+      seqTimer=requestAnimationFrame(tick);
+    }
+    seqTimer=requestAnimationFrame(tick);
+  }
+
+  /* ═══════════════════════════════════════════════
+     行为状态机（闲逛循环）
+     ═══════════════════════════════════════════════ */
+  var epoch=0;
+  var cur={x:60,y:74};
+  var lastSpot="sofa";
+
+  function pos(p){ charEl.style.left=p.x+"%"; charEl.style.top=p.y+"%"; moveCoach(p.x,p.y); }
+  function moveCoach(cx,cy){
+    if(!coach || coach.hidden) return;
+    /* 气泡显示在角色头上一侧（右偏，避免压住角色） */
+    var left=cx+6;
+    if(left>90) left=cx-44;
+    coach.style.left=left+"%";
+    coach.style.top=(cy-6)+"%";
+  }
+  function later(fn,ms){ var my=epoch; setTimeout(function(){ if(my===epoch) fn(); },ms); }
+
+  function pickSpot(){
+    var pool=HOTSPOTS.filter(function(h){ return h.id!==lastSpot; });
+    var weighted=[];
+    pool.forEach(function(h){ var w=h.weight||1; for(var i=0;i<w;i++) weighted.push(h); });
+    return weighted[Math.floor(Math.random()*weighted.length)];
+  }
+
+  function walkTo(tx,ty){
+    var sx=cur.x, sy=cur.y;
+    var dx=tx-sx, dy=ty-sy;
+    var dur=Math.min(2600,Math.max(700,420+Math.hypot(dx,dy)*34));
+    var walkFrames=(dx<0)?SPRITES.walkL:SPRITES.walkR;
+    var stepMs=Math.max(150,Math.round(dur/Math.max(3,Math.round(dur/210))));
+    stopSeq();
+    cur={x:tx,y:ty};
+    var t0=null, fi=0, lastF=0;
+    function step(ts){
+      if(t0===null) t0=ts;
+      var k=Math.min(1,(ts-t0)/dur);
+      var ease=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      pos({x:sx+dx*ease, y:sy+dy*ease});
+      if(ts-lastF>=stepMs){ setFrame(walkFrames[fi%walkFrames.length]); fi++; lastF=ts; }
+      if(k<1){ seqTimer=requestAnimationFrame(step); }
+      else{ standFrame(); }
+    }
+    seqTimer=requestAnimationFrame(step);
+    return dur;
+  }
+
+  function jumpTo(jp, land, dir){
+    /* 走到跳点 → 跳跃帧（含位移动画）→ 落到高处 */
+    var wd=walkTo(jp.x, jp.y);
+    later(function(){
+      stopSeq();
+      setFrame(dir==="left"?SPRITES.jumpL:SPRITES.jumpR);
+      var dx=Math.abs(land.x-jp.x), dy=Math.abs(land.y-jp.y);
+      var jd=Math.max(450,Math.min(900,300+Math.hypot(dx,dy)*22));
+      charEl.style.setProperty("--walk-dur",jd+"ms");
+      cur={x:land.x,y:land.y};
+      pos(cur);
+      later(function(){
+        standFrame();
+        later(loop, 2600+Math.random()*1400);
+      }, jd+80);
+    }, wd+120);
+  }
+
+  function jumpAnim(from, to, done){
+    var jd=Math.max(450,Math.min(900,300+Math.hypot(to.x-from.x,to.y-from.y)*22));
+    cur={x:to.x,y:to.y};
+    var t0=null;
+    function step(ts){
+      if(t0===null) t0=ts;
+      var k=Math.min(1,(ts-t0)/jd);
+      var lift=Math.sin(k*Math.PI)*2.2; /* 跳跃弧度 */
+      pos({x:from.x+(to.x-from.x)*k, y:from.y+(to.y-from.y)*k-lift});
+      if(k<1){ seqTimer=requestAnimationFrame(step); }
+      else{ stopSeq(); if(done) done(); }
+    }
+    seqTimer=requestAnimationFrame(step);
+  }
+
+  function loop(){
+    if(cur.y<66){
+      var gtx=Math.min(88,Math.max(12,cur.x+(cur.x>50?-10:10)));
+      var gframe=(gtx<cur.x)?SPRITES.jumpL:SPRITES.jumpR;
+      setFrame(gframe);
+      jumpAnim(cur,{x:gtx,y:82},function(){ standFrame(); later(loop,1200); });
+      return;
+    }
+    var s=pickSpot(); lastSpot=s.id;
+    if(s.type==="climb"){
+      if(s.sit){
+        /* 沙发流程：跳上 → 二郎腿(初始5s) → 其余三姿随机顺序各5s → 回到二郎腿 → 跳下 */
+        var poseOrder=["achv","love","diary"].sort(function(){ return Math.random()-0.5; });
+        var sitSeq=["cross"].concat(poseOrder).concat(["cross"]);
+        var wd0=walkTo(s.jumpFrom.x, s.jumpFrom.y);
+        later(function(){
+          stopSeq();
+          setFrame(s.dir==="left"?SPRITES.jumpL:SPRITES.jumpR);
+          jumpAnim(s.jumpFrom, s, function(){
+            var i=0;
+            function nextPose(){
+              if(i>=sitSeq.length){
+                showSitBubble(null);
+                applyPoseAnim(null);
+                charEl.style.transform="translate(-50%,-90%) scale(1)";
+                setFrame(s.dir==="left"?SPRITES.jumpR:SPRITES.jumpL);
+                jumpAnim(s, s.jumpFrom, function(){ standFrame(); later(loop,1600); });
+                return;
+              }
+              var key=sitSeq[i]; i++;
+              setFrame(SPRITES.sit[key]);
+              var sp=(s.sits&&s.sits[key])?s.sits[key]:s;
+              cur={x:sp.x,y:sp.y}; pos(cur);
+              /* 举杯姿势偏宽扁，坐姿时放大容器避免显得小 */
+              if(key==="achv"){ charEl.style.transform="translate(-50%,-100%) scale(1.3)"; }
+              else { charEl.style.transform="translate(-50%,-90%) scale(1)"; }
+              applyPoseAnim(key);
+              var meta=POSE_META[key];
+              showSitBubble(meta.bubble);
+              say(meta.acts[Math.floor(Math.random()*meta.acts.length)],true,3000);
+              later(nextPose, 5000);
+            }
+            nextPose();
+          });
+        }, wd0+120);
+        return;
+      }
+      /* 窗台/棋盘柜：跳上去站着做小动作 */
+      var wd1=walkTo(s.jumpFrom.x, s.jumpFrom.y);
+      later(function(){
+        stopSeq();
+        setFrame(s.dir==="left"?SPRITES.jumpL:SPRITES.jumpR);
+        var dx=Math.abs(s.x-s.jumpFrom.x), dy=Math.abs(s.y-s.jumpFrom.y);
+        var jd=Math.max(450,Math.min(900,300+Math.hypot(dx,dy)*22));
+        charEl.style.setProperty("--walk-dur",jd+"ms");
+        cur={x:s.x,y:s.y};
+        pos(cur);
+        later(function(){
+          standFrame();
+          say(s.acts[Math.floor(Math.random()*s.acts.length)],true);
+          playSeq(SPRITES.think,1700,function(){ return false; });
+          later(function(){ standFrame(); later(loop, 2400+Math.random()*1400); }, 3000);
+        }, jd+80);
+      }, wd1+120);
+      return;
+    }
+    /* 地面热点 */
+    var dur=walkTo(s.x, s.y);
+    later(function(){
+      standFrame();
+      if(Math.random()<0.14){
+        playSeq(SPRITES.greet,320,function(){ return false; });
+        say("你好呀～路过吗？",true,2000);
+      }else if(Math.random()<0.3){
+        playSeq(SPRITES.think,1700,function(){ return false; });
+        say(s.acts[Math.floor(Math.random()*s.acts.length)],true);
+      }else{
+        say(s.acts[Math.floor(Math.random()*s.acts.length)],true);
+      }
+      later(loop, 2600+Math.random()*1400);
+    }, dur+120);
+  }
+
+  /* ═══════════════════════════════════════════════
+     点击反应：播放打招呼动画
+     ═══════════════════════════════════════════════ */
+  var lastTap=0, lastTapStamp=0;
+  function pickLine(pool){
+    var cands=pool.filter(function(l){ return state.lastLines.indexOf(l)<0; });
+    if(!cands.length) cands=pool.slice();
+    var line=cands[Math.floor(Math.random()*cands.length)];
+    state.lastLines.push(line); if(state.lastLines.length>3) state.lastLines.shift();
+    return line;
+  }
+  function heart(){
+    var h=document.createElement("span");
+    h.className="heart";
+    h.style.left=cur.x+"%"; h.style.top=cur.y+"%";
+    h.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.9-10-9.5C.4 8.6 2.4 4.5 6.2 4.5c2.2 0 3.9 1.2 4.8 3 1-1.8 3.6-3 5.8-3 3.8 0 5.8 4.1 4.2 7-2.5 4.6-9 9.5-9 9.5z"/></svg>';
+    screenEl.appendChild(h);
+    h.addEventListener("animationend",function(){ h.remove(); });
+    setTimeout(function(){ if(h.parentNode) h.remove(); },1200);
+  }
+  charEl.addEventListener("click",function(){
+    var now=Date.now();
+    if(now-lastTap<900) return;
+    var rapid=(now-lastTapStamp<1600);
+    lastTap=now; lastTapStamp=now;
+
+    epoch++;
+    showSitBubble(null);
+    applyPoseAnim(null);
+    stopSeq();
+    charEl.classList.remove("walking");
+    charEl.classList.add("react");
+    setTimeout(function(){ charEl.classList.remove("react"); },600);
+
+    var h=new Date().getHours(), pool;
+    if(rapid) pool=REACTIONS.rapid;
+    else if(h>=5&&h<9&&Math.random()<0.35) pool=REACTIONS.morning;
+    else if((h>=23||h<5)&&Math.random()<0.35) pool=REACTIONS.night;
+    else pool=REACTIONS.tap;
+    say(pickLine(pool),false,2200);
+    heart();
+
+    playSeq(SPRITES.greet,280,function(){ return false; });
+    later(function(){ standFrame(); },2300);
+
+    state.taps++; persist(); refreshMood();
+    if(state.firstRun){ state.firstRun=false; persist(); coach.hidden=true; }
+
+    later(function(){ loop(); },2500);
+  });
+
+  /* ═══════════════════════════════════════════════
+     截图 → 拍立得
+     ═══════════════════════════════════════════════ */
+  var plWrap=$("plWrap");
+  function openPolaroid(){
+    $("flash").classList.remove("go"); void $("flash").offsetWidth; $("flash").classList.add("go");
+    $("miniChar").style.left=cur.x+"%"; $("miniChar").style.top=cur.y+"%";
+    $("miniChar").querySelector("img").src=curFrame;
+    var d=new Date();
+    $("plDate").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日 · 彻子小屋";
+    $("plMood").textContent=moodText();
+    setTimeout(function(){
+      plWrap.classList.add("show"); plWrap.setAttribute("aria-hidden","false");
+    },200);
+  }
+  function closePolaroid(){ plWrap.classList.remove("show"); plWrap.setAttribute("aria-hidden","true"); }
+  $("dShot").addEventListener("click",openPolaroid);
+  $("plClose").addEventListener("click",closePolaroid);
+  plWrap.addEventListener("click",function(e){ if(e.target===plWrap) closePolaroid(); });
+  $("plSave").addEventListener("click",function(){
+    state.album.push({t:Date.now(),mood:moodText()});
+    persist(); closePolaroid();
+    toast("已存入相册（本地）· 共 "+state.album.length+" 张");
+  });
+
+  /* ═══════════════════════════════════════════════
+     二期入口 / 设置面板
+     ═══════════════════════════════════════════════ */
+  function lockToast(name){ toast("「"+name+"」将在二期解锁，先陪他玩玩吧"); }
+  $("mAlbum").addEventListener("click",function(){ lockToast("照片墙"); });
+  $("mCalendar").addEventListener("click",function(){ lockToast("日历"); });
+  $("mDiary").addEventListener("click",function(){ lockToast("日记本"); });
+  $("dDecor").addEventListener("click",function(){ lockToast("装修"); });
+  $("dDress").addEventListener("click",function(){ lockToast("换装"); });
+
+  var sheet=$("sheet"), veil=$("veil");
+  function openSheet(){ sheet.classList.add("show"); veil.classList.add("show"); sheet.setAttribute("aria-hidden","false"); }
+  function closeSheet(){ sheet.classList.remove("show"); veil.classList.remove("show"); sheet.setAttribute("aria-hidden","true"); resetClear(); }
+  $("mSettings").addEventListener("click",openSheet);
+  veil.addEventListener("click",closeSheet);
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape"){ closeSheet(); closePolaroid(); } });
+
+  var swCalm=$("swCalm");
+  function applyCalm(){ screenEl.classList.toggle("calm",!!state.calm); swCalm.setAttribute("aria-checked",String(!!state.calm)); }
+  swCalm.addEventListener("click",function(){ state.calm=!state.calm; persist(); applyCalm(); });
+  applyCalm();
+
+  var btnClear=$("btnClear"), armed=false, armTimer=null;
+  function resetClear(){ armed=false; btnClear.classList.remove("confirm"); btnClear.textContent="清空本地存档"; }
+  btnClear.addEventListener("click",function(){
+    if(!armed){
+      armed=true; btnClear.classList.add("confirm"); btnClear.textContent="再点一次确认清空";
+      clearTimeout(armTimer); armTimer=setTimeout(resetClear,2600);
+      return;
+    }
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    state={firstRun:false,taps:0,dayKey:todayKey(),album:[],calm:false,lastLines:[]};
+    refreshMood(); resetClear(); closeSheet(); toast("存档已清空，从头开始陪他吧");
+  });
+
+  /* ═══════════════════════════════════════════════
+     缩放系统：滚轮/双指捏合缩放画面
+     ═══════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════
+     启动
+     ═══════════════════════════════════════════════ */
+  /* 角色保留在屏幕层：位置=屏幕百分比；缩放只改变视觉尺寸 */
+  refreshMood();
+  pos(cur);
+  if(state.firstRun){ coach.hidden=false; moveCoach(cur.x,cur.y); setTimeout(function(){ coach.hidden=true; }, 2600); }
+  later(loop, 1800);
+})();
+</script>
+
+<!-- ==== PWA 全屏支持（勿改游戏逻辑；使用说明见 PWA全屏使用说明.md） ==== -->
+<style>
+  #pwa-fs-btn{position:fixed;right:14px;bottom:14px;z-index:99990;width:44px;height:44px;border-radius:50%;background:rgba(74,54,40,.42);color:#FFFBF2;font-size:13px;letter-spacing:1px;opacity:.72}
+  #pwa-fs-btn:hover{opacity:1}
+  #pwa-fs-tip{position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:99991;max-width:82vw;background:rgba(36,26,17,.85);color:#FFFBF2;padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.7;text-align:center}
+</style>
+<script>
+(function(){
+  var ua = navigator.userAgent || '';
+  var isIPhone = /iPhone|iPod/i.test(ua);
+  var isWeChat = /MicroMessenger/i.test(ua);
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || (window.navigator && window.navigator.standalone === true);
+  if (isIPhone && standalone) return; /* 已从主屏打开：iOS 本就没有浏览器栏，无需按钮和引导 */
+
+  if (!isIPhone && !isWeChat) {
+    /* 电脑 / 安卓 / iPad：一键全屏。iPhone 不支持网页全屏 API（苹果限制），走下面的引导 */
+    var btn = document.createElement('button');
+    btn.id = 'pwa-fs-btn'; btn.type = 'button'; btn.title = '全屏 / 退出全屏'; btn.textContent = '全屏';
+    btn.addEventListener('click', function () {
+      var root = document.documentElement;
+      var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+      if (fsEl) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
+      else { (root.requestFullscreen || root.webkitRequestFullscreen).call(root); }
+    });
+    document.body.appendChild(btn);
+  }
+
+  if (isIPhone || isWeChat) {
+    var tip = document.createElement('div');
+    tip.id = 'pwa-fs-tip';
+    tip.innerHTML = isWeChat
+      ? '微信内无法全屏：点右上角「···」→「在浏览器打开」<br>再用浏览器「添加到主屏幕」即可全屏游玩'
+      : '想全屏游玩：点「分享」→「添加到主屏幕」<br>之后从桌面图标打开就是全屏画面';
+    tip.addEventListener('click', function () { tip.remove(); });
+    document.body.appendChild(tip);
+    setTimeout(function () { var t = document.getElementById('pwa-fs-tip'); if (t) t.remove(); }, 9000);
+  }
+
+  /* Service Worker 注册（仅 https / localhost 生效；本地双击 file:// 打开会自动跳过） */
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function(){}); });
+  }
+})();
+</script>
+</body>
+</html>
