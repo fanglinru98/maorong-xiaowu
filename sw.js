@@ -3,11 +3,10 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v2';
+const CACHE_VER = 'maoor-v3';
 const PRECACHE = [
   './index.html',
   './manifest.json',
-  './毛茸小屋V22demo.html',
   './icon-180.png',
   './icon-192.png',
   './icon-512.png',
