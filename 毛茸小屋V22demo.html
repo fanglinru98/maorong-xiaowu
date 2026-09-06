@@ -1,0 +1,2421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>毛茸小屋 V22 装修 demo</title>
+<!-- PWA 全屏支持（V21 同款方案）：加到主屏幕后全屏运行 -->
+<meta name="theme-color" content="#332416">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="毛茸小屋">
+<style>
+:root{--ink:#2f2b28;--muted:#8d877f;--line:#e5e1da;--bg:#f5f3ef;--panel:#fbfaf8;--accent:#3a352f;
+  --gold:#d9b56a;--gold-deep:#c9a55c;--gold-line:#ead9ae;--panel2:#f8f0d8;--ink2:#5a4632;
+  --hudline:#e8dcc2;--wood-deep:#5a4632;--ink-soft:#7a6248;--coin:#c9861f;--barH:min(43%,368px); /* v22bar2：竖版大卡两行网格（照用户图二），面板高度回调到与装修底边栏demo 一致 */
+  --shadow-1:0 2px 8px rgba(74,54,40,.14);--shadow-2:0 8px 24px rgba(58,40,24,.22);
+  --font-display:"Alibaba PuHuiTi","PingFang SC","Source Han Sans SC","Microsoft YaHei UI",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer} /* v22bar2b：全局按钮重置（照装修底边栏demo 第22行），去 UA 灰底黑边 */
+html,body{height:100%}
+body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font:15px/1.6 var(--font-display)}
+/* ═══ 游戏界面壳（期1.5 批1）：390×844 · HUD 原位（照正式版 V21） ═══ */
+.screen{position:relative;width:min(390px,100vw);height:min(844px,100vh);overflow:hidden;
+  background:#3a2a1b;box-shadow:0 12px 48px rgba(0,0,0,.5)}
+/* ── 顶部 HUD：屋名+心情+头像框（V21 原位样式） ── */
+.hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
+  justify-content:flex-start;padding:calc(12px + env(safe-area-inset-top)) 16px 0;pointer-events:none}
+.mood-chip{pointer-events:auto;display:inline-flex;align-items:center;gap:13px;
+  background:rgba(255,251,242,.96);border:1.5px solid var(--hudline);border-radius:28px;
+  padding:7px 24px 7px 6px;color:var(--ink);box-shadow:var(--shadow-1)}
+.mood-chip .sun{width:54px;height:54px;flex:0 0 auto;display:grid;place-items:center}
+.mood-chip .sun .sun-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:center;
+  box-shadow:0 0 0 2px #fff,0 1px 4px rgba(74,54,40,.3)}
+.mood-chip .chip-text{display:flex;flex-direction:column;gap:1px;line-height:1.1}
+.mood-chip .home-name{font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:.03em;color:var(--wood-deep)}
+.mood-chip .mood-line{font-size:11px;font-weight:600;color:var(--muted)}
+/* ── 右侧功能列（V21 原位） ── */
+.menu-right{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top) + 10px);z-index:10;
+  display:flex;flex-direction:column;gap:16px}
+.side-btn{position:relative;width:64px;height:64px;background:none;border:none;display:grid;place-items:center;
+  transition:transform .15s ease,filter .15s ease}
+.side-btn:active{transform:scale(.92)}
+.side-btn .icon-img{width:64px;height:64px;object-fit:contain;object-position:center;pointer-events:none}
+/* ── 底部工具条（V21 原位；装修模式/底边栏展开时下沉隐藏） ── */
+.dock{position:absolute;left:50%;bottom:calc(17px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  z-index:10;display:flex;gap:13px;background:none;border:none;padding:0;transition:bottom .28s cubic-bezier(.32,.72,.28,1)}
+.dock-btn{position:relative;width:74px;height:64px;border-radius:16px;display:grid;place-items:center;
+  background:none;border:none;transition:transform .15s ease,filter .15s ease}
+.dock-btn:active{transform:translateY(1px)}
+.dock-btn .icon-img{width:67px;height:65px;object-fit:contain;object-position:center;pointer-events:none}
+body.barOpen .dock{bottom:-90px}
+/* ── Toast ── */
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(8px);z-index:14;
+  background:rgba(0,0,0,.78);color:#F5E3C8;border:1px solid rgba(217,181,106,.4);border-radius:999px;padding:9px 18px;font-size:13px;
+  letter-spacing:.02em;box-shadow:var(--shadow-2);opacity:0;pointer-events:none;
+  transition:opacity .2s ease,transform .2s ease;max-width:82%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#stage{position:absolute;inset:0;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
+#scene{position:absolute;left:50%;top:50%;width:100%;height:100%;
+  transform:translate(-50%,-50%) translate(var(--panX,0px),var(--panY,0px)) scale(var(--zoom,1));transform-origin:center center;will-change:transform}
+#roomIso{display:block;width:100%;height:100%}
+/* ═══ 装修底边栏（期1.5 批2：照装修底边栏demo 移植，body.barOpen 滑入） ═══ */
+#decoBar{position:absolute;left:0;right:0;bottom:0;height:var(--barH);z-index:20;
+  background:linear-gradient(var(--panel2),#f3e7c8);border:3px solid var(--gold-deep);border-bottom:none;
+  border-radius:22px 22px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.4);
+  padding:10px 12px 8px;display:flex;flex-direction:column;gap:8px;
+  transform:translateY(103%);transition:transform .3s cubic-bezier(.32,.72,.28,1)}
+body.barOpen #decoBar{transform:translateY(0)}
+#decoBar::before{content:"";position:absolute;inset:4px;border:1px solid var(--gold-line);
+  border-radius:18px 18px 0 0;pointer-events:none}
+.bar-edge{display:flex;align-items:center;gap:8px;margin:-2px 6px 0}
+.bar-edge i{flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.bar-edge b{width:8px;height:8px;background:var(--gold);transform:rotate(45deg);box-shadow:0 0 0 2px var(--panel2),0 0 0 3px var(--gold)}
+.bar-close{flex:0 0 auto;font-size:12px;font-weight:600;color:var(--ink-soft);padding:2px 8px;background:none;border:none;cursor:pointer}
+#tabs{display:flex;gap:6px;padding:0 4px}
+.tab{flex:1;height:38px;border-radius:12px;font-size:15px;font-weight:600;letter-spacing:2px;
+  color:var(--ink-soft);transition:all .15s}
+.tab.on{background:#fffdf4;color:var(--ink);font-weight:700;border:1.5px solid var(--gold);
+  box-shadow:0 3px 8px rgba(0,0,0,.12),inset 0 -2px 0 var(--gold-line);transform:translateY(-1px)}
+#subs{display:flex;gap:6px;overflow-x:auto;padding:2px 4px;scrollbar-width:none}
+#subs::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;height:30px;padding:0 14px;border-radius:15px;font-size:13px;font-weight:600;
+  background:#fdf8ea;border:1px solid #d9c9a0;color:var(--ink-soft);transition:all .15s}
+.chip.on{background:#3a2d20;border-color:#3a2d20;color:#f3e3b8;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+#grid{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:grid;
+  grid-template-columns:repeat(4,1fr);gap:8px;padding:4px 4px 6px;align-content:start;scrollbar-width:thin;scrollbar-color:#dcb87e #f8eed6} /* v22bar2：竖版大卡网格（照用户图二），纵向滚动滚轮原生生效 */
+#grid::-webkit-scrollbar{width:14px}
+#grid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:99px}
+#grid::-webkit-scrollbar-thumb{background:#dcb87e;border:2px solid #f8eed6;border-radius:99px}
+/* v22bar2c：滚动条=奶油轨道+焦糖胶囊滑块（照用户 09-04 卡片图右缘样式），换装层 .d-grid 同款 */
+/* v22bar2（照用户图二）：竖版卡片=图片区(细金边内框、家具居中完整不裁切)→名称粗体居中→「拥有：N」居中；
+   图片区 flex:1+min-height:0+img 双 max 约束 → 图片物理上不可能压到名称 */
+.card{height:118px;background:#fdf6e3;border:1px solid #e5d3a8;border-radius:12px;padding:5px 4px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all .12s;overflow:hidden}
+.card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 3px 10px rgba(90,70,50,.18)}
+.card .cimg{flex:1 1 0;min-height:0;width:100%;position:relative;padding:3px;
+  background:#fbf3df;border:1px solid #e8d5ac;border-radius:9px;box-sizing:border-box;overflow:hidden}
+.card .cimg img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  max-width:94%;max-height:94%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(40,25,10,.14))}
+/* v22bar2b：图片改绝对定位居中（百分比 max 对 flex 派生高度可靠解析）+ cimg overflow:hidden 双保险 → 家具png 在小框内居中完整、永不与名称重叠 */
+.card .swatch{flex:1 1 0;min-height:0;width:100%;border-radius:9px;border:1px solid rgba(90,70,50,.25)}
+.card .theme3{flex:1 1 0;min-height:0;width:100%;border-radius:9px;overflow:hidden;display:flex;border:1px solid rgba(90,70,50,.25)}
+.card .theme3 i{flex:1}
+.card .cname{flex:0 0 auto;width:100%;font-size:12px;font-weight:700;color:var(--ink);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .cown{flex:0 0 auto;font-size:10.5px;font-weight:600;color:var(--ink-soft)}
+/* 面板外右上三圆钮（面板展开时才出现） */
+#quickBtns{position:absolute;right:10px;bottom:calc(var(--barH) + 10px);display:flex;gap:8px;z-index:30;
+  opacity:0;pointer-events:none;transform:translateY(12px);transition:all .28s}
+body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
+.qb{height:30px;padding:0 14px;border-radius:15px;font-size:13px;font-weight:600;line-height:1;display:grid;place-items:center;
+  border:1.5px solid rgba(255,255,255,.35);box-shadow:0 4px 10px rgba(74,54,40,.28);transition:transform .12s;white-space:nowrap}
+.qb:active{transform:scale(.9)}
+.qb-save{background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12}
+.qb-reset{background:#f4ead0;color:#5a4632}
+/* 墙面自定义调色（用户选定方案B）：内嵌色相+深浅双滑条 */
+.cslid{display:none;margin-top:8px;padding:8px 10px 2px;border-top:1px dashed #d2b98c;flex-direction:column;gap:6px}
+.cslid.open{display:flex}
+.cslid label{font-size:11px;font-weight:700;color:#7a6248;display:flex;align-items:center;gap:8px}
+.cslid input[type=range]{flex:1;accent-color:#b98a5e;height:18px}
+/* 商店钮样式已随按钮一并移除（用户反馈②） */
+/* ── 选中家具浮动三钮（v22fab：替代原顶部工具条，悬浮在家具上方跟随移动） ── */
+#fab{display:none;position:absolute;align-items:center;gap:7px;transform:translateX(-50%);z-index:6}
+#fab button{width:34px;height:34px;border:1.5px solid var(--gold-deep);background:#fffdf4;border-radius:50%;
+  color:var(--ink2);font-size:15px;cursor:pointer;line-height:1;box-shadow:0 2px 8px rgba(58,40,24,.25);padding:0}
+#fab button:active{transform:scale(.9)}
+#fabRow{display:none;position:absolute;transform:translateX(-50%);align-items:center;gap:4px;
+  background:#fffdf4;border:1.5px solid var(--gold-deep);border-radius:16px;padding:3px 8px;
+  box-shadow:0 2px 8px rgba(58,40,24,.25);font-size:12px;color:var(--ink2);white-space:nowrap;z-index:6}
+#fabRow button{width:22px;height:22px;border:1px solid #e5d3a8;background:#fdf8ea;border-radius:6px;color:var(--ink2);cursor:pointer;line-height:1;padding:0}
+#fabRow .fr-l{color:var(--ink-soft);font-size:11px}
+/* ═══ 换装界面覆盖层（v22dress：照 09-04 验收版换装demo 整体替换，d- 前缀防与底边栏类名冲突） ═══ */
+#dressLayer{position:absolute;inset:0;z-index:50;background:#241a11;opacity:0;pointer-events:none;transition:opacity .22s ease}
+#dressLayer.show{opacity:1;pointer-events:auto}
+.d-scene-bg{ /* 更衣室图：顶对齐按宽铺满，底部空缺深棕渐变过渡（同换装demo） */
+  position:absolute;inset:0;
+  background:url("assets/dress-bg.png") top center/100% auto no-repeat,#241a11}
+.d-scene-bg::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(36,26,17,0) 55%,rgba(36,26,17,.55) 66%,#241a11 75%,#1c130c 100%)}
+.d-back{position:absolute;left:12px;top:14px;z-index:30;width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(#fdf6e3,#f3e7c8);border:2px solid var(--gold-deep);color:var(--ink2);
+  font-size:24px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.35);
+  display:grid;place-items:center;transition:transform .12s;cursor:pointer}
+.d-back:active{transform:scale(.88)}
+.d-plaque{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:30;
+  display:flex;align-items:center;gap:8px;padding:9px 30px 10px;
+  background:linear-gradient(#5a3a2c,#3a251c);border:2px solid var(--gold);border-radius:14px;
+  box-shadow:0 5px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(234,217,174,.3)}
+.d-plaque::before{content:"❤️";position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:15px;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.d-plaque i{font-style:normal;font-size:15px}
+.d-plaque span{font-size:19px;font-weight:700;letter-spacing:6px;text-indent:6px;color:#f3e3b8}
+#dTopBtns{position:absolute;right:10px;top:14px;display:flex;flex-direction:column;gap:7px;z-index:30;align-items:flex-end}
+.d-qb{height:30px;padding:0 12px;border-radius:15px;font-size:13px;font-weight:600;line-height:1;display:grid;place-items:center;
+  border:1.5px solid rgba(255,255,255,.35);box-shadow:0 4px 10px rgba(74,54,40,.28);transition:transform .12s;white-space:nowrap;cursor:pointer}
+.d-qb:active{transform:scale(.9)}
+.d-qb-save{background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12}
+.d-qb-reset{background:#f4ead0;color:#5a4632}
+.d-charimg{position:absolute;left:50%;top:37%;height:36%;transform:translate(-50%,-50%);z-index:5;cursor:pointer;
+  filter:drop-shadow(0 10px 14px rgba(20,10,5,.35))}
+.d-charimg.pop{animation:dpop .5s ease}
+@keyframes dpop{0%{transform:translate(-50%,-50%) scale(1)}35%{transform:translate(-50%,-50%) scale(.95) translateY(3px)}70%{transform:translate(-50%,-52%) scale(1.04)}100%{transform:translate(-50%,-50%) scale(1)}}
+.d-charimg.wiggle{animation:dwiggle .55s ease} /* 点 IP：果冻微晃 */
+@keyframes dwiggle{0%{transform:translate(-50%,-50%) scale(1,1)}25%{transform:translate(-50%,-50%) scale(1.05,.94)}50%{transform:translate(-50%,-49.5%) scale(.96,1.05)}75%{transform:translate(-50%,-50%) scale(1.03,.97)}100%{transform:translate(-50%,-50%) scale(1,1)}}
+.d-heart{position:absolute;z-index:6;font-size:20px;pointer-events:none;animation:dheartUp 1s ease-out forwards}
+@keyframes dheartUp{0%{opacity:0;transform:translate(-50%,0) scale(.5)}18%{opacity:1}100%{opacity:0;transform:translate(-50%,-70px) scale(1.15)}}
+.d-saybub{position:absolute;left:50%;top:13.5%;transform:translateX(-50%) scale(.6);
+  background:#fffdf4;border:1.5px solid var(--gold);color:var(--ink2);font-size:12.5px;font-weight:600;
+  padding:7px 12px;border-radius:12px;opacity:0;pointer-events:none;transition:all .18s;z-index:10;white-space:nowrap;
+  box-shadow:0 3px 8px rgba(90,70,50,.15)}
+.d-saybub::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
+  border:6px solid transparent;border-top-color:#fffdf4;border-bottom:none}
+.d-saybub.show{opacity:1;transform:translateX(-50%) scale(1)}
+#dPanel{ /* 底部一整块面板：四周留缝透出更衣室场景 */
+  position:absolute;left:10px;right:10px;bottom:10px;height:43%;z-index:10;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:linear-gradient(#faf3e0,#f3e7c8);border:1.5px solid #e0cda2;border-radius:20px;
+  box-shadow:0 -8px 24px rgba(15,8,4,.35)}
+.d-tabs{flex:0 0 auto;display:flex;gap:6px;padding:12px 12px 6px}
+.d-tab{flex:1;height:38px;border-radius:12px;font-size:15px;font-weight:600;letter-spacing:2px;
+  color:var(--ink-soft);transition:all .15s;cursor:pointer}
+.d-tab.on{background:#fffdf4;color:var(--ink2);font-weight:700;border:1.5px solid var(--gold);
+  box-shadow:0 3px 8px rgba(0,0,0,.12),inset 0 -2px 0 var(--gold-line);transform:translateY(-1px)}
+.d-grid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 10px 12px;align-content:start;scrollbar-width:thin;scrollbar-color:#dcb87e #f8eed6}
+.d-grid::-webkit-scrollbar{width:14px}
+.d-grid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:99px}
+.d-grid::-webkit-scrollbar-thumb{background:#dcb87e;border:2px solid #f8eed6;border-radius:99px}
+.d-card{position:relative;background:#fdf6e3;border:1px solid #e5d3a8;border-radius:12px;padding:5px 4px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;cursor:pointer}
+.d-card .d-cimg{ /* 细金边内框（装修家具卡同款） */
+  width:100%;height:74px;box-sizing:border-box;padding:3px;background:#fbf3df;border:1px solid #e8d5ac;border-radius:9px;
+  display:grid;place-items:center;font-size:40px;line-height:1;overflow:hidden}
+.d-card .d-cname{font-size:12px;font-weight:700;color:var(--ink2);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d-card.sel{border-color:var(--gold-deep);background:#fffdf4;box-shadow:0 4px 10px rgba(90,70,50,.18),inset 0 -2px 0 var(--gold-line);transform:translateY(-1px)}
+.d-card.sel::after{content:"✓";position:absolute;right:-6px;top:-6px;width:23px;height:23px;border-radius:50%;
+  background:#3a2d20;color:#fdf6e3;font-size:12.5px;font-weight:700;display:grid;place-items:center;
+  border:2px solid #fffdf4;box-shadow:0 2px 5px rgba(0,0,0,.25)}
+/* ═══ 日记手帐书（批6：照日记页demo 三段版移植：封面→历史→写日记）+ 相册面板 ═══ */
+#dimVeil{position:absolute;inset:0;z-index:40;background:rgba(22,13,6,0);pointer-events:none;transition:background .32s ease}
+#dimVeil.show{background:rgba(22,13,6,.5);pointer-events:auto}
+#book{position:absolute;left:50%;top:47%;width:min(94%,370px);height:66%;z-index:41;
+  transform:translate(calc(-50% - 115vw),-50%);
+  transition:transform .38s cubic-bezier(.22,.9,.32,1);
+  background:linear-gradient(#fbf3e0,#f2e5c7);border:1px solid #d9c39a;border-radius:8px 16px 16px 8px;
+  box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 0 0 2px rgba(255,252,240,.65),inset 14px 0 20px -12px rgba(120,90,50,.3);
+  overflow:hidden;display:flex;flex-direction:column}
+#book.open{transform:translate(-50%,-50%)}
+#book::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;z-index:2;
+  background:repeating-linear-gradient(180deg,#b99a63 0 8px,transparent 8px 16px)}
+.bookmark{position:absolute;right:24px;top:-2px;width:32px;height:58px;z-index:3;
+  background:linear-gradient(#e0b96a,#c9a55c);clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%);
+  filter:drop-shadow(0 2px 3px rgba(60,40,20,.3))}
+.charm{position:absolute;left:-4px;top:37%;z-index:3;font-size:20px;
+  filter:drop-shadow(0 2px 3px rgba(60,40,20,.35))}
+.charm::before{content:"";position:absolute;left:50%;top:-14px;width:1.5px;height:14px;background:#a98d5f}
+.bback{position:absolute;left:18px;top:10px;z-index:6;width:32px;height:32px;border-radius:50%;
+  background:#fffdf4;border:1.5px solid #c9a55c;color:#5a4632;font-size:17px;font-weight:700;
+  display:grid;place-items:center;box-shadow:0 3px 8px rgba(60,40,20,.25);transition:transform .12s}
+.bback:active{transform:scale(.88)}
+/* 三段状态：封面 → 历史 → 写日记 */
+#book .pg{display:none}
+#book.st-cover .pg-cover{display:flex}
+#book.st-list .pg-list{display:flex}
+#book.st-write .pg-write{display:flex}
+/* 封面：皮革+金框猫头像（用户效果图一） */
+.pg-cover{position:absolute;inset:0;z-index:2;background:linear-gradient(160deg,#6b4a2e,#4a3320 55%,#3a2718);
+  flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;border-radius:8px 16px 16px 8px}
+.pg-cover::before{content:"";position:absolute;inset:10px;border:2px solid rgba(222,182,110,.5);border-radius:6px 12px 12px 6px;pointer-events:none}
+.pg-cover::after{content:"";position:absolute;left:10px;top:0;bottom:0;width:2px;z-index:2;
+  background:linear-gradient(rgba(255,235,190,0),rgba(255,235,190,.35),rgba(255,235,190,0))}
+.cv-frame{width:96px;height:96px;border-radius:50%;border:4px solid #e0b96a;box-shadow:0 0 0 3px #8a6a3a,0 6px 14px rgba(0,0,0,.45);overflow:hidden;background:#fdf6e3}
+.cv-frame img{width:100%;height:100%;object-fit:cover}
+.cv-title{font-size:24px;font-weight:900;color:#f0d9a8;letter-spacing:6px;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.cv-title i{font-style:normal;font-size:18px;margin:0 8px;vertical-align:middle}
+.cv-sub{font-size:12px;color:#d9c39a;letter-spacing:4px}
+.cv-hint{font-size:10.5px;color:#b3945f;letter-spacing:2px;opacity:.85}
+.cv-next{position:absolute;right:16px;bottom:32px;width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12;font-size:22px;font-weight:800;
+  display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.4);transition:transform .12s}
+.cv-next:active{transform:scale(.9)}
+/* 历史列表：双列日记卡+翻页（用户效果图二） */
+.pg-list{position:absolute;inset:0;z-index:1;padding:40px 14px 10px 24px;flex-direction:column}
+.ls-head{display:flex;align-items:center;gap:8px;margin:16px 0 9px}
+.ls-head img{width:38px;height:38px;border-radius:50%;border:2.5px solid #fff;background:#fdf6e3;object-fit:cover;
+  box-shadow:0 2px 5px rgba(60,40,20,.25);transform:rotate(-5deg)}
+.ls-head .tt{flex:1;text-align:center;font-size:17px;font-weight:800;color:#5a4632}
+.ls-add{width:30px;height:30px;border-radius:50%;background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12;
+  font-size:20px;font-weight:800;line-height:1;display:grid;place-items:center;box-shadow:0 2px 5px rgba(60,40,20,.3);transition:transform .12s}
+.ls-add:active{transform:scale(.88)}
+#dList{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  align-content:start;padding:2px 2px 6px}
+#dList::-webkit-scrollbar{width:12px}
+#dList::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:7px}
+#dList::-webkit-scrollbar-thumb{background:#dcb87e;border-radius:7px;border:2px solid #f8eed6}
+.dcard{background:#fffdf6;border-radius:6px;padding:7px 8px 8px;box-shadow:0 2px 6px rgba(80,55,25,.2);
+  display:flex;flex-direction:column;gap:3px;text-align:left;transition:transform .12s}
+.dcard:active{transform:scale(.96)}
+.dcard .dd{font-size:10.5px;color:#8a7052;font-weight:700}
+.dcard .ds{font-size:11px;line-height:1.55;color:#4a3826;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.dcard .dfoot{display:flex;align-items:center;justify-content:flex-end;margin-top:2px}
+.dcard .dm{font-size:15px}
+.pgr{display:flex;align-items:center;justify-content:center;gap:12px;padding-top:7px}
+.pgr .pn{width:26px;height:26px;color:#8a6b4a;font-size:17px;font-weight:800;display:grid;place-items:center}
+.pgr .pn:disabled{opacity:.32}
+#dPage{font-size:12px;font-weight:800;color:#5a4632}
+.sortB{font-size:11px;font-weight:700;color:#7a6248;padding:3px 9px;border:1px solid #d2b98c;border-radius:12px;background:#fffdf4}
+/* 写日记页（原版式）+ 右下「写完了」保存 */
+.pg-write{position:absolute;inset:0;z-index:1;padding:40px 12px 12px 20px;flex-direction:column}
+.b-head{display:flex;align-items:center;gap:9px;padding:12px 60px 4px 24px}
+.b-head img{width:42px;height:42px;border-radius:50%;border:2.5px solid #fff;background:#fdf6e3;object-fit:cover;
+  box-shadow:0 2px 6px rgba(60,40,20,.25);transform:rotate(-4deg)}
+.b-head .date{flex:1;font-size:15px;font-weight:700;color:#5a4632;border-bottom:2px solid #d9c39a;padding-bottom:3px;outline:none;min-width:0}
+.wxBtn{width:30px;height:30px;border-radius:50%;background:#fffdf4;border:1.5px solid #c9a55c;
+  font-size:15px;display:grid;place-items:center;box-shadow:0 2px 5px rgba(60,40,20,.2)}
+.b-body{flex:1;min-height:0;overflow-y:auto;margin:2px 12px 4px 20px;padding:2px 8px 8px 6px;
+  font-size:13.5px;line-height:2.1;color:#4a3826;outline:none;cursor:text;
+  background:repeating-linear-gradient(transparent,transparent calc(2.1em - 1px),rgba(160,130,90,.38) calc(2.1em - 1px),rgba(160,130,90,.38) 2.1em);
+  background-attachment:local}
+.b-body .stk{display:inline-block;font-size:20px;transform:rotate(-6deg);margin:0 2px;vertical-align:middle}
+.sec-t{font-size:12.5px;font-weight:800;color:#5a4632;opacity:.85;margin:2px 18px 4px 24px}
+.moods{display:flex;gap:9px;padding:0 16px 6px 24px}
+.mood{font-size:22px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;
+  border:2px solid transparent;transition:all .15s}
+.mood.on{border-color:#c9a55c;background:#fffdf4;transform:scale(1.18);box-shadow:0 3px 8px rgba(90,60,30,.28)}
+.wr-save{position:absolute;right:14px;bottom:12px;z-index:5;height:30px;padding:0 14px;border-radius:16px;
+  background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12;font-size:12.5px;font-weight:800;
+  box-shadow:0 3px 8px rgba(60,40,20,.3);transition:transform .12s}
+.wr-save:active{transform:scale(.92)}
+/* ── 相册面板（批6：照相册页demo 移植，左滑入+真翻页+灯箱） ── */
+#album{position:absolute;left:0;top:8%;bottom:0;width:min(82%,328px);z-index:42;
+  transform:translateX(-118%);
+  transition:transform .38s cubic-bezier(.22,.9,.32,1);
+  background:linear-gradient(178deg,#fbf3e0 0%,#f6ecd4 55%,#efdfba 100%);
+  border:1px solid #d9c39a;border-left:none;border-radius:0 20px 0 0;
+  box-shadow:8px 0 28px rgba(0,0,0,.42),inset 0 0 0 2px rgba(255,252,240,.6);
+  padding:14px 14px 10px 18px;display:flex;flex-direction:column}
+#album.open{transform:translateX(0)}
+.a-back{position:absolute;left:10px;top:12px;width:32px;height:32px;border-radius:50%;
+  color:#8a6b4a;font-size:21px;font-weight:700;display:grid;place-items:center;transition:transform .12s}
+.a-back:active{transform:scale(.88)}
+.a-title{height:32px;line-height:32px;text-align:center;font-size:20px;font-weight:800;
+  color:#5a4632;letter-spacing:6px;padding:0 30px}
+.a-rule{height:9px;position:relative;margin:4px 12px 11px}
+.a-rule::before{content:"";position:absolute;left:6px;right:6px;top:50%;height:1.5px;background:#cdb488}
+.a-rule::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;background:#8a7052;
+  transform:translate(-50%,-50%) rotate(45deg);border-radius:1px}
+#aGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:13px;
+  align-content:start;padding:3px 3px 8px}
+#aGrid::-webkit-scrollbar{width:14px}
+#aGrid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:8px}
+#aGrid::-webkit-scrollbar-thumb{background:#dcb87e;border-radius:8px;border:2px solid #f8eed6}
+.pcard{position:relative;background:#fffdf6;border-radius:5px;padding:6px 6px 7px;
+  box-shadow:0 3px 8px rgba(80,55,25,.22);display:flex;flex-direction:column;align-items:stretch;
+  transition:transform .15s}
+.pcard:active{transform:scale(.96)}
+.pimg{display:block;aspect-ratio:1/1;overflow:hidden;border-radius:3px;background:#efe4c8}
+.pimg img{width:100%;height:100%;object-fit:cover;display:block}
+.pdate{font-size:10.5px;color:#8a7052;margin:5px 2px 0}
+.pcap{font-size:13px;font-weight:800;color:#5a4632;text-align:center;letter-spacing:1px;margin:2px 0 1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard.newphoto{background:#f6ecd4;border:1.5px dashed #d2b98c;box-shadow:none;
+  align-items:center;justify-content:center;gap:6px;min-height:172px}
+.np-plus{font-size:34px;color:#8a7052;font-weight:700;line-height:1}
+.np-txt{font-size:13.5px;color:#8a7052;font-weight:600;letter-spacing:.5px}
+.a-pager{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 4px}
+.a-arrow{width:30px;height:30px;border-radius:50%;color:#8a6b4a;font-size:20px;font-weight:700;
+  display:grid;place-items:center;transition:transform .12s}
+.a-arrow:active{transform:scale(.88)}
+.a-arrow:disabled{opacity:.32}
+#aCount{font-size:15px;font-weight:800;color:#5a4632;letter-spacing:1px}
+#lb{position:absolute;inset:0;z-index:43;background:rgba(20,12,5,.74);display:none;place-items:center}
+#lb.show{display:grid}
+.lb-card{width:76%;background:#fffdf6;border-radius:8px;padding:10px 10px 12px;
+  box-shadow:0 22px 60px rgba(0,0,0,.55)}
+.lb-hint{font-size:10.5px;color:#b09b78;text-align:center;margin-top:7px}
+/* ═══ 设置面板（批6.5：V21 同款底部抽屉移植，z-44 在相册/灯箱之上，暗罩复用 #dimVeil） ═══ */
+#sheet{position:absolute;left:0;right:0;bottom:0;z-index:44;background:#fdf6e3;border-radius:24px 24px 0 0;
+  box-shadow:0 -12px 40px rgba(20,12,4,.45);padding:14px 20px calc(20px + env(safe-area-inset-bottom));
+  max-height:72%;overflow-y:auto;transform:translateY(105%);transition:transform .32s cubic-bezier(.22,.9,.32,1)}
+#sheet.show{transform:translateY(0)}
+.sheet-grip{width:40px;height:4px;border-radius:2px;background:#d8c3a5;margin:0 auto 12px}
+#sheet h2{font-size:18px;color:#5a4632;margin:0 0 6px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px solid #ead9ae}
+.set-row:last-child{border-bottom:none}
+.lab{font-size:14px;font-weight:700;color:#5a4632;display:block}
+.sub{font-size:11.5px;color:#9a8163;display:block;margin-top:2px;max-width:230px}
+.switch{width:46px;height:27px;border-radius:14px;background:#d8c3a5;position:relative;transition:background .18s;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fffdf4;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .18s}
+.switch[aria-checked="true"]{background:#7f9b6a}
+.switch[aria-checked="true"]::after{left:22px}
+.switch[disabled]{opacity:.45;cursor:not-allowed}
+.tap-big{font-size:20px;font-weight:900;color:#5a4632}
+/* ── 卡4：存档导出/恢复 + 存档码 ── */
+.set-row-act{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.set-row-act:active{background:#f6ecd4}
+.set-go{font-size:21px;font-weight:700;color:#b09b78;flex:none;line-height:1}
+#restoreBar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;
+  background:#eef4e4;border:1.5px solid #7f9b6a;border-radius:12px;padding:8px 12px}
+#restoreBar[hidden]{display:none}
+.rst-info{font-size:11.5px;line-height:1.55;color:#4f6b3a;font-weight:700}
+.btn-mini{height:34px;padding:0 14px;flex:none;border-radius:10px;border:1.5px solid #7f9b6a;
+  background:#f4f9ee;color:#3f5c31;font-size:12.5px;font-weight:800;transition:transform .12s}
+.btn-mini:active{transform:scale(.93)}
+/* 存档码小面板（z-48：设置抽屉之上、换装之下） */
+#codeSheet{position:absolute;left:50%;top:50%;width:min(88%,340px);z-index:48;
+  transform:translate(-50%,-46%) scale(.94);opacity:0;pointer-events:none;transition:all .24s cubic-bezier(.22,.9,.32,1);
+  background:linear-gradient(#fbf3e0,#f2e5c7);border:1px solid #d9c39a;border-radius:16px;
+  box-shadow:0 18px 50px rgba(20,12,4,.5),inset 0 0 0 2px rgba(255,252,240,.65);padding:14px 14px 12px}
+#codeSheet.show{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+#codeSheet h3{font-size:15px;color:#5a4632;margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
+#codeSheet textarea{width:100%;box-sizing:border-box;height:64px;border:1.5px solid #c9a55c;border-radius:10px;
+  background:#fffdf8;padding:6px 8px;font-size:11px;line-height:1.5;color:#4a3826;resize:none;outline:none;font-family:Consolas,monospace}
+#codeOut{background:#f6ecd4}
+#codeSheet .chint{font-size:10.5px;color:#9a8163;margin:6px 0;line-height:1.5}
+#codeSheet .crow2{display:flex;gap:8px;margin-top:6px}
+.btn-danger{width:100%;height:46px;border:1.5px solid #cf5b4a;border-radius:12px;color:#cf5b4a;font-size:14.5px;font-weight:800;background:transparent;margin-top:14px;transition:all .15s}
+.btn-danger.confirm{background:#cf5b4a;color:#fffdf4}
+.about-box{margin-top:14px;background:#f6ecd4;border:1px solid #ead9ae;border-radius:12px;padding:10px 12px;font-size:11.5px;line-height:1.7;color:#7a6248}
+.about-box code{font-family:Consolas,monospace;background:#eee0bd;padding:1px 5px;border-radius:4px;font-size:10.5px}
+/* ═══ 拍立得（批6.6：拍照→房间快照拍立得→存入相册，z-46 暗罩自带） ═══ */
+#flash{position:absolute;inset:0;z-index:47;background:#fff;opacity:0;pointer-events:none}
+#flash.go{animation:flashGo .5s ease-out}
+@keyframes flashGo{0%{opacity:.9}100%{opacity:0}}
+#plWrap{position:absolute;inset:0;z-index:46;background:rgba(36,26,17,.5);opacity:0;pointer-events:none;transition:opacity .2s ease;display:grid;place-items:center}
+#plWrap.show{opacity:1;pointer-events:auto}
+#plWrap .polaroid{background:#fffdf6;border-radius:6px;padding:10px 10px 12px;box-shadow:0 18px 50px rgba(20,12,4,.5);
+  width:min(76%,300px);transform:rotate(1.6deg) scale(.92);transition:transform .22s cubic-bezier(.22,.9,.32,1)}
+#plWrap.show .polaroid{transform:rotate(-1.6deg) scale(1)}
+.pl-shot{width:100%;aspect-ratio:1/1.05;object-fit:cover;display:block;border:1px solid #ead9ae;background:#f2e5c7}
+.pl-cap{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 2px 2px}
+.pl-cap .date{font-size:13.5px;font-weight:800;color:#5a4632}
+.pl-cap .mood{font-size:11px;color:#9a8163}
+.polaroid-actions{display:flex;gap:8px;margin-top:10px}
+.pl-btn{flex:1;height:36px;border-radius:10px;border:1.5px solid #d9c39a;background:#fffdf4;color:#5a4632;font-size:13px;font-weight:800}
+.pl-btn.primary{background:linear-gradient(#e8c883,#c9a55c);border-color:#c9a55c;color:#3a2b12}
+.pl-btn:active{transform:scale(.95)}
+/* ═══ 日历面板（批6.7：照日历界面demoA 移植，左滑入+心形月历+时刻流+备忘卡，z-45） ═══ */
+#cal{position:absolute;left:0;top:8%;bottom:0;width:min(86%,336px);z-index:45;display:flex;flex-direction:column;
+  transform:translateX(-118%);transition:transform .38s cubic-bezier(.22,.9,.32,1);
+  background:linear-gradient(160deg,#33201a,#2a1712 60%,#241210);border-right:2px solid #54342a;
+  border-radius:0 18px 18px 0;box-shadow:8px 0 30px rgba(0,0,0,.5);overflow:hidden}
+#cal.open{transform:translateX(0)}
+#cal::before{content:"";position:absolute;inset:8px;border:1px solid rgba(217,181,106,.35);border-radius:0 12px 12px 0;pointer-events:none}
+.cback{position:absolute;left:12px;top:12px;z-index:6;width:30px;height:30px;border-radius:50%;
+  background:#fffdf4;border:1.5px solid #c9a55c;color:#5a4632;font-size:16px;font-weight:700;
+  display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.4);transition:transform .12s}
+.cback:active{transform:scale(.88)}
+.banner{margin:10px 26px 0;padding:9px 0 10px;text-align:center;position:relative;
+  background:linear-gradient(#a03a2c,#7c2a20);border:2px solid #d9b56a;border-radius:10px;
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.4)}
+.banner::before{content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
+  background:repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 8px,transparent 8px 16px)}
+.banner b{position:relative;font-size:21px;font-weight:900;color:#ffe9c4;letter-spacing:10px;text-indent:10px;text-shadow:0 1px 0 #4a140e}
+.banner i{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%) rotate(45deg);width:13px;height:13px;
+  background:#7c2a20;border-right:2px solid #d9b56a;border-bottom:2px solid #d9b56a}
+.ctabs{display:flex;justify-content:center;gap:8px;padding:18px 12px 10px}
+.ctab{font-size:12.5px;font-weight:800;color:#e8cfa8;letter-spacing:2px;padding:7px 16px;border-radius:14px;
+  border:1.5px solid rgba(217,181,106,.4);transition:all .15s}
+.ctab.on{background:#fffdf4;color:#5a4632;border-color:#d9b56a;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.ctab.on::after{content:"▾";display:block;text-align:center;color:#c9a55c;font-size:9px;line-height:1;margin-top:-1px}
+/* 心形月历：心形=clip-path，发光用父级 filter（clip 内会被裁） */
+.cgrid{padding:2px 14px 0}
+.cweek{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10.5px;color:#c9a55c;font-weight:700;padding-bottom:2px}
+.cweek b:nth-child(6),.cweek b:nth-child(7){color:#e06a55}
+.crow{display:grid;grid-template-columns:repeat(7,1fr)}
+.day{position:relative;height:44px}
+.day .h{position:absolute;left:50%;top:50%;width:34px;height:31px;transform:translate(-50%,-58%);display:block;transition:transform .15s;
+  clip-path:path("M17,31 C17,31 1.5,19.5 1.5,10.5 A8.2,8.2 0 0 1 17,7.6 A8.2,8.2 0 0 1 32.5,10.5 C32.5,19.5 17,31 17,31 Z");
+  background:#43261e}
+.day .h b{position:absolute;left:0;right:0;top:7px;text-align:center;font-size:11.5px;font-weight:800;color:#8f6f5a}
+.day.ev{filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.day.ev .h{background:#a03a2c}
+.day.ev .h b{color:#ffe9c4}
+.day.today{filter:drop-shadow(0 0 6px rgba(240,200,110,.75))}
+.day.today .h{background:linear-gradient(160deg,#f0d9a8,#d9b56a)}
+.day.today .h b{color:#6b3a20}
+/* 选中态：深一度圆圈框住日期 */
+.day.sel::before{content:"";position:absolute;left:50%;top:50%;width:40px;height:40px;border-radius:50%;
+  transform:translate(-50%,-58%);border:2px solid #e8c883;background:rgba(0,0,0,.22);box-shadow:inset 0 0 6px rgba(0,0,0,.3)}
+.day.sel .h{transform:translate(-50%,-58%) scale(1.06)}
+.day:active .h{transform:translate(-50%,-58%) scale(.9)}
+/* 两视图切换（日/月） */
+#vDay{display:none}
+#cal.v-day #vMonth{display:none}
+#cal.v-day #vDay{display:block}
+#cal.v-day .mrows{display:none}
+#cal.v-day .clegend{display:none}
+/* 日视图：竖版时刻流 */
+.dday{display:flex;align-items:center;justify-content:center;gap:22px;padding:12px 0 8px}
+.dnav{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(217,181,106,.5);color:#e8cfa8;font-size:16px;
+  display:grid;place-items:center;background:rgba(255,255,255,.04);transition:transform .12s}
+.dnav:active{transform:scale(.9)}
+.dhead .dhd{font-size:15px;font-weight:900;color:#f0e6cc;letter-spacing:1px}
+.dtline{position:relative;padding:4px 16px 10px}
+.titem{position:relative;padding:7px 0}
+.titem::before{content:"";position:absolute;left:60px;top:0;bottom:0;width:2px;background:rgba(217,181,106,.28)}
+.titem:last-child::before{bottom:auto;height:50%}
+.ttime{position:absolute;left:0;top:50%;transform:translateY(-50%);width:46px;text-align:center;padding:3px 0;
+  border-radius:9px;background:rgba(240,217,168,.14);border:1px solid rgba(217,181,106,.38);
+  color:#e8cfa8;font-size:10.5px;font-weight:800;z-index:1}
+.tdot{position:absolute;left:56px;top:50%;transform:translateY(-50%);width:11px;height:11px;border-radius:50%;
+  background:#2a1712;border:2.5px solid #c9a55c;z-index:1}
+.tcard{margin-left:82px;width:calc(100% - 82px);display:flex;align-items:center;gap:9px;padding:9px 10px;
+  border-radius:13px;background:#fbf3df;color:#4a3826;box-shadow:0 2px 7px rgba(0,0,0,.32);
+  text-align:left;transition:transform .12s}
+.tcard:active{transform:scale(.97)}
+.tico{width:30px;height:30px;flex:none;border-radius:50%;background:linear-gradient(160deg,#a03a2c,#7c2a20);
+  display:grid;place-items:center;font-size:15px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.tmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.ttl{font-size:12px;font-weight:800;color:#4a3826;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tsub{font-size:9.5px;font-weight:700;color:#8a7052}
+.tcard.done{opacity:.82}
+.tcard.done .ttl{text-decoration:line-through;color:#8a7052}
+.ttog{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #c9a55c;color:transparent;
+  display:grid;place-items:center;font-size:11px;font-weight:900;transition:all .12s}
+.tcard.done .ttog{background:#c9a55c;color:#fffdf4}
+.dempty{margin:10px 30px 14px;padding:18px 10px;border:1.5px dashed rgba(217,181,106,.4);border-radius:12px;
+  text-align:center;font-size:10.5px;color:rgba(232,207,168,.55)}
+/* 备忘输入框 + 自绘时间滑动选择器（7 项可视+滑动+中央金带） */
+.mform{display:none;gap:6px;padding:8px 14px 2px;align-items:center}
+.mform.show{display:flex}
+.mform input{min-width:0;height:30px;border:1.5px solid #c9a55c;border-radius:9px;background:#fffdf8;padding:0 6px;
+  font-size:12px;color:#4a3826;outline:none}
+.mform input:focus{border-color:#a03a2c}
+.tsel{width:52px;height:30px;flex:none;border:1.5px solid #c9a55c;border-radius:9px;background:#fffdf8;
+  color:#4a3826;font-size:12.5px;font-weight:800;text-align:center;letter-spacing:2px;transition:transform .12s}
+.tsel:active{transform:scale(.94)}
+.tsep{font-style:normal;font-weight:900;color:#8a7052;flex:none}
+.tpick{display:none;position:absolute;left:10px;right:10px;bottom:8px;z-index:6;background:#fffdf6;
+  border:1.5px solid #c9a55c;border-radius:12px;box-shadow:0 8px 22px rgba(30,20,10,.35);padding:6px 6px 8px}
+.tpick.open{display:block}
+.tpick::before{content:"";position:absolute;left:8px;right:8px;top:84px;height:26px;border-radius:8px;
+  background:rgba(201,165,92,.18);pointer-events:none}
+.tpick::after{content:"";position:absolute;left:6px;right:6px;top:6px;height:44px;pointer-events:none;
+  background:linear-gradient(#fffdf6,rgba(255,253,246,0))}
+.tgrad{position:absolute;left:6px;right:6px;bottom:8px;height:44px;pointer-events:none;
+  background:linear-gradient(rgba(255,253,246,0),#fffdf6)}
+.tlist{height:182px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}
+.tlist::-webkit-scrollbar{display:none}
+.topt{display:block;width:100%;height:26px;line-height:26px;text-align:center;font-size:12.5px;font-weight:800;
+  color:#6b5642;scroll-snap-align:center}
+.topt.on{color:#3a2d20}
+.topt:active{background:rgba(201,165,92,.22)}
+#mTxt{flex:1}
+.mform .mk{width:30px;height:30px;border-radius:50%;flex:none;font-size:13px;font-weight:800;display:grid;place-items:center}
+#mOk{background:linear-gradient(#a03a2c,#7c2a20);color:#ffe9c4}
+#mNo{border:1.5px solid #c9a55c;color:#8a6b3a;background:#fffdf8}
+.day .paw{position:absolute;left:50%;top:0;transform:translateX(-72%);font-size:11px;pointer-events:none}
+.clegend{display:flex;justify-content:center;gap:16px;padding:6px 0 8px;font-size:10px;color:#c9a55c}
+.clegend i{font-style:normal;display:inline-block;width:12px;height:11px;vertical-align:-1px;margin-right:4px;
+  clip-path:path("M6,11 C6,11 .5,7 .5,3.8 A2.9,2.9 0 0 1 6,2.7 A2.9,2.9 0 0 1 11.5,3.8 C11.5,7 6,11 6,11 Z")}
+.clegend .lg-ev i{background:#a03a2c}
+.clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
+/* 备忘卡 */
+.memo{flex:1;min-height:0;margin:2px 14px 14px;background:#fbf3df;border:1.5px solid #e0cda2;border-radius:14px;
+  box-shadow:0 6px 16px rgba(0,0,0,.4);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.memo .mhead{padding:10px 14px 8px;border-bottom:2px dashed #e0cda2;display:flex;align-items:baseline;gap:8px}
+.memo .mdate{font-size:15px;font-weight:800;color:#5a4632}
+.memo .msub{font-size:10.5px;color:#9a8163}
+.memo .mtitle{flex:1;text-align:right;font-size:11.5px;font-weight:800;color:#7c2a20;letter-spacing:1px}
+.mrows{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 6px}
+.mrow{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:9px 0;border-bottom:1px dashed #e8d5ac;font-size:12.5px;color:#4a3826}
+.mrow:last-child{border-bottom:none}
+.mrow .cb{width:20px;height:20px;border:2px solid #c9a55c;border-radius:6px;background:#fffdf8;flex:none;
+  display:grid;place-items:center;color:#7c9b6a;font-size:13px;font-weight:800;transition:all .15s}
+.mrow.done .cb::before{content:"✓"}
+.mrow.done .mt{color:#9a8163;text-decoration:line-through}
+.mrow .mt{flex:1}
+.mrow .me{font-size:15px}
+.memo .mfoot{padding:8px 14px 12px}
+.madd{width:100%;height:38px;border:2px dashed #c9a55c;border-radius:12px;background:rgba(217,181,106,.12);
+  color:#8a6b3a;font-size:12.5px;font-weight:800;letter-spacing:2px;transition:all .15s}
+.madd:active{transform:scale(.97);background:rgba(217,181,106,.22)}
+</style>
+</head>
+<body>
+<div class="screen" id="screen">
+<!-- ═══ 等距房间引擎（V22 装修 demo 底座） ═══ -->
+<div id="stage">
+  <div id="scene"><canvas id="roomIso"></canvas>
+    <div id="fab"><button id="fabSize" title="尺寸（占格宽/深加减）">⤢</button><button id="fabFlip" title="水平镜像（左右翻转）">⇋</button><button id="fabDel" title="删除选中家具">🗑</button></div>
+    <div id="fabRow"><span class="fr-l">宽</span><button id="wMinus" title="宽度少一格">−</button><span id="selW">2</span><button id="wPlus" title="宽度多一格">＋</button><span class="fr-l">深</span><button id="dMinus" title="深度少一格">−</button><span id="selD">2</span><button id="dPlus" title="深度多一格">＋</button></div>
+  </div>
+</div><!-- /stage -->
+<!-- 面板外右上三圆钮（装修面板展开时出现） -->
+<div id="quickBtns">
+  <button class="qb qb-save" title="保存布局">保存</button>
+  <button class="qb qb-reset" title="重置布局">重置</button>
+</div>
+<!-- 装修底边栏（造景/装修/主题） -->
+<div id="decoBar">
+  <div class="bar-edge"><i></i><b></b><i></i><button class="bar-close" id="barClose" title="收起装修面板">▾ 收起</button></div>
+  <div id="tabs"></div>
+  <div id="subs"></div>
+  <div id="grid"></div>
+  <div class="cslid" id="cSlid">
+    <label>色相<input type="range" id="cHue" min="0" max="360" value="38"></label>
+    <label>深浅<input type="range" id="cDep" min="18" max="88" value="82"></label>
+  </div>
+</div>
+<header class="hud-top">
+  <span class="mood-chip" id="moodChip">
+    <span class="sun" aria-hidden="true"><img class="sun-avatar" src="icon/头像框.png" alt="彻子小屋的头像"></span>
+    <span class="chip-text">
+      <span class="home-name">彻子小屋</span>
+      <span class="mood-line"><span id="moodText">心情很好</span></span>
+    </span>
+  </span>
+</header>
+<nav class="menu-right" aria-label="功能菜单">
+  <button class="side-btn" id="mAlbum" aria-label="相册"><img class="icon-img" src="icon/相册.png" alt="" aria-hidden="true"></button>
+  <button class="side-btn" id="mCalendar" aria-label="日历"><img class="icon-img" src="icon/日历.png" alt="" aria-hidden="true"></button>
+  <button class="side-btn" id="mDiary" aria-label="日记本"><img class="icon-img" src="icon/日记.png" alt="" aria-hidden="true"></button>
+  <button class="side-btn is-settings" id="mSettings" aria-label="设置"><img class="icon-img" src="icon/设置.png" alt="" aria-hidden="true"></button>
+</nav>
+<div class="dock" role="toolbar" aria-label="主操作">
+  <button class="dock-btn" id="dDecor" aria-label="装修模式开关"><img class="icon-img" src="icon/装修.png" alt="装修" aria-hidden="true"></button>
+  <button class="dock-btn" id="dDress" aria-label="换装"><img class="icon-img" src="icon/换装.png" alt="换装" aria-hidden="true"></button>
+  <button class="dock-btn" id="dShot" aria-label="拍照，二期接入"><img class="icon-img" src="icon/拍照.png" alt="拍照" aria-hidden="true"></button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- 日记手帐书（批6：三段版 封面→历史→写日记，点右侧菜单「日记本」从左滑入） -->
+<div id="dimVeil" aria-hidden="true"></div>
+<section id="book" class="st-cover" aria-label="日记手帐">
+  <div class="bookmark" aria-hidden="true"></div>
+  <span class="charm" aria-hidden="true">🦊</span>
+  <button class="bback" id="bBack" title="返回">‹</button>
+  <div class="pg pg-cover" id="pgCover" title="翻开日记">
+    <div class="cv-frame"><img src="icon/头像框.png" alt="小猫头像"></div>
+    <div class="cv-title"><i>🔥</i>小猫日记<i>☕</i></div>
+    <div class="cv-sub">· 记录点滴 ·</div>
+    <div class="cv-hint">点一下翻开</div>
+    <button class="cv-next" id="cvNext" title="翻开日记">›</button>
+  </div>
+  <div class="pg pg-list">
+    <div class="ls-head">
+      <img src="icon/头像框.png" alt="猫头贴纸">
+      <div class="tt">写日记</div>
+      <button class="ls-add" id="dAdd" title="写今天的日记">＋</button>
+    </div>
+    <div id="dList"></div>
+    <div class="pgr">
+      <button class="pn" id="dPrev" title="上一页">‹</button>
+      <button class="sortB" id="dSort" title="切换排序">⇅ 倒序</button>
+      <span id="dPage">1 / 1 页</span>
+      <button class="pn" id="dNext" title="下一页">›</button>
+    </div>
+  </div>
+  <div class="pg pg-write">
+    <div class="b-head">
+      <img src="icon/头像框.png" alt="猫头贴纸">
+      <div class="date" id="dateLine" contenteditable="true" spellcheck="false">202X年 10月22日 (周五)</div>
+      <button class="wxBtn" id="wxBtn" title="换天气">☀️</button>
+    </div>
+    <div class="b-body" id="dBody" contenteditable="true" spellcheck="false"></div>
+    <div class="sec-t">心情记录</div>
+    <div class="moods" id="moods"></div>
+    <button class="wr-save" id="dSaveE">写完了 ✓</button>
+  </div>
+</section>
+<!-- 相册面板（批6：照相册页demo 移植，点右侧菜单「相册」左滑入） -->
+<section id="album" aria-label="相册">
+  <button class="a-back" id="aBack" title="收起相册">‹</button>
+  <div class="a-title">相册</div>
+  <div class="a-rule" aria-hidden="true"></div>
+  <div id="aGrid"></div>
+  <div class="a-pager">
+    <button class="a-arrow" id="aPrev" title="上一页">‹</button>
+    <div id="aCount">1/15</div>
+    <button class="a-arrow" id="aNext" title="下一页">›</button>
+  </div>
+</section>
+<div id="lb" aria-label="照片预览">
+  <div class="lb-card">
+    <span class="pimg"><img id="lbImg" src="" alt=""></span>
+    <div class="pdate" id="lbDate"></div>
+    <div class="pcap" id="lbCap"></div>
+    <div class="lb-hint">点击空白处关闭</div>
+  </div>
+</div>
+<!-- 设置面板（批6.5：V21 同款底部抽屉，点 HUD「设置」滑入，暗罩复用 #dimVeil） -->
+<div id="sheet" aria-hidden="true" role="dialog" aria-label="设置">
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <h2>设置</h2>
+  <div class="set-row">
+    <span><span class="lab">音效与环境声</span><span class="sub">二期接入，敬请期待</span></span>
+    <button class="switch" role="switch" aria-checked="false" disabled aria-label="音效与环境声"></button>
+  </div>
+  <div class="set-row">
+    <span><span class="lab">减弱动效</span><span class="sub">停用点击反馈动画与爱心粒子</span></span>
+    <button class="switch" id="swCalm" role="switch" aria-checked="false" aria-label="减弱动效"></button>
+  </div>
+  <div class="set-row">
+    <span><span class="lab">今日互动</span><span class="sub">今天戳了小猫多少下</span></span>
+    <span class="tap-big" id="tapCount">0</span>
+  </div>
+  <!-- 卡4：存档导出/恢复 + 存档码 -->
+  <div class="set-row set-row-act" id="rowExport" role="button" tabindex="0" aria-label="导出存档">
+    <span><span class="lab">📤 导出存档</span><span class="sub">房间/换装/日记/相册/日历/设置 打包成一个 JSON 文件</span></span>
+    <span class="set-go" aria-hidden="true">›</span>
+  </div>
+  <div class="set-row set-row-act" id="rowImport" role="button" tabindex="0" aria-label="恢复存档">
+    <span><span class="lab">📥 恢复存档</span><span class="sub">从 JSON 文件还原，恢复后需刷新生效</span></span>
+    <span class="set-go" aria-hidden="true">›</span>
+  </div>
+  <div class="set-row set-row-act" id="rowCode" role="button" tabindex="0" aria-label="存档码">
+    <span><span class="lab">🔑 存档码</span><span class="sub">复制一串文本带走进度；粘贴即可恢复（不含照片快照）</span></span>
+    <span class="set-go" aria-hidden="true">›</span>
+  </div>
+  <div id="restoreBar" hidden>
+    <span class="rst-info" id="rstInfo"></span>
+    <button class="btn-mini" id="btnReload">立即刷新</button>
+  </div>
+  <button class="btn-danger" id="btnClear">清空本地存档</button>
+  <div class="about-box">
+    毛茸小屋 V22 demo · 等距房间+装修底边栏+换装+日记+相册。家具图在 <code>assets/2.5d/</code>，家具清单在脚本顶部 <code>FURN_DEF</code> 里改；衣服在 <code>WARDROBE</code>，各面板存档各自独立在 localStorage。
+  </div>
+</div>
+<!-- 卡4：恢复存档用的隐藏文件选择器（accept 限制 JSON） -->
+<input type="file" id="fileRestore" accept="application/json,.json" hidden>
+<!-- 卡4：存档码面板（复制带走 / 粘贴恢复） -->
+<section id="codeSheet" aria-hidden="true" aria-label="存档码">
+  <h3>存档码 <button class="btn-mini" id="codeClose">✕</button></h3>
+  <textarea id="codeOut" readonly spellcheck="false" placeholder="点「生成存档码」显示当前进度"></textarea>
+  <div class="crow2">
+    <button class="btn-mini" id="codeGen">生成存档码</button>
+    <button class="btn-mini" id="codeCopy">复制</button>
+  </div>
+  <div class="chint">照片快照（拍照存的图）不进存档码，换设备请用「导出存档」文件版。</div>
+  <textarea id="codeIn" spellcheck="false" placeholder="把另一台设备的存档码粘贴到这里"></textarea>
+  <div class="crow2"><button class="btn-mini" id="codeApply">粘贴恢复</button></div>
+</section>
+<!-- 拍立得（批6.6：拍照 → 房间快照拍立得 → 存入相册） -->
+<div id="flash" aria-hidden="true"></div>
+<!-- 日历面板（批6.7：照日历界面demoA 移植，点 HUD「日历」左滑入） -->
+<section id="cal" aria-label="日历面板">
+  <button class="cback" id="cBack" title="收起日历">‹</button>
+  <div class="banner"><b>日历</b><i aria-hidden="true"></i></div>
+  <nav class="ctabs">
+    <button class="ctab" data-v="day">日视图</button>
+    <button class="ctab on" data-v="month">月视图</button>
+  </nav>
+  <div id="vMonth">
+    <div class="cweek"><b>一</b><b>二</b><b>三</b><b>四</b><b>五</b><b>六</b><b>日</b></div>
+    <div class="crow" id="cGrid"></div>
+  </div>
+  <div id="vDay">
+    <div class="dday">
+      <button class="dnav" id="dPrevD" title="前一天">‹</button>
+      <div class="dhead" id="dHead"></div>
+      <button class="dnav" id="dNextD" title="后一天">›</button>
+    </div>
+    <div class="dtline" id="dTl"></div>
+  </div>
+  <div class="clegend"><span class="lg-ev"><i></i>有记录</span><span class="lg-td"><i></i>今天</span></div>
+  <div class="memo">
+    <div class="mhead">
+      <span class="mdate" id="mDate">—</span>
+      <span class="msub" id="mWx">晴</span>
+      <span class="mtitle">备忘事项</span>
+    </div>
+    <div class="mrows" id="mRows"></div>
+    <div class="mform" id="mForm">
+      <button class="tsel" id="mH" title="小时（点开滑动选择）">--</button>
+      <i class="tsep" aria-hidden="true">:</i>
+      <button class="tsel" id="mM" title="分钟（点开滑动选择）">--</button>
+      <input id="mTxt" placeholder="要做的事…" maxlength="30">
+      <button class="mk" id="mOk" title="确认">✓</button>
+      <button class="mk" id="mDel" title="删除这条" style="display:none">🗑</button>
+      <button class="mk" id="mNo" title="取消">✕</button>
+    </div>
+    <div class="tpick" id="tPick" aria-hidden="true"><div class="tgrad"></div><div class="tlist" id="tList"></div></div>
+    <div class="mfoot"><button class="madd" id="mAdd">＋ 添加备忘</button></div>
+  </div>
+</section>
+<div id="plWrap" aria-hidden="true">
+  <div class="polaroid" role="dialog" aria-modal="true" aria-label="拍立得照片">
+    <img class="pl-shot" id="plShot" alt="房间快照">
+    <div class="pl-cap"><span class="date" id="plDate">—</span><span class="mood" id="plMood">—</span></div>
+    <div class="polaroid-actions">
+      <button class="pl-btn" id="plClose">收下</button>
+      <button class="pl-btn primary" id="plSave">存入相册</button>
+    </div>
+  </div>
+</div>
+<!-- 换装界面覆盖层（点 dock「换装」弹出，‹ 返回主界面） -->
+<div id="dressLayer">
+  <div class="d-scene-bg" aria-hidden="true"></div>
+  <button class="d-back" id="dBack" title="返回">‹</button>
+  <div class="d-plaque"><i>🌹</i><span>换装</span><i>🌹</i></div>
+  <div id="dTopBtns">
+    <button class="d-qb d-qb-save" id="dSave" title="保存装扮">💾 保存</button>
+    <button class="d-qb d-qb-reset" id="dReset" title="重置装扮">↺ 重置</button>
+  </div>
+  <img class="d-charimg" id="dCharImg" src="assets/character/stand.png" alt="角色">
+  <div class="d-saybub" id="dSayBub" role="status"></div>
+  <section id="dPanel" aria-label="换装面板">
+    <nav class="d-tabs" id="dTabs"></nav>
+    <div class="d-grid" id="dGrid"></div>
+  </section>
+</div>
+</div><!-- /screen -->
+<script>
+/* ═══ 等距房间引擎 v1（毛茸小屋主界面底座 · 独立预览版） ═══
+   等距格点与《室内布局比对台》同款：P(i,j)=(cw(i−j), ch(i+j))，2:1 标准等距。
+   缩放走 CSS --zoom（与游戏 .scene 的 --zoom 同机制），画布按 2.5 倍超采样保证放大不糊。
+   换装修只改 DECOR / FURNITURE 两张表，引擎零改动。 */
+(function(){
+"use strict";
+/* ── 配置表（装修接口：以后换壁纸/地板/家具只动这里） ── */
+var ROOM={n:8,cw:100,ch:50,wallH:800,wallT:0.24,floorT:24}; /* 期1.5 反馈：墙高 400→800（向上延长一倍） */
+var DECOR={
+  floor:   {type:"color",value:"#d2b48c",fb:"#d2b48c"},   /* type:"img" 时 value=贴图地址, fb=兜底色 */
+  wallBack:{type:"color",value:"#f5e6d3",fb:"#f5e6d3"},   /* 右后墙（沿 P(0,0)→P(n,0) 棱） */
+  wallLeft:{type:"color",value:"#ece0cd",fb:"#ece0cd"},   /* 左后墙（沿 P(0,0)→P(0,n) 棱） */
+  grid:true
+};
+var FURNITURE=[]; /* 运行时家具实例表 */
+/* ── 家具库定义（V22：assets/2.5d 23 件；w/d=声明占格，glow=期4 光效预留位） ── */
+var FURN_DEF=[
+  {id:"f270",name:"哥特书架",  src:"assets/2.5d/f270.png",w:1,d:1,h:40,glow:null},
+  {id:"f271",name:"占位家具01",src:"assets/2.5d/f271.png",w:1,d:1,h:40,glow:null},
+  {id:"f272",name:"占位家具02",src:"assets/2.5d/f272.png",w:1,d:1,h:40,glow:null},
+  {id:"f273",name:"占位家具03",src:"assets/2.5d/f273.png",w:1,d:1,h:40,glow:null},
+  {id:"f274",name:"宝石宝箱",  src:"assets/2.5d/f274.png",w:1,d:1,h:40,glow:null},
+  {id:"f275",name:"占位家具04",src:"assets/2.5d/f275.png",w:1,d:1,h:40,glow:null},
+  {id:"f276",name:"占位家具05",src:"assets/2.5d/f276.png",w:1,d:1,h:40,glow:null},
+  {id:"f277",name:"国际象棋",  src:"assets/2.5d/f277.png",w:1,d:1,h:40,glow:null},
+  {id:"f278",name:"占位家具06",src:"assets/2.5d/f278.png",w:1,d:1,h:40,glow:null},
+  {id:"f279",name:"占位家具07",src:"assets/2.5d/f279.png",w:1,d:1,h:40,glow:null},
+  {id:"f280",name:"占位家具08",src:"assets/2.5d/f280.png",w:1,d:1,h:40,glow:null},
+  {id:"f281",name:"哥特提灯",  src:"assets/2.5d/f281.png",w:1,d:1,h:40,glow:null,wall:"back"},
+  {id:"f282",name:"占位家具09",src:"assets/2.5d/f282.png",w:1,d:1,h:40,glow:null},
+  {id:"f283",name:"占位家具10",src:"assets/2.5d/f283.png",w:1,d:1,h:40,glow:null},
+  {id:"f284",name:"占位家具11",src:"assets/2.5d/f284.png",w:1,d:1,h:40,glow:null},
+  {id:"f285",name:"黄铜挂历",  src:"assets/2.5d/f285.png",w:1,d:1,h:40,glow:null,wall:"back"},
+  {id:"f286",name:"占位家具12",src:"assets/2.5d/f286.png",w:1,d:1,h:40,glow:null},
+  {id:"f287",name:"占位家具13",src:"assets/2.5d/f287.png",w:1,d:1,h:40,glow:null},
+  {id:"f288",name:"红黑地球仪",src:"assets/2.5d/f288.png",w:1,d:1,h:40,glow:null},
+  {id:"f289",name:"占位家具14",src:"assets/2.5d/f289.png",w:1,d:1,h:40,glow:null},
+  {id:"f290",name:"占位家具15",src:"assets/2.5d/f290.png",w:1,d:1,h:40,glow:null},
+  {id:"f291",name:"占位家具16",src:"assets/2.5d/f291.png",w:1,d:1,h:40,glow:null},
+  {id:"f292",name:"玫瑰茶几",  src:"assets/2.5d/f292.png",w:1,d:1,h:40,glow:null}
+];
+var DEF_MAP={};(function(){var i;for(i=0;i<FURN_DEF.length;i++)DEF_MAP[FURN_DEF[i].id]=FURN_DEF[i];})();
+/* ── 视图状态（期1.5：等距内部 --zoom 退役，缩放统一由 v22view 引擎接管） ── */
+var $=function(id){return document.getElementById(id);};
+var stage=$("stage"),scene=$("scene"),cv=$("roomIso");
+var ctx=cv&&cv.getContext?cv.getContext("2d"):null;
+if(!stage||!scene||!cv||!ctx)return;
+var W=960,Hc=600,S=0.5,OX=480,OY=200;
+/* ── 等距几何 ── */
+function px(i,j){return OX+ROOM.cw*(i-j)*S;}
+function py(i,j){return OY+ROOM.ch*(i+j)*S;}
+function shade(hex,f){
+  var n=parseInt(hex.slice(1),16);
+  var r=Math.min(255,Math.round(((n>>16)&255)*f));
+  var g=Math.min(255,Math.round(((n>>8)&255)*f));
+  var b=Math.min(255,Math.round((n&255)*f));
+  return "rgb("+r+","+g+","+b+")";
+}
+function mixHex(a,b,t){
+  var na=parseInt(a.slice(1),16),nb=parseInt(b.slice(1),16);
+  var r=Math.round(((na>>16)&255)*(1-t)+((nb>>16)&255)*t);
+  var g=Math.round(((na>>8)&255)*(1-t)+((nb>>8)&255)*t);
+  var bl=Math.round((na&255)*(1-t)+(nb&255)*t);
+  return "rgb("+r+","+g+","+bl+")";
+}
+var OUTLINE="rgba(122,84,48,.65)"; /* 期1.5 反馈：描边改棕色（原 rgba(45,35,25,.55) 近黑） */
+var LWS=0.5; /* 描线宽补偿系数（期1.5 反馈：390 小屏 S 小，固定像素线显粗；resize 里按 S 更新，对齐大屏模板页的相对观感） */
+function quad(x1,y1,x2,y2,x3,y3,x4,y4){
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x3,y3);ctx.lineTo(x4,y4);ctx.closePath();
+}
+/* 倒角四边形：每个角向内收 r 后用二次曲线过渡（r 按边长自动钳制） */
+function roundedQuad(x1,y1,x2,y2,x3,y3,x4,y4,r){
+  var pts=[[x1,y1],[x2,y2],[x3,y3],[x4,y4]],i;
+  ctx.beginPath();
+  for(i=0;i<4;i++){
+    var p=pts[i],pv=pts[(i+3)%4],nx=pts[(i+1)%4];
+    var ax=p[0]-pv[0],ay=p[1]-pv[1],bx=nx[0]-p[0],by=nx[1]-p[1];
+    var l1=Math.sqrt(ax*ax+ay*ay),l2=Math.sqrt(bx*bx+by*by);
+    if(!l1||!l2){continue;}
+    var rr=Math.min(r,l1/2.2,l2/2.2);
+    var mx=p[0]-ax/l1*rr,my=p[1]-ay/l1*rr;
+    var ex=p[0]+bx/l2*rr,ey=p[1]+by/l2*rr;
+    if(i===0)ctx.moveTo(mx,my);else ctx.lineTo(mx,my);
+    ctx.quadraticCurveTo(p[0],p[1],ex,ey);
+  }
+  ctx.closePath();
+}
+function face(x1,y1,x2,y2,x3,y3,x4,y4,col,r){
+  if(r)roundedQuad(x1,y1,x2,y2,x3,y3,x4,y4,r);else quad(x1,y1,x2,y2,x3,y3,x4,y4);
+  ctx.fillStyle=col;ctx.fill();
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
+}
+/* ── 贴图缓存（createPattern 平铺，方向对齐等距轴） ── */
+var PTN={},LOADING={};
+function patternOf(key){
+  var e=DECOR[key];
+  if(!e||e.type!=="img")return null;
+  return PTN[key+"|"+e.value]||null;
+}
+function loadPattern(key){
+  var e=DECOR[key];
+  if(!e||e.type!=="img")return;
+  var ck=key+"|"+e.value;
+  if(PTN[ck]||LOADING[ck])return;
+  LOADING[ck]=1;
+  var im=new Image();
+  im.onload=function(){
+    PTN[ck]={p:ctx.createPattern(im,"repeat"),w:im.naturalWidth||im.width||64,h:im.naturalHeight||im.height||32};
+    delete LOADING[ck];render();
+  };
+  im.onerror=function(){delete LOADING[ck];render();};
+  im.src=e.value;
+}
+/* ── 绘制 ── */
+function drawWall(key,i0,j0,i1,j1){
+  var x0=px(i0,j0),y0=py(i0,j0),x1=px(i1,j1),y1=py(i1,j1),h=ROOM.wallH*S;
+  var e=DECOR[key],pt=patternOf(key);
+  var wc=(e&&e.fb)||"#f5e6d3";
+  /* 外向厚度偏移：右墙(沿u)外推=−v方向(+cw,−ch)，左墙(沿v)外推=−u方向(−cw,−ch) */
+  var ox=(i1>i0?1:-1)*ROOM.wallT*ROOM.cw*S, oy=-ROOM.wallT*ROOM.ch*S;
+  var cut=mixHex(wc,"#6b4a2f",0.45);
+  /* 1) 内墙面 */
+  quad(x0,y0,x1,y1,x1,y1-h,x0,y0-h);
+  if(pt){
+    ctx.save();ctx.clip();
+    var ex=(x1-x0)/ROOM.n,ey=(y1-y0)/ROOM.n;      /* 每格棱向量 */
+    ctx.transform(ex/pt.w,ey/pt.w,0,-h/pt.h,x0,y0); /* 贴图 x=沿棱 y=向上，一格一repeat */
+    ctx.fillStyle=pt.p;ctx.fillRect(0,0,ROOM.n*pt.w,pt.h+2);
+    ctx.restore();
+  }else{
+    ctx.fillStyle=wc;ctx.fill();
+  }
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=2.4*LWS;ctx.stroke();
+  /* 2) 顶部厚度条带（外缘倒角） */
+  roundedQuad(x0,y0-h,x1,y1-h,x1+ox,y1-h+oy,x0+ox,y0-h+oy,6*S);
+  ctx.fillStyle=shade(wc,1.04);ctx.fill();
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
+  /* 3) 端头断面（近端深棕断面，参考图风格） */
+  roundedQuad(x1,y1,x1+ox,y1+oy,x1+ox,y1+oy-h,x1,y1-h,5*S);
+  ctx.fillStyle=cut;ctx.fill();
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
+}
+function drawFloor(){
+  var N=ROOM.n,pt=patternOf("floor"),e=DECOR.floor;
+  /* 地板顶面：仅南角倒角（A/B/D 三角贴墙保持直角防缝隙） */
+  (function(){
+    var ax=px(0,0),ay=py(0,0),bx=px(N,0),by=py(N,0),cx2=px(N,N),cy2=py(N,N),dx2=px(0,N),dy2=py(0,N),rC=12*S;
+    var l1=Math.sqrt((cx2-bx)*(cx2-bx)+(cy2-by)*(cy2-by)),l2=Math.sqrt((cx2-dx2)*(cx2-dx2)+(cy2-dy2)*(cy2-dy2));
+    var p1=[cx2-(cx2-bx)/l1*rC,cy2-(cy2-by)/l1*rC],p2=[cx2-(cx2-dx2)/l2*rC,cy2-(cy2-dy2)/l2*rC];
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.lineTo(p1[0],p1[1]);
+    ctx.quadraticCurveTo(cx2,cy2,p2[0],p2[1]);ctx.lineTo(dx2,dy2);ctx.closePath();
+  })();
+  if(pt){
+    ctx.save();ctx.clip();
+    /* 贴图 x 轴=u(+i)，y 轴=v(+j)，锚在 P(0,0) */
+    ctx.transform(ROOM.cw*S/pt.w,ROOM.ch*S/pt.w,-ROOM.cw*S/pt.h,ROOM.ch*S/pt.h,OX,OY);
+    ctx.fillStyle=pt.p;ctx.fillRect(0,0,N*pt.w,N*pt.h+2);
+    ctx.restore();
+  }else{
+    ctx.fillStyle=(e&&e.fb)||"#d2b48c";ctx.fill();
+  }
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.5*LWS;ctx.stroke();
+  /* 地板厚度：南向两个断面（深棕底座，参考图风格） */
+  var fc=(e&&e.fb)||"#d2b48c",T=ROOM.floorT*S;
+  var cutFR=mixHex(fc,"#3f2a16",0.5),cutFL=mixHex(fc,"#3f2a16",0.64);
+  roundedQuad(px(N,0),py(N,0),px(N,N),py(N,N),px(N,N),py(N,N)+T,px(N,0),py(N,0)+T,5*S);
+  ctx.fillStyle=cutFR;ctx.fill();ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
+  roundedQuad(px(N,N),py(N,N),px(0,N),py(0,N),px(0,N),py(0,N)+T,px(N,N),py(N,N)+T,5*S);
+  ctx.fillStyle=cutFL;ctx.fill();ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
+  if(DECOR.grid&&decoMode&&gridFade>0){ /* 地板网格仅装修模式显示；随 gridFade 与底边栏同步渐显渐隐 */
+    var i,j;
+    ctx.beginPath();
+    for(i=1;i<N;i++){ctx.moveTo(px(i,0),py(i,0));ctx.lineTo(px(i,N),py(i,N));}
+    for(j=1;j<N;j++){ctx.moveTo(px(0,j),py(0,j));ctx.lineTo(px(N,j),py(N,j));}
+    ctx.strokeStyle="rgba(90,80,68,"+(0.14*gridFade).toFixed(3)+")";ctx.lineWidth=1;ctx.stroke();
+  }
+}
+/* ── 家具（占位体块 / 真图精灵） ── */
+var FIMG={};
+function furnImg(it){
+  if(!it.img)return null;
+  var ck=it.def||it.id; /* V22：同款家具（同 def）共享图片缓存 */
+  if(!(ck in FIMG)){
+    FIMG[ck]=null;
+    var im=new Image();
+    im.onload=function(){
+      var e={img:im,w:im.naturalWidth||im.width,h:im.naturalHeight||im.height,tx:0,ty:0,tw:im.naturalWidth||im.width,th:im.naturalHeight||im.height};
+      try{ /* 透明度包围盒（alpha>16，与游戏帧管线同款）：裁掉 PNG 四周透明边，落地对位才准 */
+        var oc=document.createElement("canvas");oc.width=e.w;oc.height=e.h;
+        var c2=oc.getContext("2d");c2.drawImage(im,0,0);
+        var px8=c2.getImageData(0,0,e.w,e.h).data,x,y,al,x0=e.w,y0=e.h,x1=-1,y1=-1;
+        for(y=0;y<e.h;y++)for(x=0;x<e.w;x++){
+          al=px8[(y*e.w+x)*4+3];
+          if(al>16){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+        }
+        if(x1>=0&&y1>=0){e.tx=x0;e.ty=y0;e.tw=x1-x0+1;e.th=y1-y0+1;}
+      }catch(err){}
+      FIMG[ck]=e;render();
+    };
+    im.onerror=function(){FIMG[ck]="err";};
+    im.src=it.img;
+  }
+  var v=FIMG[ck];
+  return (v&&v!=="err")?v:null;
+}
+function itemDepth(a,b){ /* 墙件深度=-1000（贴墙最远，永远先画、被落地家具遮挡） */
+  var aw=a.wall?-1000:(a.gx+a.w/2+a.gy+a.d/2);
+  var bw=b.wall?-1000:(b.gx+b.w/2+b.gy+b.d/2);
+  return aw-bw;
+}
+function sortFurniture(){return FURNITURE.slice().sort(itemDepth);}
+function wallAnchor(it){ /* 墙件锚点：底边中心（沿棱 w/2 格处，向上 v 层，每层=墙高/3） */
+  var ux=it.u+it.w/2;
+  return it.wall==="left"?[px(0,ux),py(0,ux)]:[px(ux,0),py(ux,0)];
+}
+function drawItem(it){
+  if(it.wall){ /* ═══ 墙件（期1.5 批2）：贴墙渲染，底边中心=墙面锚点 ═══ */
+    var wa=wallAnchor(it),cy=wa[1]-it.v*ROOM.cw*S; /* 墙件层高=一格（与地面格子同宽，格子正方形） */
+    var fw=furnImg(it);
+    var ww=Math.max(20,ROOM.cw*it.w*S*0.92*it.scale);
+    if(fw&&fw.img){
+      var wdw=ww*(fw.tw/fw.w),wdh=wdw*fw.th/fw.tw;
+      try{
+        if(it.flip){
+          ctx.save();ctx.translate(wa[0],0);ctx.scale(-1,1);ctx.translate(-wa[0],0);
+          ctx.drawImage(fw.img,fw.tx,fw.ty,fw.tw,fw.th,wa[0]-wdw/2,cy-wdh,wdw,wdh);
+          ctx.restore();
+        }else{
+          ctx.drawImage(fw.img,fw.tx,fw.ty,fw.tw,fw.th,wa[0]-wdw/2,cy-wdh,wdw,wdh);
+        }
+      }catch(err){}
+    }else{ /* 图片未加载兜底：墙面小色块 */
+      ctx.fillStyle=it.color;ctx.fillRect(wa[0]-20,cy-40,40,40);
+      ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.strokeRect(wa[0]-20,cy-40,40,40);
+    }
+    if(it.sel){ /* 选中虚线框（墙面矩形） */
+      ctx.setLineDash([6,4]);
+      ctx.lineWidth=2*LWS;
+      ctx.strokeRect(wa[0]-ww/2,cy-ww,ww,ww);
+      ctx.setLineDash([]);
+    }
+    return;
+  }
+  var x1=px(it.gx,it.gy),          y1=py(it.gx,it.gy),
+      x2=px(it.gx+it.w,it.gy),     y2=py(it.gx+it.w,it.gy),
+      x3=px(it.gx+it.w,it.gy+it.d),y3=py(it.gx+it.w,it.gy+it.d),
+      x4=px(it.gx,it.gy+it.d),     y4=py(it.gx,it.gy+it.d),
+      h=it.h*S;
+  var fi=furnImg(it);
+  if(fi&&fi.img){ /* 真图模式：内容包围盒底边中点＝足迹近角下尖（虚线框），落地不悬空 */
+    var mx=px(it.gx+it.w/2,it.gy+it.d/2);
+    var dw=Math.max(20,ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w),dh=dw*fi.th/fi.tw;
+    /* v11 直接贴图；翻转时以内容盒水平中线 mx 为轴左右镜像（v22fab：扭曲系统已整体移除） */
+    try{
+      if(it.flip){
+        ctx.save();
+        ctx.translate(mx,0);ctx.scale(-1,1);ctx.translate(-mx,0);
+        ctx.drawImage(fi.img,fi.tx,fi.ty,fi.tw,fi.th,mx-dw/2,y3-dh,dw,dh);
+        ctx.restore();
+      }else{
+        ctx.drawImage(fi.img,fi.tx,fi.ty,fi.tw,fi.th,mx-dw/2,y3-dh,dw,dh);
+      }
+    }catch(err){}
+  }
+  else if(h<=0){ /* 平面件（地毯，四角倒角） */
+    roundedQuad(x1,y1,x2,y2,x3,y3,x4,y4,10*S);
+    ctx.fillStyle=it.color;ctx.fill();
+    ctx.strokeStyle=OUTLINE;ctx.lineWidth=2*LWS;ctx.stroke();
+  }
+  else{ /* 体块（图片未加载时的兜底）：左面→右面→顶面 */
+    face(x4,y4,x3,y3,x3,y3-h,x4,y4-h,shade(it.color,0.82));
+    face(x2,y2,x3,y3,x3,y3-h,x2,y2-h,shade(it.color,0.94));
+    face(x1,y1-h,x2,y2-h,x3,y3-h,x4,y4-h,shade(it.color,1.08),7*S);
+  }
+  if(it.sel){ /* 选中：足迹虚线框 */
+    ctx.setLineDash([6,4]);
+    quad(x1,y1,x2,y2,x3,y3,x4,y4);
+    ctx.strokeStyle="#3a352f";ctx.lineWidth=2*LWS;ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+function drawWallGrid(){ /* 墙面格子：装修模式显示——竖线每格 1 条、横线每格 1 条（格子=正方形 cw×cw 与地面格子同宽；墙高变高=行数变多而非格子变长） */
+  if(!decoMode||gridFade<=0)return;
+  var N=ROOM.n,cell=ROOM.cw*S,rows=Math.round(ROOM.wallH/ROOM.cw),i;
+  ctx.beginPath();
+  for(i=0;i<=N;i++){
+    ctx.moveTo(px(i,0),py(i,0));ctx.lineTo(px(i,0),py(i,0)-cell*rows);
+    ctx.moveTo(px(0,i),py(0,i));ctx.lineTo(px(0,i),py(0,i)-cell*rows);
+  }
+  for(i=1;i<rows;i++){
+    ctx.moveTo(px(0,0),py(0,0)-cell*i);ctx.lineTo(px(N,0),py(N,0)-cell*i);
+    ctx.moveTo(px(0,0),py(0,0)-cell*i);ctx.lineTo(px(0,N),py(0,N)-cell*i);
+  }
+  ctx.strokeStyle="rgba(90,80,68,"+(0.18*gridFade).toFixed(3)+")";ctx.lineWidth=1;ctx.stroke();
+}
+function render(){
+  var k=cv.width/Math.max(1,W);
+  ctx.setTransform(k,0,0,k,0,0);
+  ctx.lineJoin="round";ctx.lineCap="round";
+  ctx.clearRect(0,0,W,Hc);
+  drawWall("wallLeft",0,0,0,ROOM.n);
+  drawWall("wallBack",0,0,ROOM.n,0);
+  /* 墙角斜接补面（两墙顶带在 P(0,0) 上方的缺口） */
+  var hh=ROOM.wallH*S,ws=ROOM.wallT*S;
+  var wbH=(DECOR.wallBack&&DECOR.wallBack.fb)||"#f5e6d3";
+  roundedQuad(OX,OY-hh,OX+ROOM.cw*ws,OY-hh-ROOM.ch*ws,OX,OY-hh-2*ROOM.ch*ws,OX-ROOM.cw*ws,OY-hh-ROOM.ch*ws,4*S);
+  ctx.fillStyle=shade(wbH,1.04);ctx.fill();
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
+  drawFloor();
+  drawWallGrid();
+  var fs=sortFurniture(),i;
+  for(i=0;i<fs.length;i++)drawItem(fs[i]);
+}
+/* ═══ 画面缩放与拖拽（期1.5 批1：v22view 引擎移植自正式版 V21） ═══
+   滚轮/双指捏合缩放 1~2.5 倍；空白处拖拽平移；平移范围随倍数钳制，1 倍不可拖（有界）。
+   HUD/dock 在 screen 层不随动；等距房间在 scene 层跟随 --zoom/--panX/--panY。 */
+var VZ=1,VPX=0,VPY=0,VZMIN=1,VZMAX=2.5;
+function clampPan(){
+  var r=stage.getBoundingClientRect();
+  var rx=Math.max(0,r.width*(VZ-1)/2),ry=Math.max(0,r.height*(VZ-1)/2);
+  /* v22fab：装修模式放宽垂直上拖余量（约一个面板高，把被底边栏挡住的房间下半部拖出来看）；退出装修自动收拢归位 */
+  var up=decoMode?Math.round(r.height*0.43):0;
+  VPX=Math.max(-rx,Math.min(rx,VPX));
+  VPY=Math.max(-ry-up,Math.min(ry,VPY));
+}
+function applyView(){
+  clampPan();
+  scene.style.setProperty("--zoom",VZ);
+  scene.style.setProperty("--panX",VPX.toFixed(1)+"px");
+  scene.style.setProperty("--panY",VPY.toFixed(1)+"px");
+}
+function zoomAt(cx,cy,f){ /* 以视口点为锚缩放：锚点下的场景点保持不动 */
+  var r=stage.getBoundingClientRect();
+  var lx=cx-r.left-r.width/2,ly=cy-r.top-r.height/2;
+  var z0=VZ;VZ=Math.max(VZMIN,Math.min(VZMAX,VZ*f));
+  if(VZ===z0)return;
+  VPX=lx-(lx-VPX)*(VZ/z0);VPY=ly-(ly-VPY)*(VZ/z0);
+  applyView();
+}
+function zoomCenter(f){
+  var r=stage.getBoundingClientRect();
+  zoomAt(r.left+r.width/2,r.top+r.height/2,f);
+}
+/* 右下角 ＋/－/⌂ 三钮已按用户要求移除（2026-09-03）：缩放走滚轮/双指捏合，视图复位=缩回 1 倍（1 倍时平移天然归零） */
+var pts=new Map(),vdrag=null,pinch0=null;
+function pinchSnap(){
+  var a=Array.from(pts.values());
+  return {d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};
+}
+stage.addEventListener("pointerdown",function(e){
+  if(e.pointerType==="mouse"&&e.button!==0)return;
+  if(e.target.closest("button,#fab,#fabRow"))return; /* HUD/浮动三钮不启动画面拖拽 */
+  try{stage.setPointerCapture(e.pointerId);}catch(err){}
+  pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size===2){vdrag=null;pinch0=pinchSnap();} /* 第二根手指落下：转捏合模式 */
+  else if(pts.size===1){vdrag={id:e.pointerId,x:e.clientX,y:e.clientY,px:VPX,py:VPY,moved:false};}
+});
+stage.addEventListener("pointermove",function(e){
+  if(pts.has(e.pointerId))pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size>=2&&pinch0){
+    var s=pinchSnap();
+    if(s.d>10)zoomAt(s.cx,s.cy,s.d/pinch0.d); /* 双指中点为锚缩放 */
+    pinch0=s;
+  }else if(vdrag&&e.pointerId===vdrag.id){
+    var dx=e.clientX-vdrag.x,dy=e.clientY-vdrag.y;
+    if(!vdrag.moved&&Math.hypot(dx,dy)<6)return; /* 6px 阈值防误触 */
+    vdrag.moved=true;VPX=vdrag.px+dx;VPY=vdrag.py+dy;applyView();
+  }
+});
+function endPtr(e){
+  pts.delete(e.pointerId);
+  if(pts.size<2)pinch0=null;
+  /* wasTap 单击预留期2 角色走位；装修模式点空白清选择已由 canvas handler 完成 */
+  if(vdrag&&e.pointerId===vdrag.id)vdrag=null;
+}
+stage.addEventListener("pointerup",endPtr);
+stage.addEventListener("pointercancel",endPtr);
+window.addEventListener("resize",applyView);
+function applySavedView(z){ /* 存档恢复：VZ 钳制 1~2.5（旧档可能是 0.5~4 的旧缩放值） */
+  VZ=Math.max(VZMIN,Math.min(VZMAX,z||1));VPX=0;VPY=0;applyView();
+}
+/* ── 自适应 + 超采样 ── */
+function resize(){
+  W=stage.clientWidth||960;Hc=stage.clientHeight||600;
+  var dpr=window.devicePixelRatio||1;
+  var k=(FITK||1)*VZMAX*Math.min(dpr,2); /* 方案A 适配：壳被等比放大时渲染分辨率同步乘 k 防发虚 */
+  k=Math.min(k,4096/W,4096/Hc);
+  cv.width=Math.max(1,Math.round(W*k));
+  cv.height=Math.max(1,Math.round(Hc*k));
+  S=Math.min((W-36)/(ROOM.cw*2*ROOM.n),(Hc-36)/(ROOM.ch*2*ROOM.n+ROOM.wallH));
+  /* 房间在 HUD 与 dock 之间垂直居中（期1.5 反馈：四周留白少一些）；边距 96→36 房间更大 */
+  var topPad=88,botPad=92,avail=Math.max(120,Hc-topPad-botPad);
+  var contentH=ROOM.wallH*S+ROOM.ch*2*ROOM.n*S;
+  OX=W/2;OY=topPad+Math.max(10,(avail-contentH)/2)+ROOM.wallH*S;
+  LWS=Math.max(0.45,S*2.2);
+  render();
+}
+/* 自定义调色（用户选定方案B）：内嵌双滑条实时混色（cslTarget=wall 双墙同换 / floor 换地板；替代原隐藏原生取色器——会跳界面外左上角） */
+var cslTarget="wall";
+function cCustomApply(){
+  var c="hsl("+$("cHue").value+",45%,"+$("cDep").value+"%)";
+  var sw=null;
+  if(cslTarget==="floor"){
+    setDecor("floor",{type:"color",value:c,fb:c});
+    sw=document.getElementById("cCardSwF");
+  }else{
+    setDecor("wallBack",{type:"color",value:c,fb:c});
+    setDecor("wallLeft",{type:"color",value:c,fb:c});
+    sw=document.getElementById("cCardSw");
+  }
+  if(sw){sw.style.background=c;sw.textContent="";}
+}
+$("cHue").addEventListener("input",cCustomApply);
+$("cDep").addEventListener("input",cCustomApply);
+/* 旧等距缩放按钮已退役：视图缩放统一走 v22view（滚轮/双指捏合） */
+/* 网格渐显渐隐：装修模式开关时网格与底边栏同步出现/消失（约 240ms 过渡，用户反馈③） */
+var gridFade=0,gridT=null;
+function animGrid(on){
+  clearInterval(gridT);
+  gridT=setInterval(function(){
+    gridFade=on?Math.min(1,gridFade+0.14):Math.max(0,gridFade-0.14);
+    if(gridFade===0||gridFade===1)clearInterval(gridT);
+    render();
+  },28);
+}
+/* ── 家具交互：命中/选中/拖拽/缩放/删除/导入 ── */
+var SEL=null,drag=null,FID=0;
+function itemAt(sx,sy){
+  var fs=sortFurniture(),i,it,mx,by,dw,dh,fi;
+  for(i=fs.length-1;i>=0;i--){
+    it=fs[i];
+    if(it.wall){ /* 墙件：按墙面内容盒判定 */
+      var wa=wallAnchor(it),wy=wa[1]-it.v*ROOM.cw*S;
+      var ww=Math.max(20,ROOM.cw*it.w*S*0.92*it.scale),fi2=furnImg(it);
+      var wh=fi2&&fi2.img?ww*(fi2.th/fi2.tw):ww;
+      if(sx>=wa[0]-ww/2-4&&sx<=wa[0]+ww/2+4&&sy>=wy-wh-4&&sy<=wy+4)return it;
+      continue;
+    }
+    mx=px(it.gx+it.w/2,it.gy+it.d/2);
+    fi=furnImg(it);
+    if(fi&&fi.img){ /* 已加载：按内容包围盒判定（与 drawItem 同锚点） */
+      dw=Math.max(20,ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w);dh=dw*fi.th/fi.tw;
+      by=py(it.gx+it.w,it.gy+it.d);
+      if(sx>=mx-dw/2-4&&sx<=mx+dw/2+4&&sy>=by-dh-4&&sy<=by+4)return it;
+    }else{ /* 未加载：按足迹菱形包围盒判定 */
+      by=py(it.gx,it.gy);
+      if(sx>=px(it.gx,it.gy+it.d)-4&&sx<=px(it.gx+it.w,it.gy)+4&&sy>=by-4&&sy<=py(it.gx+it.w,it.gy+it.d)+4)return it;
+    }
+  }
+  return null;
+}
+function select(it){
+  var i;
+  for(i=0;i<FURNITURE.length;i++)delete FURNITURE[i].sel;
+  SEL=it||null;
+  if(SEL)SEL.sel=1;
+  updateSelChip();
+  render();
+}
+function updateSelChip(){ /* v22fab：驱动浮动三钮（显示/隐藏 + 跟随家具定位 + 刷新占格数值） */
+  var c=$("fab"),r=$("fabRow");
+  if(!c)return;
+  if(SEL){
+    c.style.display="flex";
+    $("selW").textContent=SEL.w;
+    $("selD").textContent=SEL.d;
+    positionFab();
+    if(r&&r.style.display==="flex")positionFabRow();
+  }else{
+    c.style.display="none";
+    if(r)r.style.display="none";
+  }
+}
+function adjFoot(dim,delta){ /* 声明占格：改 w/d 后图片自动缩放占满，位置钳制在房间内 */
+  if(!SEL)return;
+  if(dim==="d"&&SEL.wall)return; /* 墙件无深度概念 */
+  if(dim==="w"){
+    SEL.w=Math.max(1,Math.min(ROOM.n,SEL.w+delta));
+    if(SEL.wall)SEL.u=Math.max(0,Math.min(ROOM.n-SEL.w,SEL.u));
+    else SEL.gx=Math.max(0,Math.min(ROOM.n-SEL.w,SEL.gx));
+  }else{
+    SEL.d=Math.max(1,Math.min(ROOM.n,SEL.d+delta));
+    SEL.gy=Math.max(0,Math.min(ROOM.n-SEL.d,SEL.gy));
+  }
+  updateSelChip();saveSoon();render();
+}
+$("wMinus").addEventListener("click",function(){adjFoot("w",-1);});
+$("wPlus").addEventListener("click",function(){adjFoot("w",1);});
+$("dMinus").addEventListener("click",function(){adjFoot("d",-1);});
+$("dPlus").addEventListener("click",function(){adjFoot("d",1);});
+function contentBox(it){ /* v22fab：与 drawItem/img、itemAt 同锚点的内容盒（浮动三钮定位用）；墙件走墙面锚 */
+  var fi=furnImg(it);
+  if(it.wall){
+    var wa=wallAnchor(it),ww=Math.max(20,ROOM.cw*it.w*S*0.92*it.scale),wh=fi&&fi.img?ww*(fi.th/fi.tw):ww;
+    return {mx:wa[0],T:wa[1]-it.v*ROOM.cw*S-wh,dw:ww,dh:wh};
+  }
+  var rw=(fi&&fi.tw)?fi.tw/fi.w:1;
+  var dw2=Math.max(20,ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*rw,dh=dw2*((fi&&fi.tw)?fi.th/fi.tw:1);
+  return {mx:px(it.gx+it.w/2,it.gy+it.d/2),T:py(it.gx+it.w,it.gy+it.d)-dh,dw:dw2,dh:dh};
+}
+function positionFab(){ /* 三钮悬浮在家具内容盒上方居中，钳制在画布内 */
+  var c=$("fab");
+  if(!c||!SEL)return;
+  var b=contentBox(SEL),total=c.offsetWidth||116;
+  var left=Math.max(total/2+4,Math.min(W-total/2-4,b.mx));
+  c.style.left=left+"px";
+  c.style.top=Math.max(44,b.T-40)+"px";
+}
+function positionFabRow(){ /* 占格步进条悬浮在三钮上方 */
+  var r=$("fabRow");
+  if(!r||!SEL)return;
+  var b=contentBox(SEL);
+  r.style.left=Math.max(90,Math.min(W-90,b.mx))+"px";
+  r.style.top=Math.max(6,b.T-76)+"px";
+}
+function removeSelected(){
+  if(!SEL)return;
+  var i=FURNITURE.indexOf(SEL);
+  if(i>=0)FURNITURE.splice(i,1);
+  SEL=null;updateSelChip();saveSoon();render();updateOwned();
+}
+function addFurniture(defId,gx,gy){ /* V22：按家具库定义生成实例（存档只存 def 引用）；墙件（def.wall）默认右墙中层居中 */
+  var def=DEF_MAP[defId];
+  if(!def)return null;
+  FID++;
+  var it={id:"f"+FID,def:def.id,name:def.name,img:def.src,gx:0,gy:0,w:def.w,d:def.d,h:def.h,scale:1,color:"#c9b8a3",flip:"",wall:def.wall||null,u:Math.round((ROOM.n-def.w)/2),v:1};
+  if(it.wall){
+    if(typeof gx==="number")it.u=Math.max(0,Math.min(ROOM.n-it.w,Math.round(gx)));
+    it.u=Math.max(0,Math.min(ROOM.n-it.w,it.u));
+  }else{
+    it.gx=Math.round((ROOM.n-def.w)/2);it.gy=Math.round((ROOM.n-def.d)/2);
+    if(typeof gx==="number")it.gx=Math.max(0,Math.min(ROOM.n-it.w,gx));
+    if(typeof gy==="number")it.gy=Math.max(0,Math.min(ROOM.n-it.d,gy));
+  }
+  FURNITURE.push(it);
+  saveSoon();
+  render();
+  return it;
+}
+function sceneXY(e){ /* 指针→画布坐标（抵消 CSS --zoom 缩放） */
+  var r=cv.getBoundingClientRect();
+  return [(e.clientX-r.left)*(W/(r.width||W)),(e.clientY-r.top)*(Hc/(r.height||Hc))];
+}
+cv.addEventListener("pointerdown",function(e){
+  if(!decoMode)return; /* V22 游玩模式：家具锁死不响应，画布拖拽交给 v22view 平移画面 */
+  var p=sceneXY(e),it=itemAt(p[0],p[1]);
+  if(it){
+    e.stopPropagation(); /* 期1.5：拖家具时拦住冒泡，v22view 不启动画面拖拽 */
+    select(it);
+    drag={it:it,ox:p[0],oy:p[1],gx:it.gx,gy:it.gy};
+    try{cv.setPointerCapture(e.pointerId);}catch(err){}
+  }else{select(null);}
+});
+window.addEventListener("pointermove",function(e){
+  if(!drag)return;
+  var p=sceneXY(e),it=drag.it;
+  if(it.wall){ /* 墙件：指针投影到墙面（屏幕中线分左右墙），吸附格位与层（层高=一格，与地面格子同宽） */
+    var cell=ROOM.cw*S,rows=Math.round(ROOM.wallH/ROOM.cw);
+    var uc=Math.abs(p[0]-OX)/cell;
+    var v=(OY+ROOM.ch*uc*S-p[1])/cell;
+    it.wall=p[0]<=OX?"left":"back";
+    it.u=Math.max(0,Math.min(ROOM.n-it.w,Math.round(uc)));
+    it.v=Math.max(0,Math.min(rows-1,Math.round(v)));
+    render();positionFab();positionFabRow();return;
+  }
+  /* 屏幕位移→世界位移→等距格子位移（逆变换），吸附格子并钳制在房间内 */
+  var dWX=(p[0]-drag.ox)/S,dWY=(p[1]-drag.oy)/S;
+  var di=(dWX/ROOM.cw+dWY/ROOM.ch)/2,dj=(dWY/ROOM.ch-dWX/ROOM.cw)/2;
+  it.gx=Math.max(0,Math.min(ROOM.n-it.w,Math.round(drag.gx+di)));
+  it.gy=Math.max(0,Math.min(ROOM.n-it.d,Math.round(drag.gy+dj)));
+  render();positionFab();positionFabRow();
+});
+window.addEventListener("pointerup",function(){drag=null;saveSoon();});
+/* v22fab：浮动三钮（尺寸/翻转/删除）接线 */
+$("fabDel").addEventListener("click",removeSelected);
+$("fabFlip").addEventListener("click",function(){
+  if(!SEL)return;
+  SEL.flip=SEL.flip?"":"1";
+  updateSelChip();saveSoon();render();
+});
+$("fabSize").addEventListener("click",function(){
+  var r=$("fabRow");
+  if(!r||!SEL)return;
+  var show=r.style.display!=="flex";
+  r.style.display=show?"flex":"none";
+  if(show)positionFabRow();
+});
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"){select(null);closeSettings();aCloseLb();closePolaroid();closeCal();}
+  else if((e.key==="Delete"||e.key==="Backspace")&&decoMode)removeSelected();
+});
+stage.addEventListener("wheel",function(e){
+  e.preventDefault();
+  var p=sceneXY(e),it=decoMode?itemAt(p[0],p[1]):null;
+  if(it){ /* 装修模式：滚轮在物件上=等比缩放该物件 */
+    it.scale=Math.max(0.3,Math.min(3,it.scale*(e.deltaY<0?1.08:1/1.08)));
+    updateSelChip();saveSoon();render();return;
+  }
+  zoomAt(e.clientX,e.clientY,e.deltaY<0?1.12:1/1.12); /* 空白处=v22view 视图缩放 */
+},{passive:false});
+function setDecor(key,patch){
+  var e=DECOR[key];
+  if(!e)return;
+  for(var k2 in patch)e[k2]=patch[k2];
+  if(e.type==="img")loadPattern(key);
+  saveSoon();
+  render();
+}
+window.addEventListener("resize",resize);
+/* ── 装修模式（V22）：游玩=家具锁死只看场景；装修=可摆放/删除/形变。入口=dock「装修」钮 ── */
+var decoMode=false;
+function setDecoMode(on){
+  decoMode=!!on;
+  document.body.classList.toggle("deco",decoMode);
+  document.body.classList.toggle("barOpen",decoMode); /* 装修时 dock 下沉让位（批2 底边栏展开同样用 barOpen） */
+  animGrid(decoMode); /* 网格与底边栏同步渐显/渐隐（用户反馈③） */
+  if(!decoMode)select(null);
+  applyView(); /* v22fab：进出装修立即重钳平移（进=放宽可上拖，出=自动归位） */
+  saveSoon();
+}
+$("dDecor").addEventListener("click",function(){setDecoMode(!decoMode);});
+/* ── HUD 接线（期1.5）：占位项弹提示；dDress=换装界面（批3 接入） ── */
+var toastT=null;
+function toast(msg){
+  var t=$("toast");
+  t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("show");},1800);
+}
+$("mAlbum").addEventListener("click",function(){openAlbum();}); /* 相册已接入（批6） */
+$("mCalendar").addEventListener("click",function(){openCal();}); /* 日历已接入（批6.7） */
+$("mDiary").addEventListener("click",function(){openDiary();}); /* 日记本已接入（批4） */
+$("mSettings").addEventListener("click",function(){openSettings();}); /* 设置面板已接入（批6.5） */
+/* dShot 拍照已在批6.6 拍立得段接线 */
+/* ═══ 日记本（批6：照日记页demo 三段版移植：封面→历史→写日记，独立存档） ═══ */
+var bookEl=$("book"),veilEl=$("dimVeil");
+var DIAKEY="maoor-v22-diary-v2";
+var MOODS=["😌","😐","😕","😭","😄","😠"];
+var WX=["☀️","🌤️","⛅","☁️","🌧️","⛈️","❄️"];
+var ENTRIES=[
+  {key:"2026-10-22",wx:"☀️",mood:0,body:"今天在小屋里静静地读了一下午书。壁炉前的火光让人感到非常安心，彻子在旁边打盹，尾巴一摇一摇的。"},
+  {key:"2026-10-21",wx:"🌤️",mood:4,body:"尝试了新的茶点配方，奶油放得刚刚好，明天想再做一次请朋友来尝尝。"},
+  {key:"2026-10-20",wx:"⛅",mood:1,body:"整理了房间，翻出很多旧照片，每一张都想再看看，时间过得真快呀。"},
+  {key:"2026-10-19",wx:"🌧️",mood:5,body:"下了一整天雨，没出门，跟国际象棋较了一下午劲，还是输了三盘。"}
+];
+var dSt={mood:-1},draft={mood:-1,body:""},curEdit=null,dpage=0,dWxi=0,descSort=true,PER=4;
+function fullToday(){var d=new Date(),w=["周日","周一","周二","周三","周四","周五","周六"];return d.getFullYear()+"年 "+(d.getMonth()+1)+"月 "+d.getDate()+"日 ("+w[d.getDay()]+")"}
+function todayKey(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function fmtKey(k){var p=k.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]),w=["周日","周一","周二","周三","周四","周五","周六"];return (+p[1])+"月"+(+p[2])+"日 "+w[d.getDay()]}
+function shortDate(s){var m=(s||"").match(/(\d{4})年\s*(\d+)月\s*(\d+)日/);return m?(+m[2])+"月"+(+m[3])+"日":s}
+function entrySort(e){var s=(e.dd||fmtKey(e.key)).match(/(\d+)月\s*(\d+)日/);return s?(+s[1])*100+(+s[2]):0}
+function setView(v){bookEl.classList.remove("st-cover","st-list","st-write");bookEl.classList.add("st-"+v)}
+function syncVeil(){
+  var on=bookEl.classList.contains("open")||albumEl.classList.contains("open")||sheetEl.classList.contains("show")||calEl.classList.contains("open");
+  veilEl.classList.toggle("show",on);
+}
+function openDiary(){
+  closeAlbum();setDress(false);closeSettings();closeCal();
+  bookEl.classList.add("open");syncVeil();setView("cover");
+}
+function closeDiary(){bookEl.classList.remove("open");syncVeil();}
+function renderMoods(){
+  var box=$("moods");box.innerHTML="";
+  MOODS.forEach(function(m,i){
+    var b=document.createElement("button");
+    b.className="mood"+(dSt.mood===i?" on":"");b.textContent=m;b.setAttribute("data-i",i);
+    b.addEventListener("click",function(){dSt.mood=(dSt.mood===i?-1:i);renderMoods();});
+    box.appendChild(b);
+  });
+}
+function renderList(){
+  var box=$("dList");box.innerHTML="";
+  var list=ENTRIES.slice().sort(function(a,b){return descSort?entrySort(b)-entrySort(a):entrySort(a)-entrySort(b)});
+  var pages=Math.max(1,Math.ceil(list.length/PER));
+  if(dpage>pages-1)dpage=pages-1;
+  list.slice(dpage*PER,dpage*PER+PER).forEach(function(e){
+    var c=document.createElement("button");
+    c.className="dcard";
+    c.innerHTML='<div class="dd">'+(e.dd?shortDate(e.dd):fmtKey(e.key))+' · '+e.wx+'</div>'
+      +'<div class="ds">'+(e.body||"").replace(/<[^>]*>/g," ")+'</div>'
+      +'<div class="dfoot"><span class="dm">'+(MOODS[e.mood]||"😌")+'</span></div>';
+    c.addEventListener("click",function(){openEntry(e.key)});
+    box.appendChild(c);
+  });
+  $("dPage").textContent=(dpage+1)+" / "+pages+" 页";
+  $("dPrev").disabled=dpage===0;
+  $("dNext").disabled=dpage>=pages-1;
+}
+function openEntry(key){ /* 点旧日记卡：载入该篇进写页编辑 */
+  var e=null;
+  for(var i=0;i<ENTRIES.length;i++)if(ENTRIES[i].key===key)e=ENTRIES[i];
+  if(!e)return;
+  curEdit=key;$("dBody").innerHTML=e.body||"";
+  $("dateLine").textContent=e.dd||fullToday();
+  var wi=WX.indexOf(e.wx);dWxi=wi<0?0:wi;$("wxBtn").textContent=WX[dWxi];
+  dSt.mood=e.mood;renderMoods();setView("write");
+}
+function startNew(){ /* 顶部加号：写今天的日记（当天已有则续写） */
+  var t=todayKey(),e=null;
+  for(var i=0;i<ENTRIES.length;i++)if(ENTRIES[i].key===t)e=ENTRIES[i];
+  curEdit=t;
+  if(e){openEntry(t);return}
+  $("dBody").innerHTML=draft.body||"";$("dateLine").textContent=fullToday();
+  dWxi=0;$("wxBtn").textContent=WX[0];
+  dSt.mood=draft.mood;renderMoods();setView("write");
+}
+$("pgCover").addEventListener("click",function(){dpage=0;renderList();setView("list")});
+$("dPrev").addEventListener("click",function(){if(dpage>0){dpage--;renderList()}});
+$("dNext").addEventListener("click",function(){dpage++;renderList()});
+$("dSort").addEventListener("click",function(){descSort=!descSort;this.textContent=descSort?"⇅ 倒序":"⇅ 正序";renderList()});
+$("dAdd").addEventListener("click",function(){startNew()});
+$("wxBtn").addEventListener("click",function(){dWxi=(dWxi+1)%WX.length;this.textContent=WX[dWxi]});
+$("dSaveE").addEventListener("click",function(){ /* 右下「写完了」：保存+回列表 */
+  var body=$("dBody").innerHTML||"（今天还没有写字…）";
+  var e={key:curEdit||todayKey(),dd:$("dateLine").textContent,wx:WX[dWxi],
+    mood:dSt.mood<0?0:dSt.mood,body:body};
+  var i=ENTRIES.findIndex(function(x){return x.key===e.key});
+  if(i>=0)ENTRIES[i]=e;else ENTRIES.push(e);
+  saveAll();dpage=0;renderList();setView("list");
+  toast(e.key===todayKey()?"日记已收进册子":"日记已更新");
+});
+/* bBack 语义：写→列表，列表→封面，封面→合书 */
+$("bBack").addEventListener("click",function(){
+  if(bookEl.classList.contains("st-write")){draft.mood=dSt.mood;draft.body=$("dBody").innerHTML;setView("list");renderList();}
+  else if(bookEl.classList.contains("st-list")){setView("cover")}
+  else{closeDiary()}
+});
+function saveAll(){
+  try{localStorage.setItem(DIAKEY,JSON.stringify({entries:ENTRIES,draft:draft}))}catch(e){}
+}
+function loadAll(){
+  try{
+    var raw=localStorage.getItem(DIAKEY);if(!raw)return;
+    var d=JSON.parse(raw);
+    if(Object.prototype.toString.call(d.entries)==="[object Array]"&&d.entries.length)ENTRIES=d.entries;
+    if(d.draft&&typeof d.draft.body==="string")draft=d.draft;
+  }catch(e){}
+}
+function initDiary(){
+  loadAll();
+  $("dateLine").textContent=fullToday();
+  renderMoods();
+}
+veilEl.addEventListener("click",function(){closeDiary();closeAlbum();closeSettings();closeCal();});
+/* ═══ 相册（批6：照相册页demo 移植，左滑入+真翻页+灯箱+点外关闭） ═══ */
+var albumEl=$("album");
+var PHOTOS=[
+  {d:"2026.03.15",t:"惬意的下午茶",src:"assets/character/stand.png"},
+  {d:"2026.03.14",t:"珍贵的收藏",src:"assets/2.5d/f274.png"},
+  {d:"2026.03.13",t:"壁炉旁的惬意",src:"assets/bg-new.jpg"},
+  {d:"2026.03.12",t:"日常的记录",src:"assets/2.5d/f270.png"},
+  {d:"2026.03.11",t:"小酌一杯",src:"assets/2.5d/f292.png"},
+  {d:"2026.03.10",t:"温暖的夜晚",src:"assets/2.5d/f281.png"},
+  {d:"2026.03.09",t:"安静的角落",src:"assets/2.5d/f288.png"},
+  {d:"2026.03.08",t:"棋逢对手",src:"assets/2.5d/f277.png"},
+  {d:"2026.03.07",t:"书桌的时光",src:"assets/2.5d/f285.png"},
+  {d:"2026.03.06",t:"玫瑰与茶",src:"assets/2.5d/f292.png"},
+  {d:"2026.03.05",t:"窗边的下午",src:"assets/bg-new.jpg"},
+  {d:"2026.03.04",t:"夜色温柔",src:"assets/2.5d/f281.png"},
+  {d:"2026.03.03",t:"藏书一隅",src:"assets/2.5d/f270.png"},
+  {d:"2026.03.02",t:"主人的新衣",src:"assets/character/stand.png"},
+  {d:"2026.03.01",t:"小屋的早晨",src:"assets/bg-new.jpg"}
+];
+var A_PER=8,A_PAGE=0;
+function aPageCount(){return Math.ceil((PHOTOS.length+1)/A_PER)}
+function aRender(){
+  var g=$("aGrid");g.innerHTML="";
+  if(A_PAGE===0){ /* 首格=New Photo 占位（拍照功能二期） */
+    var np=document.createElement("button");
+    np.className="pcard newphoto";np.id="npCard";
+    np.innerHTML='<span class="np-plus">＋</span><span class="np-txt">New Photo</span>';
+    np.addEventListener("click",function(){openPhoto(true)}); /* New Photo=拍照入口（批6.6） */
+    g.appendChild(np);
+  }
+  var first=A_PAGE===0?0:A_PER-1;
+  var end=Math.min(PHOTOS.length,first+(A_PAGE===0?A_PER-1:A_PER));
+  for(var i=first;i<end;i++){
+    (function(i){
+      var p=PHOTOS[i];
+      var b=document.createElement("button");
+      b.className="pcard";b.setAttribute("data-i",i);
+      b.innerHTML='<span class="pimg"><img src="'+p.src+'" alt="'+p.t+'"></span>'
+        +'<span class="pdate">'+p.d+'</span><span class="pcap">'+p.t+'</span>';
+      b.addEventListener("click",function(){aOpenLb(i)});
+      g.appendChild(b);
+    })(i);
+  }
+  $("aPrev").disabled=A_PAGE===0;
+  $("aNext").disabled=A_PAGE>=aPageCount()-1;
+  $("aCount").textContent=(A_PAGE+1)+"/"+PHOTOS.length; /* 页码=当前页/总照片数（1/15→2/15） */
+}
+function aOpenLb(i){
+  var p=PHOTOS[i];
+  $("lbImg").src=p.src;$("lbDate").textContent=p.d;$("lbCap").textContent=p.t;
+  $("lb").classList.add("show");
+}
+function aCloseLb(){$("lb").classList.remove("show")}
+function openAlbum(){
+  setDress(false);closeDiary();closeSettings();closeCal();
+  albumEl.classList.add("open");syncVeil();aRender();
+}
+function closeAlbum(){albumEl.classList.remove("open");syncVeil();aCloseLb();}
+$("aPrev").addEventListener("click",function(){if(A_PAGE>0){A_PAGE--;aRender()}});
+$("aNext").addEventListener("click",function(){if(A_PAGE<aPageCount()-1){A_PAGE++;aRender()}});
+$("lb").addEventListener("click",function(){aCloseLb()});
+$("aBack").addEventListener("click",function(){closeAlbum()});
+/* 点面板外右侧空白也可关（demo 同款）；灯箱点击只关灯箱不收面板 */
+document.addEventListener("click",function(e){
+  if(!albumEl.classList.contains("open"))return;
+  var t=e.target;
+  if(t.closest&&t.closest("#album"))return;
+  if(t.closest&&t.closest("#mAlbum"))return;
+  if(t.closest&&t.closest("#lb"))return;
+  if(t.closest&&t.closest("#plWrap"))return; /* 拍立得浮层不算面板外 */
+  closeAlbum();
+});
+initDiary();aRender();
+/* ═══ 设置面板（批6.5：V21 同款底部抽屉移植；SETKEY 独立存档） ═══ */
+var sheetEl=$("sheet");
+var SETKEY="maoor-v22-settings-v1";
+var setSt={calm:false,taps:0};
+function setSave(){try{localStorage.setItem(SETKEY,JSON.stringify(setSt))}catch(e){}}
+function applyCalm(){
+  document.getElementById("screen").classList.toggle("calm",!!setSt.calm);
+  $("swCalm").setAttribute("aria-checked",String(!!setSt.calm));
+}
+function openSettings(){
+  closeDiary();closeAlbum();setDress(false);closeCal();
+  sheetEl.classList.add("show");sheetEl.setAttribute("aria-hidden","false");syncVeil();
+}
+function closeSettings(){
+  sheetEl.classList.remove("show");sheetEl.setAttribute("aria-hidden","true");
+  closeCode();resetClear();syncVeil();
+}
+$("swCalm").addEventListener("click",function(){setSt.calm=!setSt.calm;setSave();applyCalm();});
+var btnClear=$("btnClear"),armed=false,armTimer=null;
+function resetClear(){armed=false;btnClear.classList.remove("confirm");btnClear.textContent="清空本地存档";}
+btnClear.addEventListener("click",function(){
+  if(!armed){
+    armed=true;btnClear.classList.add("confirm");btnClear.textContent="再点一次确认清空";
+    clearTimeout(armTimer);armTimer=setTimeout(resetClear,2600);
+    return;
+  }
+  clearTimeout(armTimer);
+  try{
+    for(var ci=0;ci<SAVE_KEYS.length;ci++)localStorage.removeItem(SAVE_KEYS[ci]);
+  }catch(e){}
+  setSt={calm:false,taps:0};applyCalm();$("tapCount").textContent="0";
+  FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();updateOwned();
+  resetClear();closeSettings();toast("存档已清空，从头开始布置吧");
+});
+/* ═══ 卡4：存档导出/恢复 + 存档码（自 V22存档导出原型 合入；6 存档 key 全量） ═══ */
+var SAVE_APP="maoor",SAVE_VER=1;
+var SAVE_KEYS=[
+  "maoor-v22-state-v2",       /* 房间布局+装修+主题 */
+  "maoor-v22-dress-state-v1", /* 换装 */
+  "maoor-v22-diary-v2",       /* 日记 */
+  "maoor-v22-photos-v1",      /* 相册（含拍照快照） */
+  "maoor-v22-calendar-v1",    /* 日历 */
+  SETKEY                      /* 设置 */
+];
+var lastExport=null;
+function savePad2(n){return(n<10?"0":"")+n}
+function saveDateStr(d){return d.getFullYear()+"-"+savePad2(d.getMonth()+1)+"-"+savePad2(d.getDate())}
+function saveFileDate(d){return ""+d.getFullYear()+savePad2(d.getMonth()+1)+savePad2(d.getDate())}
+function saveByteLen(s){ /* UTF-8 字节数（jsdom/老浏览器降级） */
+  try{return new Blob([s]).size}catch(e){}
+  try{return unescape(encodeURIComponent(s)).length}catch(e2){}
+  return String(s).length;
+}
+/* 打包：6 个 key 全覆盖，空 key 也保留字段（值为 null） */
+function buildSaveObj(){
+  var keys={},size={},i,k,v;
+  for(i=0;i<SAVE_KEYS.length;i++){
+    k=SAVE_KEYS[i];v=null;
+    try{v=localStorage.getItem(k)}catch(e){v=null}
+    keys[k]=v;size[k]=(v==null)?0:saveByteLen(v);
+  }
+  return {app:SAVE_APP,ver:SAVE_VER,date:saveDateStr(new Date()),keys:keys,size:size};
+}
+/* 导出：Blob + a.download 下载 maoor-save-YYYYMMDD.json（无 Blob 环境静默降级，仍返回数据） */
+function exportSave(){
+  var obj=buildSaveObj(),txt="";
+  try{txt=JSON.stringify(obj)}catch(e){toast("导出失败：存档无法序列化");return null}
+  var name="maoor-save-"+saveFileDate(new Date())+".json";
+  try{
+    var blob=new Blob([txt],{type:"application/json;charset=utf-8"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url;a.download=name;a.rel="noopener";a.style.display="none";
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e1){}
+      if(a.parentNode)a.parentNode.removeChild(a);},0);
+  }catch(e2){ /* jsdom 等无 createObjectURL 时忽略 */ }
+  lastExport={name:name,text:txt,obj:obj};
+  toast("存档已导出："+name);
+  return obj;
+}
+/* 校验：app / ver 数字 / keys 对象，任一不符即拒绝 */
+function validateSave(o){
+  if(!o||typeof o!=="object"||Array.isArray(o))return{ok:false,why:"文件内容不是合法的存档对象"};
+  if(o.app!==SAVE_APP)return{ok:false,why:"不是毛茸小屋存档（app 字段不匹配）"};
+  if(typeof o.ver!=="number"||!isFinite(o.ver))return{ok:false,why:"版本号缺失或格式不对"};
+  if(!o.keys||typeof o.keys!=="object"||Array.isArray(o.keys))return{ok:false,why:"缺少存档数据（keys 字段）"};
+  return{ok:true};
+}
+/* 恢复：先收齐待写值再统一写入，任一步失败整体回滚（全有或全无） */
+function applyRestore(text){
+  var o;
+  try{o=JSON.parse(text)}catch(e){return{ok:false,why:"JSON 解析失败，文件可能已损坏"}}
+  var v=validateSave(o);if(!v.ok)return v;
+  var pairs=[],i,k,val;
+  for(i=0;i<SAVE_KEYS.length;i++){
+    k=SAVE_KEYS[i];val=o.keys[k];
+    if(val==null)continue;                     /* 文件里没这个 key → 跳过，不改动本地 */
+    if(typeof val!=="string")return{ok:false,why:"存档字段格式不对："+k};
+    pairs.push([k,val]);
+  }
+  if(!pairs.length)return{ok:false,why:"文件里没有任何可恢复的存档内容"};
+  var backup=[],old;
+  try{
+    for(i=0;i<pairs.length;i++){
+      k=pairs[i][0];old=null;
+      try{old=localStorage.getItem(k)}catch(e3){old=null}
+      backup.push([k,old]);
+    }
+    for(i=0;i<pairs.length;i++)localStorage.setItem(pairs[i][0],pairs[i][1]);
+  }catch(e4){
+    for(i=0;i<backup.length;i++){
+      try{if(backup[i][1]==null)localStorage.removeItem(backup[i][0]);
+        else localStorage.setItem(backup[i][0],backup[i][1]);}catch(e5){}
+    }
+    return{ok:false,why:"写入本地存储失败，已回滚（浏览器存储可能已满）"};
+  }
+  return{ok:true,ver:o.ver,date:typeof o.date==="string"?o.date:"",count:pairs.length};
+}
+function showRestoreBar(r){
+  var bar=$("restoreBar"),info=$("rstInfo");
+  if(!bar||!info)return;
+  info.textContent="存档已恢复 · 版本 v"+r.ver+(r.date?(" · "+r.date):"")+" · "+r.count+" 项，刷新后生效";
+  bar.hidden=false;
+}
+function hideRestoreBar(){var bar=$("restoreBar");if(bar)bar.hidden=true;}
+/* 接线：导出行 / 恢复行 / 隐藏 file input / 刷新按钮 */
+$("rowExport").addEventListener("click",exportSave);
+$("rowExport").addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();exportSave();}});
+$("rowImport").addEventListener("click",function(){var f=$("fileRestore");if(f)f.click();});
+$("rowImport").addEventListener("keydown",function(e){
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();var f=$("fileRestore");if(f)f.click();}});
+$("fileRestore").addEventListener("change",function(){
+  var inp=this,f=inp.files&&inp.files[0];
+  if(!f){inp.value="";return;}
+  if(!window.FileReader){toast("当前浏览器不支持读取文件");inp.value="";return;}
+  var fr=new FileReader();
+  fr.onload=function(){
+    var r=applyRestore(String(fr.result||""));
+    if(!r.ok){hideRestoreBar();toast("恢复失败："+r.why);}
+    else{showRestoreBar(r);toast("已恢复，刷新生效");}
+    inp.value="";
+  };
+  fr.onerror=function(){hideRestoreBar();toast("读取文件失败");inp.value="";};
+  fr.readAsText(f);
+});
+$("btnReload").addEventListener("click",function(){
+  try{location.reload();}catch(e){ /* jsdom 未实现导航，忽略 */ }
+});
+/* 存档码：文本进度全量 + 照片快照瘦身（复制粘贴换设备；文件版才是含照片全量备份） */
+function b64Utf8enc(s){return btoa(unescape(encodeURIComponent(s)))}
+function b64Utf8dec(b){return decodeURIComponent(escape(atob(b)))}
+function buildSaveObjLite(){
+  var o=buildSaveObj(),i,p,ph,raw;
+  try{
+    raw=o.keys["maoor-v22-photos-v1"];
+    if(raw){
+      ph=JSON.parse(raw);
+      if(ph&&ph.photos&&ph.photos.length){
+        for(i=0;i<ph.photos.length;i++){p=ph.photos[i];if(p&&typeof p.src==="string"&&p.src.slice(0,5)==="data:")p.src="";}
+        o.keys["maoor-v22-photos-v1"]=JSON.stringify(ph);
+      }
+    }
+  }catch(e){}
+  return o;
+}
+function saveCodeEncode(){
+  try{return "MAOOR1."+b64Utf8enc(JSON.stringify(buildSaveObjLite()))}catch(e){return ""}
+}
+function saveCodeParse(code){
+  code=String(code||"").replace(/\s+/g,"");
+  if(!code)return{ok:false,why:"先粘贴存档码"};
+  if(code.slice(0,7)!=="MAOOR1.")return{ok:false,why:"不是毛茸小屋存档码（应以 MAOOR1. 开头）"};
+  var txt;try{txt=b64Utf8dec(code.slice(7))}catch(e){return{ok:false,why:"存档码已损坏，无法解码"}}
+  var o;try{o=JSON.parse(txt)}catch(e){return{ok:false,why:"存档码内容不是合法存档"}}
+  var v=validateSave(o);if(!v.ok)return v;
+  return{ok:true,text:txt};
+}
+var codeEl=$("codeSheet");
+function openCode(){codeEl.classList.add("show");codeEl.setAttribute("aria-hidden","false");$("codeOut").value="";}
+function closeCode(){codeEl.classList.remove("show");codeEl.setAttribute("aria-hidden","true");}
+$("rowCode").addEventListener("click",openCode);
+$("codeClose").addEventListener("click",closeCode);
+$("codeGen").addEventListener("click",function(){
+  var c=saveCodeEncode();
+  if(!c){toast("生成失败：存档无法编码");return}
+  $("codeOut").value=c;
+  toast("已生成，点「复制」带走");
+});
+$("codeCopy").addEventListener("click",function(){
+  var ta=$("codeOut");if(!ta.value){toast("先点「生成存档码」");return}
+  ta.focus();ta.select();
+  var done=false;
+  try{done=document.execCommand("copy")}catch(e){}
+  if(!done&&navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(function(){toast("已复制到剪贴板")},function(){toast("请手动长按全选复制")});
+    return;
+  }
+  toast(done?"已复制到剪贴板":"请手动长按全选复制");
+});
+$("codeApply").addEventListener("click",function(){
+  var p=saveCodeParse($("codeIn").value);
+  if(!p.ok){toast(p.why);return}
+  var r=applyRestore(p.text);
+  if(!r.ok){toast("恢复失败："+r.why);return}
+  showRestoreBar(r);toast("已恢复，刷新生效");
+});
+/* 测试/联调钩子（与 __roomHooks 同风格） */
+window.__saveHooks={
+  keys:SAVE_KEYS,app:SAVE_APP,ver:SAVE_VER,
+  build:buildSaveObj,buildLite:buildSaveObjLite,doExport:exportSave,
+  validate:validateSave,apply:applyRestore,
+  encode:saveCodeEncode,parse:saveCodeParse,
+  showBar:showRestoreBar,hideBar:hideRestoreBar,
+  openCode:openCode,closeCode:closeCode,
+  last:function(){return lastExport;}
+};
+(function(){ /* 设置档恢复 */
+  try{
+    var r=localStorage.getItem(SETKEY);if(!r)return;
+    var d=JSON.parse(r);
+    if(typeof d.calm==="boolean")setSt.calm=d.calm;
+    if(typeof d.taps==="number"&&d.taps>=0)setSt.taps=d.taps;
+  }catch(e){}
+  applyCalm();$("tapCount").textContent=setSt.taps;
+})();
+/* ═══ 拍照 → 拍立得 → 存入相册（批6.6；照片档 PKEY 独立，快照只留最近 5 张） ═══ */
+var PKEY="maoor-v22-photos-v1";
+var PLMOODS=["美好的小屋时光","今天也布置得真用心","暖暖的一个下午","该给自己泡杯茶了","彻子的小窝，越看越喜欢"];
+var plWrapEl=$("plWrap"),pendingPhoto=null;
+function openPhoto(fromAlbum){ /* fromAlbum=true：收下后回到相册 */
+  closeSettings();closeCal();
+  var fl=$("flash");fl.classList.remove("go");void fl.offsetWidth;fl.classList.add("go");
+  var shot="";
+  try{shot=cv.toDataURL("image/png")}catch(e){shot=""} /* jsdom/异常兜底 */
+  var d=new Date();
+  var dtxt=(d.getMonth()+1)+"月"+d.getDate()+"日 · 彻子小屋";
+  $("plDate").textContent=dtxt;
+  $("plMood").textContent=PLMOODS[Math.floor(Math.random()*PLMOODS.length)];
+  pendingPhoto={mood:$("plMood").textContent,src:shot,back:!!fromAlbum};
+  var img=$("plShot");
+  if(shot){img.src=shot;img.style.display="block"}
+  else{img.style.display="none"}
+  setTimeout(function(){plWrapEl.classList.add("show");plWrapEl.setAttribute("aria-hidden","false")},200);
+}
+function closePolaroid(){
+  plWrapEl.classList.remove("show");plWrapEl.setAttribute("aria-hidden","true");
+  if(pendingPhoto&&pendingPhoto.back)openAlbum(); /* 从相册进来，收下回相册 */
+  pendingPhoto=null;
+}
+$("plClose").addEventListener("click",closePolaroid);
+plWrapEl.addEventListener("click",function(e){if(e.target===plWrapEl)closePolaroid();});
+$("plSave").addEventListener("click",function(){
+  var p=pendingPhoto||{mood:$("plMood").textContent,src:"",back:false};
+  PHOTOS.unshift({d:($("plDate").textContent||"").replace(" · 彻子小屋",""),t:p.mood,src:p.src||"assets/bg-new.jpg",shot:!!p.src});
+  A_PAGE=0;aRender();
+  photosPersist();
+  closePolaroid();
+  toast("已存入相册 · 共 "+PHOTOS.length+" 张");
+});
+function photosPersist(){
+  try{localStorage.setItem(PKEY,JSON.stringify(PHOTOS.filter(function(p){return p.shot}).slice(0,5)))}
+  catch(e){ /* 超容量降级：只存文字元数据 */
+    try{localStorage.setItem(PKEY,JSON.stringify(PHOTOS.filter(function(p){return p.shot}).slice(0,2).map(function(p){return{d:p.d,t:p.t}})))}catch(e2){}
+  }
+}
+(function(){ /* 照片档恢复：存档快照卡插回 PHOTOS 最前 */
+  try{
+    var r=localStorage.getItem(PKEY);if(!r)return;
+    var arr=JSON.parse(r);
+    if(Object.prototype.toString.call(arr)==="[object Array]"){
+      arr.reverse().forEach(function(p){if(p&&p.d&&p.t)PHOTOS.unshift({d:p.d,t:p.t,src:p.src||"assets/bg-new.jpg",shot:!!p.src})});
+    }
+  }catch(e){}
+})();
+/* 拍照钩子见文末 __roomHooks（photos） */
+$("dShot").addEventListener("click",function(){openPhoto(false);});
+/* ═══ 换装界面（期1.5 批3：照换装界面demo 移植为全屏覆盖层，d- 前缀防冲突） ═══ */
+var DCATS=["suit","top","bottom","coat","acc"];
+var DCAT_NAME={suit:"套装",top:"上衣",bottom:"下装",coat:"外套",acc:"配饰"};
+var WARDROBE={
+  suit:[{name:"绅士派对",icon:"🤵"},{name:"学院风",icon:"🎓"},{name:"休闲时光",icon:"🩴"},{name:"冬日暖阳",icon:"🧣"},{name:"夏日清爽",icon:"👕"},{name:"音乐之旅",icon:"🎻"}],
+  top:[{name:"白衬衫",icon:"👔"},{name:"条纹衫",icon:"🎽"},{name:"小毛衣",icon:"🧶"},{name:"运动背心",icon:"🦺"}],
+  bottom:[{name:"牛仔裤",icon:"👖"},{name:"百褶裙",icon:"👗"},{name:"运动短裤",icon:"🩳"}],
+  coat:[{name:"呢子大衣",icon:"🧥"},{name:"小西装",icon:"🕴️"},{name:"小雨衣",icon:"☔"},{name:"毛斗篷",icon:"🧙"}],
+  acc:[{name:"领结",icon:"🎀"},{name:"圆框眼镜",icon:"👓"},{name:"贝雷帽",icon:"🎩"},{name:"小背包",icon:"🎒"}]
+};
+var dCat="suit",dPicked={suit:"绅士派对"};
+var DLSKEY="maoor-v22-dress-state-v1";
+function dLoadState(){ /* 读档校验（非法类目/名称忽略） */
+  try{
+    var raw=localStorage.getItem(DLSKEY);
+    if(!raw)return;
+    var saved=JSON.parse(raw),clean={};
+    DCATS.forEach(function(c){
+      if(saved[c]&&WARDROBE[c].some(function(it){return it.name===saved[c]}))clean[c]=saved[c];
+    });
+    if(Object.keys(clean).length)dPicked=clean;
+  }catch(e){}
+}
+function dSaveOutfit(){try{localStorage.setItem(DLSKEY,JSON.stringify(dPicked))}catch(e){}}
+function dResetOutfit(){ /* 装修页同语义：恢复默认并落档 */
+  dPicked={suit:"绅士派对"};dSaveOutfit();
+  dRenderGrid();dPop();toast("已重置");
+}
+var dressEl=$("dressLayer");
+function dRenderTabs(){
+  var box=$("dTabs");box.innerHTML="";
+  DCATS.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="d-tab"+(c===dCat?" on":"");
+    b.textContent=DCAT_NAME[c];
+    b.setAttribute("data-cat",c);
+    b.addEventListener("click",function(){dCat=c;dRenderTabs();dRenderGrid();});
+    box.appendChild(b);
+  });
+}
+function dRenderGrid(){
+  var box=$("dGrid");box.innerHTML="";
+  WARDROBE[dCat].forEach(function(item){
+    var d=document.createElement("div");
+    d.className="d-card"+(dPicked[dCat]===item.name?" sel":"");
+    d.setAttribute("data-name",item.name);
+    var img=document.createElement("div");img.className="d-cimg";img.textContent=item.icon;
+    var nm=document.createElement("div");nm.className="d-cname";nm.textContent=item.name;
+    d.appendChild(img);d.appendChild(nm);
+    d.addEventListener("click",function(){
+      if(dPicked[dCat]===item.name)return;
+      dPicked[dCat]=item.name;
+      dRenderGrid();
+      toast("已换上 "+item.name);
+      dSay(dPickLine(DRESS_LINES));
+      dPop();
+    });
+    box.appendChild(d);
+  });
+}
+function dPop(){
+  var c=$("dCharImg");
+  c.classList.remove("pop");
+  void c.offsetWidth; /* 重启动画 */
+  c.classList.add("pop");
+}
+var DRESS_LINES=["这个我挺喜欢的！","嗯...还行吧","哇，超合适的！","感觉元气满满~","有点不太像我呢","就决定是它了！","毛茸茸的最舒服了","换好啦，好看吗？"];
+var IDLE_LINES=["今天想穿点什么好呢~","衣柜里好多衣服呀","你帮我挑嘛~","待会去哪里玩呢？","镜子里的我帅不帅？","呼...站了好久啦"];
+var bubTimer=null,idleTimer=null,lastLine="";
+function dPickLine(arr){
+  var s;do{s=arr[Math.floor(Math.random()*arr.length)]}while(s===lastLine&&arr.length>1);
+  lastLine=s;return s;
+}
+function dSay(text){
+  var b=$("dSayBub");b.textContent=text;b.classList.add("show");
+  clearTimeout(bubTimer);
+  bubTimer=setTimeout(function(){b.classList.remove("show")},2000);
+}
+function dScheduleIdle(){
+  clearTimeout(idleTimer);
+  idleTimer=setTimeout(function(){dSay(dPickLine(IDLE_LINES));dScheduleIdle();},9000+Math.random()*6000);
+}
+function setDress(on){ /* 打开=渲染+启动闲聊计时；关闭=停闲聊；开换装时关日记/相册（三层互斥） */
+  if(on){closeDiary();closeAlbum();closeSettings();closeCal();}
+  dressEl.classList.toggle("show",!!on);
+  if(on){dRenderTabs();dRenderGrid();dScheduleIdle();}
+  else clearTimeout(idleTimer);
+}
+$("dDress").addEventListener("click",function(){setDress(true);});
+$("dBack").addEventListener("click",function(){setDress(false);});
+$("dSave").addEventListener("click",function(){dSaveOutfit();toast("已保存");});
+$("dReset").addEventListener("click",function(){dResetOutfit();});
+/* 点 IP：果冻微晃 + 随机台词 + 爱心/星星上飘（同换装demo） */
+var DCLICK_LINES=["嘿嘿，痒痒的~","别戳啦，怕痒","要出门了吗？","今天这身好看吗？","喵~","换好啦，再夸夸我嘛","咕噜咕噜~站好久啦"];
+function dFloatHeart(){
+  var s=document.createElement("span");
+  s.className="d-heart";
+  s.textContent=["❤️","💕","✨"][Math.floor(Math.random()*3)];
+  s.style.left="calc(50% + "+(Math.round(Math.random()*70)-35)+"px)";
+  s.style.top=(24+Math.random()*8)+"%";
+  s.addEventListener("animationend",function(){s.remove()});
+  dressEl.appendChild(s);
+}
+$("dCharImg").addEventListener("click",function(){
+  setSt.taps++;$("tapCount").textContent=setSt.taps;setSave(); /* 今日互动计数（设置面板） */
+  var c=$("dCharImg");
+  c.classList.remove("pop","wiggle");
+  if(setSt.calm){dSay(dPickLine(DCLICK_LINES));return} /* 减弱动效：只说话，不晃不出爱心 */
+  void c.offsetWidth; /* 重启动画 */
+  c.classList.add("wiggle");
+  dFloatHeart();
+  dSay(dPickLine(DCLICK_LINES));
+});
+dLoadState();
+/* ═══ 装修底边栏（期1.5 批2）：造景=家具卡真实摆放 / 装修=墙地配色卡 / 主题=配色预设一键换 ═══ */
+var curTab=0,curSub=0;
+var CAT=[
+  {label:"造景",subs:[
+    {n:"坐具",ids:["f271","f272","f273"]},
+    {n:"桌台",ids:["f292","f275","f276"]},
+    {n:"柜子",ids:["f270","f278","f279"]},
+    {n:"摆件",ids:["f274","f277","f288","f283","f290","f291","f285","f286"]},
+    {n:"床",ids:["f282","f284","f287"]},
+    {n:"氛围",ids:["f281","f280","f289"]}
+  ]},
+  {label:"装修",subs:[
+    {n:"墙面",swatches:[["#f5e6d3","奶油墙"],["#efe0c8","浅木墙"],["#e9c8cf","玫瑰墙"],["#3a2430","暗夜墙"],["custom","自定义"]]},
+    {n:"地板",swatches:[["#d2b48c","原木地板"],["#c8a274","暖棕地板"],["#cfc8bd","灰白地板"],["#6b4a2f","深褐地板"],["custom","自定义"]]}
+  ]},
+  {label:"主题",subs:[
+    {n:"配色主题",themes:[
+      {n:"原木暖居",theme:{floor:"#d2b48c",back:"#f5e6d3",left:"#ece0cd"}},
+      {n:"猩红古堡",theme:{floor:"#6b2f2f",back:"#3a2430",left:"#2f1d28"}},
+      {n:"海盐假日",theme:{floor:"#b8cfc9",back:"#eef4f2",left:"#dfe9e6"}},
+      {n:"樱花物语",theme:{floor:"#e8c9cf",back:"#fbeef1",left:"#f3dfe5"}}
+    ]}
+  ]}
+];
+var PRICE={f270:250,f271:250,f272:30,f273:180,f274:180,f275:30,f276:120,f277:30,f278:30,f279:180,f280:180,f281:30,f282:420,f283:120,f284:60,f285:60,f286:30,f287:250,f288:60,f289:420,f290:250,f291:30,f292:250};
+var elTabs=$("tabs"),elSubs=$("subs"),elGrid=$("grid");
+function renderTabs(){
+  elTabs.innerHTML="";
+  CAT.forEach(function(cat,i){
+    var b=document.createElement("button");
+    b.className="tab"+(i===curTab?" on":"");
+    b.textContent=cat.label;
+    b.addEventListener("click",function(){if(curTab===i)return;curTab=i;curSub=0;renderTabs();renderSubs();renderGrid();});
+    elTabs.appendChild(b);
+  });
+}
+function renderSubs(){
+  elSubs.innerHTML="";
+  CAT[curTab].subs.forEach(function(s,j){
+    var b=document.createElement("button");
+    b.className="chip"+(j===curSub?" on":"");
+    b.textContent=s.n;
+    b.addEventListener("click",function(){if(curSub===j)return;curSub=j;renderSubs();renderGrid();});
+    elSubs.appendChild(b);
+  });
+}
+function renderGrid(){
+  elGrid.innerHTML="";
+  $("cSlid").classList.remove("open"); /* 切模块收起自定义滑条，防目标残留 */
+  var sub=CAT[curTab].subs[curSub];
+  if(sub.ids){ /* 家具卡：点击=真实放进房间 */
+    sub.ids.forEach(function(id){
+      var def=DEF_MAP[id];if(!def)return;
+      var card=document.createElement("div");card.className="card";
+      var img=document.createElement("div");img.className="cimg";
+      var im=document.createElement("img");im.src=def.src;im.alt=def.name;img.appendChild(im);
+      var nm=document.createElement("div");nm.className="cname";nm.textContent=def.name;nm.title=def.name;
+      var ow=document.createElement("div");ow.className="cown";ow.dataset.id=id;ow.textContent="拥有：0";
+      card.appendChild(img);card.appendChild(nm);card.appendChild(ow);
+      card.addEventListener("click",function(){
+        var it=addFurniture(id);
+        if(it){select(it);updateOwned();toast("「"+def.name+"」已放进房间，拖到喜欢的位置");}
+      });
+      elGrid.appendChild(card);
+    });
+  }else if(sub.swatches){ /* 墙面/地板配色卡（墙面=两堵墙一起换；「custom」卡=方案B内嵌双滑条自定义） */
+    var isWall=curTab===1&&curSub===0;
+    sub.swatches.forEach(function(sw){
+      var card=document.createElement("div");card.className="card";
+      var swd=document.createElement("div");swd.className="swatch";
+      var nm=document.createElement("div");nm.className="cname";nm.textContent=sw[1];
+      if(sw[0]==="custom"){ /* 自定义色卡（方案B）：点击展开内嵌双滑条（墙面双墙同换/地板换地板，cCustomApply） */
+        swd.id=isWall?"cCardSw":"cCardSwF";
+        swd.style.background="linear-gradient(135deg,#f5e6d3,#e9c8cf,#3a2430)";
+        swd.style.cssText+=";display:grid;place-items:center;color:#fff;font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)";
+        swd.textContent="🎨";
+        card.appendChild(swd);card.appendChild(nm);
+        card.addEventListener("click",function(){cslTarget=isWall?"wall":"floor";$("cSlid").classList.toggle("open");});
+      }else{
+        swd.style.background=sw[0];
+        card.appendChild(swd);card.appendChild(nm);
+        card.addEventListener("click",function(){
+          if(isWall){
+            setDecor("wallBack",{type:"color",value:sw[0],fb:sw[0]});
+            setDecor("wallLeft",{type:"color",value:sw[0],fb:sw[0]});
+          }else{
+            setDecor("floor",{type:"color",value:sw[0],fb:sw[0]});
+          }
+          toast("已换上「"+sw[1]+"」");
+        });
+      }
+      elGrid.appendChild(card);
+    });
+  }else if(sub.themes){ /* 主题卡：三色条预览，一键换地板+两墙（主题页签下平铺 4 套） */
+    sub.themes.forEach(function(th){
+      var card=document.createElement("div");card.className="card";
+      var t3=document.createElement("div");t3.className="theme3";
+      [th.theme.back,th.theme.left,th.theme.floor].forEach(function(c2){
+        var i2=document.createElement("i");i2.style.background=c2;t3.appendChild(i2);
+      });
+      var nm=document.createElement("div");nm.className="cname";nm.textContent=th.n;
+      card.appendChild(t3);card.appendChild(nm);
+      card.addEventListener("click",function(){applyTheme(th.theme);toast("主题已切换："+th.n);});
+      elGrid.appendChild(card);
+    });
+  }
+  updateOwned(); /* v22bar2：渲染后刷新「拥有：N」 */
+}
+function updateOwned(){ /* v22bar2：「拥有：N」=该家具已在房间里摆放的数量（实时） */
+  elGrid.querySelectorAll(".cown").forEach(function(o){
+    var id=o.dataset.id,n=0;
+    FURNITURE.forEach(function(f){if(f.def===id)n++;});
+    o.textContent="拥有："+n;
+  });
+}
+function applyTheme(t){
+  setDecor("floor",{type:"color",value:t.floor,fb:t.floor});
+  setDecor("wallBack",{type:"color",value:t.back,fb:t.back});
+  setDecor("wallLeft",{type:"color",value:t.left,fb:t.left});
+}
+$("barClose").addEventListener("click",function(){setDecoMode(false);});
+/* v22bar2：网格纵向滚动，滚轮/触摸板原生生效，无需映射 */
+document.querySelector(".qb-save").addEventListener("click",function(){saveState();toast("布局已保存");});
+document.querySelector(".qb-reset").addEventListener("click",function(){
+  FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();updateOwned();toast("已恢复初始摆放");
+});
+/* 商店钮已按用户要求移除（2026-09 反馈②，商店功能二期再评估） */
+/* ── 房间布局存档：localStorage 存家具清单（def 引用制） ── */
+var saveT=null;
+function saveSoon(){clearTimeout(saveT);saveT=setTimeout(saveState,350);}
+function saveState(){
+  try{
+    localStorage.setItem("maoor-v22-state-v2",JSON.stringify({
+      v:1,zoom:VZ,
+      floor:DECOR.floor.value,wallB:DECOR.wallBack.value,wallL:DECOR.wallLeft.value,grid:DECOR.grid,
+      furn:FURNITURE.map(function(f){return{def:f.def,name:f.name,gx:f.gx,gy:f.gy,w:f.w,d:f.d,h:f.h,scale:f.scale,flip:f.flip||null,wall:f.wall||null,u:f.u||0,v:f.v||0};})
+    }));
+  }catch(err){}
+}
+function restoreState(){
+  var s=null;try{s=localStorage.getItem("maoor-v22-state-v2");}catch(err){} /* v2：弃用旧档（含预置家具的 v1 档），初始为空房间 */
+  var st=null;
+  if(s){try{st=JSON.parse(s);}catch(err){st=null;}}
+  if(!st||!Array.isArray(st.furn)||!st.furn.length){seedFurniture();return;} /* 无存档/空布局：预置展示 */
+  try{
+    if(st.zoom)applySavedView(st.zoom);
+    if(st.floor)setDecor("floor",{type:"color",value:st.floor,fb:st.floor});
+    if(st.wallB)setDecor("wallBack",{type:"color",value:st.wallB,fb:st.wallB});
+    if(st.wallL)setDecor("wallLeft",{type:"color",value:st.wallL,fb:st.wallL});
+    var i,f,it;
+    for(i=0;i<st.furn.length;i++){
+      f=st.furn[i];
+      if(!f||!DEF_MAP[f.def])continue; /* 家具库没有的定义安全跳过 */
+      it=addFurniture(f.def,f.gx,f.gy);
+      if(!it)continue;
+      it.name=f.name||it.name;
+      if(f.w)it.w=Math.max(1,Math.min(ROOM.n,f.w));
+      if(f.d)it.d=Math.max(1,Math.min(ROOM.n,f.d));
+      if(typeof f.h==="number")it.h=f.h;
+      it.scale=f.scale||1;it.flip=f.flip||null;
+      if(f.wall){it.wall=f.wall;it.u=Math.max(0,Math.min(ROOM.n-it.w,f.u||0));it.v=Math.max(0,Math.min(Math.round(ROOM.wallH/ROOM.cw)-1,f.v||0));}
+      else{
+        it.gx=Math.max(0,Math.min(ROOM.n-it.w,it.gx));
+        it.gy=Math.max(0,Math.min(ROOM.n-it.d,it.gy));
+      }
+    }
+    render();
+  }catch(err){}
+}
+function seedFurniture(){ /* 期1.5 反馈：初始不预置家具，空房间由用户自己布置 */ }
+restoreState();
+renderTabs();renderSubs();renderGrid();
+window.addEventListener("beforeunload",saveState);
+/* ── v8 扭曲系统已按用户要求整体移除（v22fab）：solveH/warpDraw/四角手柄/扭曲工具条全部退役，翻转保留走画布镜像 ── */
+/* ═══ 日历面板（批6.7：照日历界面demoA 移植；月/日两视图+心形月历+时刻流+备忘卡+自绘时间选择器） ═══ */
+var calEl=$("cal"),CALK="maoor-v22-calendar-v1";
+var NOW=new Date(),Y=NOW.getFullYear(),M=NOW.getMonth(),TODAY=NOW.getDate();
+function kOf(y,m,d){return y+"-"+(m+1)+"-"+d}
+var EV={};
+EV[kOf(Y,M,TODAY)]=[
+  {t:"09:00",txt:"小提琴练习",e:"🎻",done:false},
+  {t:"14:00",txt:"整理书架藏书",e:"📕",done:false},
+  {t:"19:00",txt:"红茶时间",e:"🫖",done:true}
+];
+var PAW=kOf(Y,M,Math.max(1,TODAY-3)),TK=kOf(Y,M,TODAY),selKey=TK,editingIdx=-1;
+var calView="month";
+function saveCal(){try{localStorage.setItem(CALK,JSON.stringify({ev:EV}))}catch(e){}}
+function loadCal(){
+  try{
+    var raw=localStorage.getItem(CALK);if(!raw)return;
+    var d=JSON.parse(raw);
+    if(d&&d.ev&&typeof d.ev==="object"){EV=d.ev}
+  }catch(e){}
+}
+function calSetView(v){
+  calView=v;
+  calEl.classList.remove("v-day");
+  if(v==="day")calEl.classList.add("v-day");
+  document.querySelectorAll(".ctab").forEach(function(t){
+    t.classList.toggle("on",t.getAttribute("data-v")===v);
+  });
+  if(v==="month")calRender();
+  if(v==="day")renderDay();
+}
+document.querySelectorAll(".ctab").forEach(function(t){
+  t.addEventListener("click",function(){calSetView(t.getAttribute("data-v"))});
+});
+/* 月历渲染：周一开头；有记录红心/今天金心/选中深圈/爪印彩蛋（今天前第 3 天） */
+function calRender(){
+  var g=$("cGrid");g.innerHTML="";
+  var first=new Date(Y,M,1).getDay();
+  var lead=(first+6)%7;
+  var dim=new Date(Y,M+1,0).getDate();
+  for(var i=0;i<lead;i++){
+    var pad=document.createElement("span");pad.className="day pad";g.appendChild(pad);
+  }
+  for(var d=1;d<=dim;d++){
+    (function(d){
+      var key=kOf(Y,M,d);
+      var b=document.createElement("button");
+      b.className="day"+(EV[key]?" ev":"")+(key===kOf(Y,M,TODAY)?" today":"")+(key===selKey?" sel":"")+(key===PAW?" pawd":"");
+      b.innerHTML='<span class="h"><b>'+d+'</b></span>'+(key===PAW?'<span class="paw">🐾</span>':"");
+      b.addEventListener("click",function(){selKey=key;calRender();renderMemo();});
+      g.appendChild(b);
+    })(d);
+  }
+}
+/* 备忘卡：跟随选中日 */
+function renderMemo(){
+  var d=new Date(Y,M,parseInt(selKey.split("-")[2],10));
+  var w=["周日","周一","周二","周三","周四","周五","周六"];
+  $("mDate").textContent=(M+1)+"月"+d.getDate()+"日（"+w[d.getDay()]+"）";
+  var rows=EV[selKey]||[];
+  var box=$("mRows");box.innerHTML="";
+  if(!rows.length){
+    var e=document.createElement("div");
+    e.className="mrow";
+    e.innerHTML='<span class="mt" style="color:#9a8163">这一天还没有备忘，点下面添加一条吧</span>';
+    box.appendChild(e);
+  }
+  rows.forEach(function(r){
+    var row=document.createElement("button");
+    row.className="mrow"+(r.done?" done":"");
+    row.innerHTML='<span class="cb" aria-hidden="true"></span><span class="mt">'+r.t+" "+r.txt+'</span><span class="me">'+r.e+'</span>';
+    row.addEventListener("click",function(){r.done=!r.done;renderMemo();saveCal();});
+    box.appendChild(row);
+  });
+}
+/* 日视图：竖版时刻流（时刻签+金节点+奶油卡，按时间排序；点卡编辑/点 ✓ 切完成） */
+function tMin(t){var m=/^(\d{1,2}):(\d{2})$/.exec(t||"");return m?(+m[1])*60+(+m[2]):null}
+function renderDay(){
+  var p=selKey.split("-"),dy=new Date(+p[0],+p[1]-1,+p[2]);
+  $("dHead").innerHTML='<span class="dhd">'+(dy.getMonth()+1)+"月"+dy.getDate()+"日</span>";
+  var list=(EV[selKey]||[]).map(function(it,i){return{it:it,i:i,m:tMin(it.t)}})
+    .sort(function(a,b){return (a.m===null?9999:a.m)-(b.m===null?9999:b.m)});
+  var html="";
+  list.forEach(function(o){
+    var it=o.it;
+    html+='<div class="titem"><span class="ttime">'+(it.t||"--:--")+'</span><span class="tdot"></span>'
+      +'<button class="tcard'+(it.done?" done":"")+'" data-i="'+o.i+'" title="'+it.t+" "+it.txt+'">'
+      +'<span class="tico">'+(it.e||"📝")+'</span>'
+      +'<span class="tmain"><span class="ttl">'+it.txt+'</span>'
+      +(it.done?'<span class="tsub">已完成</span>':"")
+      +'</span><span class="ttog" title="标记完成">✓</span></button></div>';
+  });
+  $("dTl").innerHTML=html||'<div class="dempty">这一天还没有安排 · 点下面「＋ 添加备忘」写一条</div>';
+  $("dTl").querySelectorAll(".tcard").forEach(function(c){
+    c.addEventListener("click",function(ev){
+      if(ev.target.closest(".ttog")){
+        var it=EV[selKey][+c.getAttribute("data-i")];
+        it.done=!it.done;calRender();renderMemo();renderDay();saveCal();
+        toast(it.done?"已完成这条待办":"已取消完成");
+        return;
+      }
+      startEdit(+c.getAttribute("data-i"));
+    });
+  });
+}
+function stepDay(n){ /* 前后日切换（跨月/跨年安全） */
+  var p=selKey.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);
+  d.setDate(d.getDate()+n);
+  selKey=kOf(d.getFullYear(),d.getMonth(),d.getDate());
+  calRender();renderDay();renderMemo();
+}
+$("dPrevD").addEventListener("click",function(){stepDay(-1)});
+$("dNextD").addEventListener("click",function(){stepDay(1)});
+/* 时间滑动选择器（自绘替原生下拉）：点栏弹出 7 项高的滚动列表，上下滑动/点选皆可 */
+var tSel={h:"",m:""},tPickCol=null,T_IH=26,T_VH=182;
+function tLabel(v){return v===""?"--":v}
+function tOpts(col){
+  var arr=[""],i;
+  if(col==="h"){for(i=6;i<=23;i++)arr.push((i<10?"0":"")+i)}
+  else{
+    for(i=0;i<60;i+=5)arr.push((i<10?"0":"")+i);
+    if(tSel.m&&+tSel.m%5!==0&&arr.indexOf(tSel.m)<0)arr.push(tSel.m);
+    arr.sort();
+  }
+  return arr;
+}
+function markCenter(){
+  var list=$("tList"),c=Math.round((list.scrollTop+(T_VH-T_IH)/2)/T_IH);
+  var items=list.querySelectorAll(".topt");
+  items.forEach(function(b,i){b.classList.toggle("on",i===c)});
+}
+function renderTPick(){
+  var col=tPickCol;if(!col)return;
+  var opts=tOpts(col),list=$("tList"),html="";
+  opts.forEach(function(v){
+    html+='<button class="topt'+(v===tSel[col]?" on":"")+'" data-v="'+v+'">'+tLabel(v)+'</button>';
+  });
+  list.innerHTML=html;
+  var idx=opts.indexOf(tSel[col]);
+  list.scrollTop=Math.max(0,idx*T_IH-(T_VH-T_IH)/2);
+  list.querySelectorAll(".topt").forEach(function(b){
+    b.addEventListener("click",function(ev){ev.stopPropagation();tChoose(col,b.getAttribute("data-v"))});
+  });
+  list.onscroll=function(){markCenter()};
+  markCenter();
+}
+function tChoose(col,v){
+  tSel[col]=v;
+  $(col==="h"?"mH":"mM").textContent=tLabel(v);
+  if(col==="h"&&v===""){tSel.m="";$("mM").textContent="--"}
+  closePick();
+}
+function openPick(col){
+  if(tPickCol===col){closePick();return}
+  tPickCol=col;renderTPick();
+  $("tPick").classList.add("open");
+}
+function closePick(){tPickCol=null;$("tPick").classList.remove("open")}
+$("mH").addEventListener("click",function(ev){ev.stopPropagation();openPick("h")});
+$("mM").addEventListener("click",function(ev){ev.stopPropagation();openPick("m")});
+document.addEventListener("click",function(ev){if(tPickCol&&!ev.target.closest("#tPick"))closePick()});
+function setTimeSel(t){
+  var mm=/^(\d{1,2}):(\d{2})$/.exec(t||"");
+  tSel.h=mm?(mm[1].length===2?mm[1]:"0"+(+mm[1])):"";
+  tSel.m=mm?mm[2]:"";
+  $("mH").textContent=tLabel(tSel.h);
+  $("mM").textContent=tLabel(tSel.m);
+}
+/* 备忘编辑流程：＋ 添加 / 点时刻流条编辑（🗑 删除）/ ✓ 确认 / ✕ 取消 / Enter 确认（不限数量） */
+$("mAdd").addEventListener("click",function(){
+  editingIdx=-1;$("mDel").style.display="none";
+  $("mForm").classList.add("show");
+  $("mTxt").focus();
+});
+$("mNo").addEventListener("click",function(){
+  editingIdx=-1;$("mDel").style.display="none";
+  $("mForm").classList.remove("show");
+});
+function startEdit(i){
+  var it=EV[selKey][i];editingIdx=i;
+  setTimeSel(it.t==="--:--"?"":it.t);$("mTxt").value=it.txt;
+  $("mDel").style.display="inline-grid";
+  $("mForm").classList.add("show");$("mTxt").focus();
+}
+function addMemo(){
+  var txt=$("mTxt").value.trim();
+  if(!txt){toast("先写要做的事吧");return}
+  var t=tSel.h?(tSel.h+":"+(tSel.m||"00")):"--:--";
+  if(!EV[selKey])EV[selKey]=[];
+  if(editingIdx>=0){
+    var o=EV[selKey][editingIdx];
+    EV[selKey][editingIdx]={t:t,txt:txt,e:o.e||"",done:o.done};
+    toast("已更新待办");
+  }else{
+    EV[selKey].push({t:t,txt:txt,e:"",done:false});
+    toast("已添加备忘");
+  }
+  editingIdx=-1;$("mDel").style.display="none";
+  setTimeSel("");$("mTxt").value="";
+  $("mForm").classList.remove("show");
+  calRender();renderMemo();renderDay();saveCal();
+}
+$("mOk").addEventListener("click",addMemo);
+$("mDel").addEventListener("click",function(){
+  if(editingIdx<0)return;
+  EV[selKey].splice(editingIdx,1);
+  editingIdx=-1;this.style.display="none";
+  setTimeSel("");$("mTxt").value="";
+  $("mForm").classList.remove("show");
+  calRender();renderMemo();renderDay();saveCal();toast("已删除待办");
+});
+$("mTxt").addEventListener("keydown",function(e){if(e.key==="Enter")addMemo();});
+/* 开合（复用 #dimVeil，与日记/相册/设置/换装互斥） */
+function openCal(){
+  closeDiary();closeAlbum();closeSettings();setDress(false);
+  calEl.classList.add("open");syncVeil();calRender();renderMemo();
+}
+function closeCal(){calEl.classList.remove("open");closePick();syncVeil();}
+$("cBack").addEventListener("click",function(){closeCal()});
+loadCal();calRender();renderMemo();
+/* ── 测试/联调钩子 ── */
+window.__roomHooks={
+  setDecor:setDecor,sortFurniture:sortFurniture,
+  addFurniture:addFurniture,
+  selectAt:function(x,y){var it=itemAt(x,y);select(it);return it?it.id:null;},
+  clampPan:clampPan,positionFab:positionFab, /* v22fab 测试入口 */
+  removeSelected:removeSelected,
+  setDecoMode:setDecoMode,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,
+  saveState:saveState,restoreState:restoreState,
+  DECOR:DECOR,FURNITURE:FURNITURE,ROOM:ROOM,
+  state:function(){return{vz:VZ,panX:VPX,panY:VPY,W:W,H:Hc,sel:SEL?SEL.id:null,decoMode:decoMode};},
+  zoomAt:zoomAt,applyView:applyView,applySavedView:applySavedView,
+  dressState:function(){return{cat:dCat,picked:dPicked,open:dressEl.classList.contains("show")};},setDress:setDress,
+  diaryState:function(){var m=/st-(cover|list|write)/.exec(bookEl.className||"");
+    return{open:bookEl.classList.contains("open"),view:m?m[1]:"cover",
+      pages:Math.max(1,Math.ceil(ENTRIES.length/PER)),page:dpage};},
+  albumState:function(){return{open:albumEl.classList.contains("open"),page:A_PAGE,
+    cards:document.querySelectorAll("#aGrid .pcard").length,
+    photos:document.querySelectorAll("#aGrid .pcard:not(.newphoto)").length,
+    count:$("aCount").textContent,lb:$("lb").classList.contains("show")};},
+  calState:function(){return{open:calEl.classList.contains("open"),view:calView,
+    days:$("cGrid").querySelectorAll(".day:not(.pad)").length,
+    evDays:$("cGrid").querySelectorAll(".day.ev").length,
+    dayItems:$("dTl").querySelectorAll(".tcard").length,
+    form:$("mForm").classList.contains("show"),
+    memoRows:$("mRows").querySelectorAll(".mrow").length,
+    doneRows:$("mRows").querySelectorAll(".mrow.done").length};},
+};
+window.__roomHooks.photos=PHOTOS; /* 批6.6：拍立得存入相册的实时数组（unshift 置顶） */
+/* ── 屏幕适配（方案A）：手机壳等比缩放铺满视口 + canvas 精度同步（第0批） ── */
+var FITK=1;
+(function(){
+  var sc=document.querySelector(".screen");
+  function fit(){
+    var vw=window.innerWidth,vh=window.innerHeight;
+    var W2=Math.min(390,vw),H2=Math.min(844,vh);
+    var nk=Math.min(vw/W2,vh/H2);
+    FITK=nk;
+    sc.style.transform=(nk===1)?"":"scale("+nk+")";
+    resize();
+  }
+  window.addEventListener("resize",fit);
+  fit();
+})();
+/* ── 启动 ── */
+applyView();
+resize();
+})();
+/* PWA：注册根目录 Service Worker（本地 file:// 双击打开时自动跳过，不影响游玩） */
+if("serviceWorker" in navigator && location.protocol==="https:"){
+  navigator.serviceWorker.register("sw.js").catch(function(){});
+}
+</script>
+</body>
+</html>

@@ -1,17 +1,29 @@
 /* 毛茸小屋 PWA Service Worker
  * 作用：① 让安卓/桌面浏览器出现「安装应用」入口 ② 离线也能玩
- * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v1 → maoor-v2），
+ * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v1';
+const CACHE_VER = 'maoor-v2';
 const PRECACHE = [
   './index.html',
   './manifest.json',
-  './V21 毛茸小屋-可交互原型.html',
-  './V21 毛茸小屋-项目进度板.html',
+  './毛茸小屋V22demo.html',
   './icon-180.png',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './assets/bg-new.jpg',
+  './assets/dress-bg.png',
+  './assets/character/stand.png',
+  /* 2.5d 家具 23 张 */
+  './assets/2.5d/f270.png','./assets/2.5d/f271.png','./assets/2.5d/f272.png','./assets/2.5d/f273.png',
+  './assets/2.5d/f274.png','./assets/2.5d/f275.png','./assets/2.5d/f276.png','./assets/2.5d/f277.png',
+  './assets/2.5d/f278.png','./assets/2.5d/f279.png','./assets/2.5d/f280.png','./assets/2.5d/f281.png',
+  './assets/2.5d/f282.png','./assets/2.5d/f283.png','./assets/2.5d/f284.png','./assets/2.5d/f285.png',
+  './assets/2.5d/f286.png','./assets/2.5d/f287.png','./assets/2.5d/f288.png','./assets/2.5d/f289.png',
+  './assets/2.5d/f290.png','./assets/2.5d/f291.png','./assets/2.5d/f292.png',
+  /* HUD 图标 8 张 */
+  './icon/头像框.png','./icon/相册.png','./icon/日历.png','./icon/日记.png',
+  './icon/设置.png','./icon/装修.png','./icon/换装.png','./icon/拍照.png'
 ];
 
 /* 安装：预缓存核心文件（单个文件 404 也不影响整体安装） */
