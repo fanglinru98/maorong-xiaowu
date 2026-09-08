@@ -26,18 +26,19 @@ body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidde
 /* ═══ 游戏界面壳（期1.5 批1）：390×844 · HUD 原位（照正式版 V21） ═══ */
 .screen{position:relative;width:min(390px,100vw);height:min(844px,100vh);overflow:hidden;
   background:#3a2a1b;box-shadow:0 12px 48px rgba(0,0,0,.5)}
-/* ── 顶部 HUD：屋名+心情+头像框（V21 原位样式） ── */
+/* ── 顶部 HUD：头像组合（金框+头像+Lv+进度条，UI 升级批：图一样式，屋名/心情文字按用户要求移除） ── */
 .hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
   justify-content:flex-start;padding:calc(12px + env(safe-area-inset-top)) 16px 0;pointer-events:none}
-.mood-chip{pointer-events:auto;display:inline-flex;align-items:center;gap:13px;
-  background:rgba(255,251,242,.96);border:1.5px solid var(--hudline);border-radius:28px;
-  padding:7px 24px 7px 6px;color:var(--ink);box-shadow:var(--shadow-1)}
-.mood-chip .sun{width:54px;height:54px;flex:0 0 auto;display:grid;place-items:center}
-.mood-chip .sun .sun-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:center;
-  box-shadow:0 0 0 2px #fff,0 1px 4px rgba(74,54,40,.3)}
-.mood-chip .chip-text{display:flex;flex-direction:column;gap:1px;line-height:1.1}
-.mood-chip .home-name{font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:.03em;color:var(--wood-deep)}
-.mood-chip .mood-line{font-size:11px;font-weight:600;color:var(--muted)}
+.avatar-stack{position:relative;width:72px;pointer-events:auto;filter:drop-shadow(0 3px 8px rgba(20,10,5,.4))}
+.avatar-stack .av-frame{width:100%;display:block}
+.avatar-stack .av-face{position:absolute;left:50%;top:50%;width:63%;transform:translate(-50%,-56%)}
+.avatar-stack .av-lv{position:absolute;left:50%;top:73%;transform:translateX(-50%);font-size:13px;font-weight:900;
+  font-family:"幼圆","YouYuan","Yuanti SC","Microsoft YaHei",sans-serif;letter-spacing:.5px;white-space:nowrap;color:#bd8d63;
+  text-shadow:-2px -2px 0 #fffdf6,2px -2px 0 #fffdf6,-2px 2px 0 #fffdf6,2px 2px 0 #fffdf6,-2px 0 0 #fffdf6,2px 0 0 #fffdf6,0 -2px 0 #fffdf6,0 2px 0 #fffdf6,0 3px 4px rgba(60,25,10,.4)}
+.avatar-stack .av-bar{position:absolute;left:9%;right:9%;bottom:-7px;height:10px;border-radius:6px;background:#38130f;
+  border:2px solid #fffdf6;box-shadow:0 2px 4px rgba(20,8,4,.45);overflow:hidden}
+.avatar-stack .av-bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(180deg,#c94b3a,#8e2a20);
+  box-shadow:inset 0 1px 0 rgba(255,220,190,.35)}
 /* ── 右侧功能列（V21 原位） ── */
 .menu-right{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top) + 10px);z-index:10;
   display:flex;flex-direction:column;gap:16px}
@@ -65,7 +66,7 @@ body.barOpen .dock{bottom:-90px}
 #roomIso{display:block;width:100%;height:100%}
 /* ═══ 装修底边栏（批16：底框切图底板 + 造景/装修/主题 三页签分类回退）：几何按 2246×1751 实测 ═══ */
 #decoBar{position:absolute;left:0;right:0;bottom:0;z-index:20;aspect-ratio:2246/1751;
-  background:url(assets/ui/deco-panel.png) center/100% 100% no-repeat;
+  background:#f3e7c8 url(assets/ui/deco-panel.png) center/100% 100% no-repeat; /* 米色兜底：切图加载失败不黑屏 */
   transform:translateY(112%);transition:transform .3s cubic-bezier(.32,.72,.28,1)}
 body.barOpen #decoBar{transform:translateY(0)}
 #tabs{position:absolute;left:0;right:0;top:3.4%;height:8.6%;display:flex;justify-content:center;gap:18px;align-items:center}
@@ -105,7 +106,8 @@ body.barOpen #decoBar{transform:translateY(0)}
 .card .cname{flex:0 0 auto;width:100%;font-size:12px;font-weight:700;color:var(--ink);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .cown{flex:0 0 auto;font-size:10.5px;font-weight:600;color:var(--ink-soft)}
 /* 面板外右上三圆钮（面板展开时才出现） */
-#quickBtns{position:absolute;right:10px;bottom:calc(var(--barH) + 10px);display:flex;gap:8px;z-index:30;
+#quickBtns{position:absolute;right:10px;bottom:calc(min(390px,100vw)*0.7796 + 10px);display:flex;gap:8px;z-index:30;
+  /* 修按钮压页签（图二）：面板实际高=宽×1751/2246（aspect-ratio 驱动），--barH 的 36.1% 是屏高近似在矮屏/大屏失真，改按同款公式锚定 */
   opacity:0;pointer-events:none;transform:translateY(12px);transition:all .28s}
 body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .qb{height:30px;padding:0 14px;border-radius:15px;font-size:13px;font-weight:600;line-height:1;display:grid;place-items:center;
@@ -152,7 +154,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 .d-plaque i{font-style:normal;font-size:15px}
 .d-plaque span{font-size:19px;font-weight:700;letter-spacing:6px;text-indent:6px;color:#f3e3b8}
-#dTopBtns{position:absolute;right:10px;top:14px;display:flex;flex-direction:column;gap:7px;z-index:30;align-items:flex-end}
+#dTopBtns{position:absolute;right:0;bottom:100%;margin-bottom:10px;display:flex;gap:8px;z-index:30} /* 装修 quickBtns 同位：悬浮面板右上角（bottom:100% 自动跟随面板高度） */
 .d-qb{height:30px;padding:0 12px;border-radius:15px;font-size:13px;font-weight:600;line-height:1;display:grid;place-items:center;
   border:1.5px solid rgba(255,255,255,.35);box-shadow:0 4px 10px rgba(74,54,40,.28);transition:transform .12s;white-space:nowrap;cursor:pointer}
 .d-qb:active{transform:scale(.9)}
@@ -173,25 +175,22 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .d-saybub::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
   border:6px solid transparent;border-top-color:#fffdf4;border-bottom:none}
 .d-saybub.show{opacity:1;transform:translateX(-50%) scale(1)}
-#dPanel{ /* 底部一整块面板：四周留缝透出更衣室场景 */
-  position:absolute;left:10px;right:10px;bottom:10px;height:43%;z-index:10;
-  display:flex;flex-direction:column;overflow:hidden;
-  background:linear-gradient(#faf3e0,#f3e7c8);border:1.5px solid #e0cda2;border-radius:20px;
+#dPanel{ /* 底部一整块面板：装修底边栏同款切图底板（UI 升级批），页签复用全局 .tab 组件 */
+  position:absolute;left:10px;right:10px;bottom:10px;z-index:10;
+  aspect-ratio:2246/1751;
+  background:#f3e7c8 url(assets/ui/deco-panel.png) center/100% 100% no-repeat; /* 米色兜底：切图加载失败不黑屏 */
   box-shadow:0 -8px 24px rgba(15,8,4,.35)}
-.d-tabs{flex:0 0 auto;display:flex;gap:6px;padding:12px 12px 6px}
-.d-tab{flex:1;height:38px;border-radius:12px;font-size:15px;font-weight:600;letter-spacing:2px;
-  color:var(--ink-soft);transition:all .15s;cursor:pointer}
-.d-tab.on{background:#fffdf4;color:var(--ink2);font-weight:700;border:1.5px solid var(--gold);
-  box-shadow:0 3px 8px rgba(0,0,0,.12),inset 0 -2px 0 var(--gold-line);transform:translateY(-1px)}
-.d-grid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 10px 12px;align-content:start;scrollbar-width:thin;scrollbar-color:#dcb87e #f8eed6}
+.d-tabs{position:absolute;left:0;right:0;top:3.4%;height:8.6%;display:flex;gap:6px;padding:0 10px;justify-content:center}
+.d-grid{position:absolute;left:4.6%;right:5.6%;top:20.6%;bottom:8.4%;overflow-y:auto;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-content:start;scrollbar-width:thin;scrollbar-color:#dcb87e #f8eed6}
 .d-grid::-webkit-scrollbar{width:14px}
 .d-grid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:99px}
 .d-grid::-webkit-scrollbar-thumb{background:#dcb87e;border:2px solid #f8eed6;border-radius:99px}
 .d-card{position:relative;background:#fdf6e3;border:1px solid #e5d3a8;border-radius:12px;padding:5px 4px 6px;
   display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;cursor:pointer}
 .d-card .d-cimg{ /* 细金边内框（装修家具卡同款） */
-  width:100%;height:74px;box-sizing:border-box;padding:3px;background:#fbf3df;border:1px solid #e8d5ac;border-radius:9px;
-  display:grid;place-items:center;font-size:40px;line-height:1;overflow:hidden}
+  width:100%;height:56px;box-sizing:border-box;padding:3px;background:#fbf3df;border:1px solid #e8d5ac;border-radius:9px;
+  display:grid;place-items:center;font-size:30px;line-height:1;overflow:hidden}
 .d-card .d-cname{font-size:12px;font-weight:700;color:var(--ink2);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .d-card.sel{border-color:var(--gold-deep);background:#fffdf4;box-shadow:0 4px 10px rgba(90,70,50,.18),inset 0 -2px 0 var(--gold-line);transform:translateY(-1px)}
 .d-card.sel::after{content:"✓";position:absolute;right:-6px;top:-6px;width:23px;height:23px;border-radius:50%;
@@ -548,13 +547,12 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   </div>
 </div>
 <header class="hud-top">
-  <span class="mood-chip" id="moodChip">
-    <span class="sun" aria-hidden="true"><img class="sun-avatar" src="icon/头像框.png" alt="彻子小屋的头像"></span>
-    <span class="chip-text">
-      <span class="home-name">彻子小屋</span>
-      <span class="mood-line"><span id="moodText">心情很好</span></span>
-    </span>
-  </span>
+  <div class="avatar-stack" id="avatarStack" title="彻子 Lv12">
+    <img class="av-frame" src="assets/ui/avatar-frame.png" alt="">
+    <img class="av-face" src="assets/ui/avatar-face.png" alt="彻子的头像">
+    <div class="av-lv">Lv<span id="avLv">12</span></div>
+    <div class="av-bar"><i id="avProg" style="width:65%"></i></div>
+  </div>
 </header>
 <nav class="menu-right" aria-label="功能菜单">
   <button class="side-btn" id="mAlbum" aria-label="相册"><img class="icon-img" src="icon/相册.png" alt="" aria-hidden="true"></button>
@@ -726,14 +724,14 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <div class="d-scene-bg" aria-hidden="true"></div>
   <button class="d-back" id="dBack" title="返回">‹</button>
   <div class="d-plaque"><i>🌹</i><span>换装</span><i>🌹</i></div>
-  <div id="dTopBtns">
-    <button class="d-qb d-qb-save" id="dSave" title="保存装扮">💾 保存</button>
-    <button class="d-qb d-qb-reset" id="dReset" title="重置装扮">↺ 重置</button>
-  </div>
   <img class="d-charimg" id="dCharImg" src="assets/character/stand.png" alt="角色">
   <div class="d-saybub" id="dSayBub" role="status"></div>
   <section id="dPanel" aria-label="换装面板">
     <nav class="d-tabs" id="dTabs"></nav>
+    <div id="dTopBtns">
+      <button class="d-qb d-qb-save" id="dSave" title="保存装扮">💾 保存</button>
+      <button class="d-qb d-qb-reset" id="dReset" title="重置装扮">↺ 重置</button>
+    </div>
     <div class="d-grid" id="dGrid"></div>
   </section>
 </div>
@@ -1868,7 +1866,7 @@ function dRenderTabs(){
   var box=$("dTabs");box.innerHTML="";
   DCATS.forEach(function(c){
     var b=document.createElement("button");
-    b.className="d-tab"+(c===dCat?" on":"");
+    b.className="tab"+(c===dCat?" on":""); /* UI 升级批：直接复用装修页签 .tab 组件（猩红选中+金星） */
     b.textContent=DCAT_NAME[c];
     b.setAttribute("data-cat",c);
     b.addEventListener("click",function(){dCat=c;dRenderTabs();dRenderGrid();});
@@ -2407,6 +2405,15 @@ window.__roomHooks={
     doneRows:$("mRows").querySelectorAll(".mrow.done").length};},
 };
 window.__roomHooks.photos=PHOTOS; /* 批6.6：拍立得存入相册的实时数组（unshift 置顶） */
+/* 头像等级（UI 升级批：Lv+进度条占位，后续接等级系统；avatarState(lv,prog) 可改可查） */
+var AVLV=12,AVPROG=0.65;
+$("avLv").textContent=String(AVLV);
+$("avProg").style.width=Math.round(AVPROG*100)+"%";
+__roomHooks.avatarState=function(lv,prog){
+  if(typeof lv==="number"){AVLV=lv;$("avLv").textContent=String(lv)}
+  if(typeof prog==="number"){AVPROG=prog;$("avProg").style.width=Math.round(prog*100)+"%"}
+  return{lv:AVLV,prog:AVPROG};
+};
 /* ── 屏幕适配（方案A）：手机壳等比缩放铺满视口 + canvas 精度同步（第0批） ── */
 var FITK=1;
 (function(){
