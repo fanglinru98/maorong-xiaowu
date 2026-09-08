@@ -14,7 +14,7 @@
 <style>
 :root{--ink:#2f2b28;--muted:#8d877f;--line:#e5e1da;--bg:#f5f3ef;--panel:#fbfaf8;--accent:#3a352f;
   --gold:#d9b56a;--gold-deep:#c9a55c;--gold-line:#ead9ae;--panel2:#f8f0d8;--ink2:#5a4632;
-  --hudline:#e8dcc2;--wood-deep:#5a4632;--ink-soft:#7a6248;--coin:#c9861f;--barH:min(43%,368px); /* v22bar2：竖版大卡两行网格（照用户图二），面板高度回调到与装修底边栏demo 一致 */
+  --hudline:#e8dcc2;--wood-deep:#5a4632;--ink-soft:#7a6248;--coin:#c9861f;--barH:min(36.1%,304px); /* v22bar2：竖版大卡两行网格（照用户图二），面板高度回调到与装修底边栏demo 一致 */
   --shadow-1:0 2px 8px rgba(74,54,40,.14);--shadow-2:0 8px 24px rgba(58,40,24,.22);
   --font-display:"Alibaba PuHuiTi","PingFang SC","Source Han Sans SC","Microsoft YaHei UI",sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +54,7 @@ body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidde
 .dock-btn .icon-img{width:67px;height:65px;object-fit:contain;object-position:center;pointer-events:none}
 body.barOpen .dock{bottom:-90px}
 /* ── Toast ── */
-.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(8px);z-index:14;
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(8px);z-index:61;
   background:rgba(0,0,0,.78);color:#F5E3C8;border:1px solid rgba(217,181,106,.4);border-radius:999px;padding:9px 18px;font-size:13px;
   letter-spacing:.02em;box-shadow:var(--shadow-2);opacity:0;pointer-events:none;
   transition:opacity .2s ease,transform .2s ease;max-width:82%;text-align:center}
@@ -63,37 +63,35 @@ body.barOpen .dock{bottom:-90px}
 #scene{position:absolute;left:50%;top:50%;width:100%;height:100%;
   transform:translate(-50%,-50%) translate(var(--panX,0px),var(--panY,0px)) scale(var(--zoom,1));transform-origin:center center;will-change:transform}
 #roomIso{display:block;width:100%;height:100%}
-/* ═══ 装修底边栏（期1.5 批2：照装修底边栏demo 移植，body.barOpen 滑入） ═══ */
-#decoBar{position:absolute;left:0;right:0;bottom:0;height:var(--barH);z-index:20;
-  background:linear-gradient(var(--panel2),#f3e7c8);border:3px solid var(--gold-deep);border-bottom:none;
-  border-radius:22px 22px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.4);
-  padding:10px 12px 8px;display:flex;flex-direction:column;gap:8px;
-  transform:translateY(103%);transition:transform .3s cubic-bezier(.32,.72,.28,1)}
+/* ═══ 装修底边栏（批16：底框切图底板 + 造景/装修/主题 三页签分类回退）：几何按 2246×1751 实测 ═══ */
+#decoBar{position:absolute;left:0;right:0;bottom:0;z-index:20;aspect-ratio:2246/1751;
+  background:url(assets/ui/deco-panel.png) center/100% 100% no-repeat;
+  transform:translateY(112%);transition:transform .3s cubic-bezier(.32,.72,.28,1)}
 body.barOpen #decoBar{transform:translateY(0)}
-#decoBar::before{content:"";position:absolute;inset:4px;border:1px solid var(--gold-line);
-  border-radius:18px 18px 0 0;pointer-events:none}
-.bar-edge{display:flex;align-items:center;gap:8px;margin:-2px 6px 0}
-.bar-edge i{flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.bar-edge b{width:8px;height:8px;background:var(--gold);transform:rotate(45deg);box-shadow:0 0 0 2px var(--panel2),0 0 0 3px var(--gold)}
-.bar-close{flex:0 0 auto;font-size:12px;font-weight:600;color:var(--ink-soft);padding:2px 8px;background:none;border:none;cursor:pointer}
-#tabs{display:flex;gap:6px;padding:0 4px}
-.tab{flex:1;height:38px;border-radius:12px;font-size:15px;font-weight:600;letter-spacing:2px;
-  color:var(--ink-soft);transition:all .15s}
-.tab.on{background:#fffdf4;color:var(--ink);font-weight:700;border:1.5px solid var(--gold);
-  box-shadow:0 3px 8px rgba(0,0,0,.12),inset 0 -2px 0 var(--gold-line);transform:translateY(-1px)}
-#subs{display:flex;gap:6px;overflow-x:auto;padding:2px 4px;scrollbar-width:none}
+#tabs{position:absolute;left:0;right:0;top:3.4%;height:8.6%;display:flex;justify-content:center;gap:18px;align-items:center}
+.tab{min-width:14.5%;height:100%;border-radius:13px;font-size:14px;font-weight:700;letter-spacing:2px;
+  display:grid;place-items:center;color:var(--ink-soft);position:relative;transition:color .2s,transform .2s}
+.tab::before{content:"✦";position:absolute;left:50%;top:-8px;transform:translateX(-50%) scale(0);
+  font-size:10px;color:#c08a3e;opacity:0;transition:transform .22s ease,opacity .22s}
+.tab.on{color:#a03a2c;transform:translateY(-1px)}
+.tab.on::before{transform:translateX(-50%) scale(1);opacity:1}
+.tab:active{transform:translateY(1px)}
+#subs{position:absolute;left:6%;right:6%;top:calc(13.4% + 10px);height:5.8%;display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none}
 #subs::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;height:30px;padding:0 14px;border-radius:15px;font-size:13px;font-weight:600;
-  background:#fdf8ea;border:1px solid #d9c9a0;color:var(--ink-soft);transition:all .15s}
-.chip.on{background:#3a2d20;border-color:#3a2d20;color:#f3e3b8;box-shadow:0 2px 6px rgba(0,0,0,.25)}
-#grid{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:grid;
-  grid-template-columns:repeat(4,1fr);gap:8px;padding:4px 4px 6px;align-content:start;scrollbar-width:thin;scrollbar-color:#dcb87e #f8eed6} /* v22bar2：竖版大卡网格（照用户图二），纵向滚动滚轮原生生效 */
+.chip{flex:0 0 auto;height:100%;padding:0 12px;border-radius:12px;font-size:11.5px;font-weight:600;
+  color:var(--ink-soft);position:relative;transition:color .2s,transform .2s}
+.chip::after{content:"";position:absolute;inset:0;border:1.5px solid #c9a55c;border-radius:12px;
+  opacity:0;transform:scale(.9);transition:opacity .22s,transform .22s;pointer-events:none}
+.chip.on{color:#a03a2c;font-weight:800}
+.chip.on::after{opacity:1;transform:scale(1)}
+.chip:active{transform:scale(.92)}
+#grid{position:absolute;left:4.6%;right:5.6%;top:calc(20.6% + 10px);bottom:8.4%;overflow-y:auto;overflow-x:hidden;display:grid;
+  grid-template-columns:repeat(4,1fr);gap:8px;padding:2px 2px 4px;align-content:start;scrollbar-width:thin;scrollbar-color:#dcb87e #f8eed6}
 #grid::-webkit-scrollbar{width:14px}
 #grid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:99px}
 #grid::-webkit-scrollbar-thumb{background:#dcb87e;border:2px solid #f8eed6;border-radius:99px}
 /* v22bar2c：滚动条=奶油轨道+焦糖胶囊滑块（照用户 09-04 卡片图右缘样式），换装层 .d-grid 同款 */
-/* v22bar2（照用户图二）：竖版卡片=图片区(细金边内框、家具居中完整不裁切)→名称粗体居中→「拥有：N」居中；
-   图片区 flex:1+min-height:0+img 双 max 约束 → 图片物理上不可能压到名称 */
+/* v22bar2（卡片回退）：竖版卡片=图片区(细金边内框、家具居中完整不裁切)→名称粗体居中→「拥有：N」居中 */
 .card{height:118px;background:#fdf6e3;border:1px solid #e5d3a8;border-radius:12px;padding:5px 4px 6px;
   display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all .12s;overflow:hidden}
 .card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 3px 10px rgba(90,70,50,.18)}
@@ -101,7 +99,6 @@ body.barOpen #decoBar{transform:translateY(0)}
   background:#fbf3df;border:1px solid #e8d5ac;border-radius:9px;box-sizing:border-box;overflow:hidden}
 .card .cimg img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   max-width:94%;max-height:94%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(40,25,10,.14))}
-/* v22bar2b：图片改绝对定位居中（百分比 max 对 flex 派生高度可靠解析）+ cimg overflow:hidden 双保险 → 家具png 在小框内居中完整、永不与名称重叠 */
 .card .swatch{flex:1 1 0;min-height:0;width:100%;border-radius:9px;border:1px solid rgba(90,70,50,.25)}
 .card .theme3{flex:1 1 0;min-height:0;width:100%;border-radius:9px;overflow:hidden;display:flex;border:1px solid rgba(90,70,50,.25)}
 .card .theme3 i{flex:1}
@@ -116,8 +113,10 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .qb:active{transform:scale(.9)}
 .qb-save{background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12}
 .qb-reset{background:#f4ead0;color:#5a4632}
-/* 墙面自定义调色（用户选定方案B）：内嵌色相+深浅双滑条 */
-.cslid{display:none;margin-top:8px;padding:8px 10px 2px;border-top:1px dashed #d2b98c;flex-direction:column;gap:6px}
+/* 墙面/地板自定义调色（方案B）：内嵌色相+深浅双滑条，批15 改面板内悬浮条 */
+.cslid{display:none;position:absolute;left:6%;right:8%;bottom:2.5%;z-index:5;padding:8px 10px 6px;
+  border:1px solid #d2b98c;border-radius:10px;background:rgba(253,243,223,.96);flex-direction:column;gap:6px;
+  box-shadow:0 4px 12px rgba(60,40,20,.18)}
 .cslid.open{display:flex}
 .cslid label{font-size:11px;font-weight:700;color:#7a6248;display:flex;align-items:center;gap:8px}
 .cslid input[type=range]{flex:1;accent-color:#b98a5e;height:18px}
@@ -201,136 +200,108 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* ═══ 日记手帐书（批6：照日记页demo 三段版移植：封面→历史→写日记）+ 相册面板 ═══ */
 #dimVeil{position:absolute;inset:0;z-index:40;background:rgba(22,13,6,0);pointer-events:none;transition:background .32s ease}
 #dimVeil.show{background:rgba(22,13,6,.5);pointer-events:auto}
-#book{position:absolute;left:50%;top:47%;width:min(94%,370px);height:66%;z-index:41;
-  transform:translate(calc(-50% - 115vw),-50%);
+/* 日记本 v3（UI 升级批1：美术底板）——容器只做定位，皮面/书脊/纸面/插画全部在图里 */
+#book{position:absolute;left:50%;top:47%;width:min(92%,368px);height:auto;z-index:41;
+  aspect-ratio:1200/1531;transform:translate(calc(-50% - 115vw),-50%);
   transition:transform .38s cubic-bezier(.22,.9,.32,1);
-  background:linear-gradient(#fbf3e0,#f2e5c7);border:1px solid #d9c39a;border-radius:8px 16px 16px 8px;
-  box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 0 0 2px rgba(255,252,240,.65),inset 14px 0 20px -12px rgba(120,90,50,.3);
-  overflow:hidden;display:flex;flex-direction:column}
+  filter:drop-shadow(0 18px 40px rgba(0,0,0,.5))}
 #book.open{transform:translate(-50%,-50%)}
-#book::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:2px;z-index:2;
-  background:repeating-linear-gradient(180deg,#b99a63 0 8px,transparent 8px 16px)}
-.bookmark{position:absolute;right:24px;top:-2px;width:32px;height:58px;z-index:3;
-  background:linear-gradient(#e0b96a,#c9a55c);clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%);
-  filter:drop-shadow(0 2px 3px rgba(60,40,20,.3))}
-.charm{position:absolute;left:-4px;top:37%;z-index:3;font-size:20px;
-  filter:drop-shadow(0 2px 3px rgba(60,40,20,.35))}
-.charm::before{content:"";position:absolute;left:50%;top:-14px;width:1.5px;height:14px;background:#a98d5f}
-.bback{position:absolute;left:18px;top:10px;z-index:6;width:32px;height:32px;border-radius:50%;
-  background:#fffdf4;border:1.5px solid #c9a55c;color:#5a4632;font-size:17px;font-weight:700;
-  display:grid;place-items:center;box-shadow:0 3px 8px rgba(60,40,20,.25);transition:transform .12s}
-.bback:active{transform:scale(.88)}
-/* 三段状态：封面 → 历史 → 写日记 */
+/* 三段状态：封面 → 历史 → 写日记（用户拍板去掉左上返回钮，点书外空白合书） */
 #book .pg{display:none}
-#book.st-cover .pg-cover{display:flex}
+#book.st-cover .pg-cover{display:block}
 #book.st-list .pg-list{display:flex}
 #book.st-write .pg-write{display:flex}
-/* 封面：皮革+金框猫头像（用户效果图一） */
-.pg-cover{position:absolute;inset:0;z-index:2;background:linear-gradient(160deg,#6b4a2e,#4a3320 55%,#3a2718);
-  flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;border-radius:8px 16px 16px 8px}
-.pg-cover::before{content:"";position:absolute;inset:10px;border:2px solid rgba(222,182,110,.5);border-radius:6px 12px 12px 6px;pointer-events:none}
-.pg-cover::after{content:"";position:absolute;left:10px;top:0;bottom:0;width:2px;z-index:2;
-  background:linear-gradient(rgba(255,235,190,0),rgba(255,235,190,.35),rgba(255,235,190,0))}
-.cv-frame{width:96px;height:96px;border-radius:50%;border:4px solid #e0b96a;box-shadow:0 0 0 3px #8a6a3a,0 6px 14px rgba(0,0,0,.45);overflow:hidden;background:#fdf6e3}
-.cv-frame img{width:100%;height:100%;object-fit:cover}
-.cv-title{font-size:24px;font-weight:900;color:#f0d9a8;letter-spacing:6px;text-shadow:0 2px 6px rgba(0,0,0,.5)}
-.cv-title i{font-style:normal;font-size:18px;margin:0 8px;vertical-align:middle}
-.cv-sub{font-size:12px;color:#d9c39a;letter-spacing:4px}
-.cv-hint{font-size:10.5px;color:#b3945f;letter-spacing:2px;opacity:.85}
-.cv-next{position:absolute;right:16px;bottom:32px;width:40px;height:40px;border-radius:50%;
-  background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12;font-size:22px;font-weight:800;
-  display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.4);transition:transform .12s}
-.cv-next:active{transform:scale(.9)}
-/* 历史列表：双列日记卡+翻页（用户效果图二） */
-.pg-list{position:absolute;inset:0;z-index:1;padding:40px 14px 10px 24px;flex-direction:column}
-.ls-head{display:flex;align-items:center;gap:8px;margin:16px 0 9px}
-.ls-head img{width:38px;height:38px;border-radius:50%;border:2.5px solid #fff;background:#fdf6e3;object-fit:cover;
-  box-shadow:0 2px 5px rgba(60,40,20,.25);transform:rotate(-5deg)}
-.ls-head .tt{flex:1;text-align:center;font-size:17px;font-weight:800;color:#5a4632}
-.ls-add{width:30px;height:30px;border-radius:50%;background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12;
-  font-size:20px;font-weight:800;line-height:1;display:grid;place-items:center;box-shadow:0 2px 5px rgba(60,40,20,.3);transition:transform .12s}
-.ls-add:active{transform:scale(.88)}
-#dList{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;
-  align-content:start;padding:2px 2px 6px}
-#dList::-webkit-scrollbar{width:12px}
-#dList::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:7px}
-#dList::-webkit-scrollbar-thumb{background:#dcb87e;border-radius:7px;border:2px solid #f8eed6}
-.dcard{background:#fffdf6;border-radius:6px;padding:7px 8px 8px;box-shadow:0 2px 6px rgba(80,55,25,.2);
-  display:flex;flex-direction:column;gap:3px;text-align:left;transition:transform .12s}
+/* 封面：整张美术封面 assets/ui/diary-cover.png（标题/圆窗/锁扣全在图里） */
+.pg-cover{position:absolute;inset:0;z-index:2;cursor:pointer}
+.cv-img{width:100%;height:100%;object-fit:contain;display:block}
+.cv-hint{position:absolute;left:0;right:0;bottom:3.5%;text-align:center;font-size:10.5px;color:#f0d9a8;
+  letter-spacing:3px;text-shadow:0 1px 4px rgba(60,20,10,.75);animation:cvH 1.6s ease-in-out infinite}
+@keyframes cvH{0%,100%{opacity:.5}50%{opacity:1}}
+/* 历史列表：内页底板 assets/ui/diary-page.png（书脊+纸面+猫插画+底部翻页胶囊全在图里） */
+.pg-list{position:absolute;inset:0;z-index:1;flex-direction:column;
+  background:url("assets/ui/diary-page.png") center/100% 100% no-repeat;
+  padding:31% 13.4% 12.5% 12.6%}
+.d-add{position:absolute;top:calc(6% + 10px);right:calc(7% + 20px);width:26%;transition:transform .12s}
+.d-add img{width:100%;display:block}
+.d-add:active{transform:scale(.93)}
+#dList{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  align-content:start;padding:0}
+#dList::-webkit-scrollbar{width:0}
+.dcard{position:relative;aspect-ratio:689/472;border-radius:10px;overflow:hidden;
+  background:url("assets/ui/diary-card.png") center/100% 100% no-repeat;
+  display:flex;align-items:stretch;text-align:left;transition:transform .12s}
 .dcard:active{transform:scale(.96)}
-.dcard .dd{font-size:10.5px;color:#8a7052;font-weight:700}
-.dcard .ds{font-size:11px;line-height:1.55;color:#4a3826;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.dcard .dfoot{display:flex;align-items:center;justify-content:flex-end;margin-top:2px}
-.dcard .dm{font-size:15px}
-.pgr{display:flex;align-items:center;justify-content:center;gap:12px;padding-top:7px}
-.pgr .pn{width:26px;height:26px;color:#8a6b4a;font-size:17px;font-weight:800;display:grid;place-items:center}
-.pgr .pn:disabled{opacity:.32}
-#dPage{font-size:12px;font-weight:800;color:#5a4632}
-.sortB{font-size:11px;font-weight:700;color:#7a6248;padding:3px 9px;border:1px solid #d2b98c;border-radius:12px;background:#fffdf4}
-/* 写日记页（原版式）+ 右下「写完了」保存 */
-.pg-write{position:absolute;inset:0;z-index:1;padding:40px 12px 12px 20px;flex-direction:column}
-.b-head{display:flex;align-items:center;gap:9px;padding:12px 60px 4px 24px}
-.b-head img{width:42px;height:42px;border-radius:50%;border:2.5px solid #fff;background:#fdf6e3;object-fit:cover;
-  box-shadow:0 2px 6px rgba(60,40,20,.25);transform:rotate(-4deg)}
-.b-head .date{flex:1;font-size:15px;font-weight:700;color:#5a4632;border-bottom:2px solid #d9c39a;padding-bottom:3px;outline:none;min-width:0}
-.wxBtn{width:30px;height:30px;border-radius:50%;background:#fffdf4;border:1.5px solid #c9a55c;
-  font-size:15px;display:grid;place-items:center;box-shadow:0 2px 5px rgba(60,40,20,.2)}
-.b-body{flex:1;min-height:0;overflow-y:auto;margin:2px 12px 4px 20px;padding:2px 8px 8px 6px;
-  font-size:13.5px;line-height:2.1;color:#4a3826;outline:none;cursor:text;
-  background:repeating-linear-gradient(transparent,transparent calc(2.1em - 1px),rgba(160,130,90,.38) calc(2.1em - 1px),rgba(160,130,90,.38) 2.1em);
+.dnum{flex:0 0 30%;display:flex;align-items:center;justify-content:center;
+  font-family:"Bodoni MT",Didot,"Playfair Display",Georgia,"Times New Roman",serif;
+  font-weight:700;color:#633328}
+.dnum b{font-size:24px;line-height:1;transform:translateY(-6px)}
+.dnum i{width:1.5px;height:34px;background:#633328;transform:rotate(26deg);margin:0 2px;border-radius:1px}
+.dnum b.d2{font-size:14px;transform:translateY(8px)}
+.dright{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding:15% 9% 8% 0}
+.dcard .dd{font-size:9px;color:#8a7052;font-weight:700;white-space:nowrap;overflow:hidden}
+.dcard .ds{font-size:10px;line-height:1.5;color:#4a3826;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pgr{position:absolute;left:0;right:0;bottom:7.15%;height:26px;pointer-events:none}
+.pgr .pn{position:absolute;top:0;width:auto;height:26px;padding:0;background:none;border:none;pointer-events:auto}
+.pgr .pn img{height:100%;display:block}
+#dPrev{left:calc(50% - 74px)}
+#dNext{right:calc(50% - 74px)}
+.pgr .pn:disabled{opacity:.35}
+#dPage{position:absolute;left:50%;transform:translateX(-50%);bottom:8.75%;font-size:8px;font-weight:800;color:#8a6b4a;min-width:40px;text-align:center}
+.sortB{position:absolute;top:calc(6% + 54px);right:calc(7% + 25px);font-size:10px;font-weight:700;color:#7a6248;padding:2px 8px;border:1px solid #d2b98c;border-radius:11px;background:rgba(255,253,244,.85)}
+/* 写日记页：同内页底板，保存钮正压在图里自带的翻页胶囊上（写页不用翻页器） */
+.pg-write{position:absolute;inset:0;z-index:1;flex-direction:column;
+  background:url("assets/ui/diary-page.png") center/100% 100% no-repeat;
+  padding:29% 8% 12% 16%}
+.b-head{display:flex;align-items:center;gap:7px;padding:0 0 4px}
+.b-head .date{flex:1;font-size:11.5px;font-weight:700;color:#5a4632;border-bottom:2px solid #d9c39a;padding-bottom:2px;outline:none;min-width:0}
+.wxBtn{width:26px;height:26px;flex:none;border-radius:50%;background:#fffdf4;border:1.5px solid #c9a55c;
+  font-size:13px;display:grid;place-items:center;box-shadow:0 2px 5px rgba(60,40,20,.2)}
+.b-body{flex:1;min-height:0;overflow-y:auto;margin:0;padding:2px 4px 6px;
+  font-size:12.5px;line-height:2;color:#4a3826;outline:none;cursor:text;
+  background:repeating-linear-gradient(transparent,transparent calc(2em - 1px),rgba(160,130,90,.35) calc(2em - 1px),rgba(160,130,90,.35) 2em);
   background-attachment:local}
-.b-body .stk{display:inline-block;font-size:20px;transform:rotate(-6deg);margin:0 2px;vertical-align:middle}
-.sec-t{font-size:12.5px;font-weight:800;color:#5a4632;opacity:.85;margin:2px 18px 4px 24px}
-.moods{display:flex;gap:9px;padding:0 16px 6px 24px}
-.mood{font-size:22px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;
+.b-body .stk{display:inline-block;font-size:18px;transform:rotate(-6deg);margin:0 2px;vertical-align:middle}
+.sec-t{font-size:11.5px;font-weight:800;color:#5a4632;opacity:.85;margin:2px 0 3px}
+.moods{display:flex;gap:8px;padding:0 0 2px}
+.mood{font-size:20px;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;
   border:2px solid transparent;transition:all .15s}
 .mood.on{border-color:#c9a55c;background:#fffdf4;transform:scale(1.18);box-shadow:0 3px 8px rgba(90,60,30,.28)}
-.wr-save{position:absolute;right:14px;bottom:12px;z-index:5;height:30px;padding:0 14px;border-radius:16px;
-  background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12;font-size:12.5px;font-weight:800;
-  box-shadow:0 3px 8px rgba(60,40,20,.3);transition:transform .12s}
-.wr-save:active{transform:scale(.92)}
-/* ── 相册面板（批6：照相册页demo 移植，左滑入+真翻页+灯箱） ── */
-#album{position:absolute;left:0;top:8%;bottom:0;width:min(82%,328px);z-index:42;
+.wr-save{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);z-index:5;height:27px;padding:0 18px;border-radius:15px;
+  background:linear-gradient(#a03a2c,#7c2a20);color:#ffe9c4;font-size:11.5px;font-weight:800;
+  box-shadow:0 3px 8px rgba(60,20,10,.4);transition:transform .12s}
+.wr-save:active{transform:translateX(-50%) scale(.92)}
+/* ── 相册面板（批11：切图版，底板=album-panel.png，照片卡=photo-frame.png 叠框） ── */
+#album{position:absolute;left:6%;top:13.5%;height:76%;aspect-ratio:1639/3513;z-index:42;
   transform:translateX(-118%);
   transition:transform .38s cubic-bezier(.22,.9,.32,1);
-  background:linear-gradient(178deg,#fbf3e0 0%,#f6ecd4 55%,#efdfba 100%);
-  border:1px solid #d9c39a;border-left:none;border-radius:0 20px 0 0;
-  box-shadow:8px 0 28px rgba(0,0,0,.42),inset 0 0 0 2px rgba(255,252,240,.6);
-  padding:14px 14px 10px 18px;display:flex;flex-direction:column}
+  background:url(assets/ui/album-panel.png) center/100% 100% no-repeat;
+  filter:drop-shadow(0 14px 30px rgba(0,0,0,.45));
+  padding:16% 5.9% 7.5%;display:flex;flex-direction:column}
 #album.open{transform:translateX(0)}
-.a-back{position:absolute;left:10px;top:12px;width:32px;height:32px;border-radius:50%;
-  color:#8a6b4a;font-size:21px;font-weight:700;display:grid;place-items:center;transition:transform .12s}
-.a-back:active{transform:scale(.88)}
-.a-title{height:32px;line-height:32px;text-align:center;font-size:20px;font-weight:800;
-  color:#5a4632;letter-spacing:6px;padding:0 30px}
-.a-rule{height:9px;position:relative;margin:4px 12px 11px}
-.a-rule::before{content:"";position:absolute;left:6px;right:6px;top:50%;height:1.5px;background:#cdb488}
-.a-rule::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;background:#8a7052;
-  transform:translate(-50%,-50%) rotate(45deg);border-radius:1px}
-#aGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:13px;
-  align-content:start;padding:3px 3px 8px}
+#aGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:14px 12px;
+  align-content:start;padding:2px 2px 10px}
 #aGrid::-webkit-scrollbar{width:14px}
 #aGrid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:8px}
 #aGrid::-webkit-scrollbar-thumb{background:#dcb87e;border-radius:8px;border:2px solid #f8eed6}
-.pcard{position:relative;background:#fffdf6;border-radius:5px;padding:6px 6px 7px;
-  box-shadow:0 3px 8px rgba(80,55,25,.22);display:flex;flex-direction:column;align-items:stretch;
+.pcard{position:relative;background:none;box-shadow:none;display:flex;flex-direction:column;align-items:center;
   transition:transform .15s}
 .pcard:active{transform:scale(.96)}
+.pfr{position:relative;display:block;width:100%;aspect-ratio:666/619}
+.pph{position:absolute;left:13%;top:14%;width:74%;height:71%;object-fit:cover;display:block}
+.pfr-img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .pimg{display:block;aspect-ratio:1/1;overflow:hidden;border-radius:3px;background:#efe4c8}
 .pimg img{width:100%;height:100%;object-fit:cover;display:block}
 .pdate{font-size:10.5px;color:#8a7052;margin:5px 2px 0}
-.pcap{font-size:13px;font-weight:800;color:#5a4632;text-align:center;letter-spacing:1px;margin:2px 0 1px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pcard.newphoto{background:#f6ecd4;border:1.5px dashed #d2b98c;box-shadow:none;
-  align-items:center;justify-content:center;gap:6px;min-height:172px}
-.np-plus{font-size:34px;color:#8a7052;font-weight:700;line-height:1}
-.np-txt{font-size:13.5px;color:#8a7052;font-weight:600;letter-spacing:.5px}
-.a-pager{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 4px}
-.a-arrow{width:30px;height:30px;border-radius:50%;color:#8a6b4a;font-size:20px;font-weight:700;
-  display:grid;place-items:center;transition:transform .12s}
+.pcap{font-size:11.5px;font-weight:800;color:#6d3a2a;text-align:center;letter-spacing:1px;margin-top:4px;
+  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard.newphoto{width:100%;aspect-ratio:669/718;align-self:start;
+  background:url(assets/ui/album-add.png) center/100% 100% no-repeat}
+.a-pager{display:flex;align-items:center;justify-content:center;gap:30px;padding:8px 0 2px}
+.a-arrow{display:grid;place-items:center;padding:4px;transition:transform .12s}
+.a-arrow img{height:18px;display:block}
 .a-arrow:active{transform:scale(.88)}
 .a-arrow:disabled{opacity:.32}
-#aCount{font-size:15px;font-weight:800;color:#5a4632;letter-spacing:1px}
+#aCount{font-size:13px;font-weight:800;color:#6d3a2a;letter-spacing:1px}
 #lb{position:absolute;inset:0;z-index:43;background:rgba(20,12,5,.74);display:none;place-items:center}
 #lb.show{display:grid}
 .lb-card{width:76%;background:#fffdf6;border-radius:8px;padding:10px 10px 12px;
@@ -398,39 +369,40 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .pl-btn.primary{background:linear-gradient(#e8c883,#c9a55c);border-color:#c9a55c;color:#3a2b12}
 .pl-btn:active{transform:scale(.95)}
 /* ═══ 日历面板（批6.7：照日历界面demoA 移植，左滑入+心形月历+时刻流+备忘卡，z-45） ═══ */
-#cal{position:absolute;left:0;top:8%;bottom:0;width:min(86%,336px);z-index:45;display:flex;flex-direction:column;
-  transform:translateX(-118%);transition:transform .38s cubic-bezier(.22,.9,.32,1);
-  background:linear-gradient(160deg,#33201a,#2a1712 60%,#241210);border-right:2px solid #54342a;
-  border-radius:0 18px 18px 0;box-shadow:8px 0 30px rgba(0,0,0,.5);overflow:hidden}
+#cal{position:absolute;left:3%;top:12%;bottom:10.5%;width:min(64%,246px);z-index:45;display:flex;flex-direction:column;
+  transform:translateX(-130%);transition:transform .38s cubic-bezier(.22,.9,.32,1);--hs:.82;
+  background:url(assets/ui/cal-panel.png) center/100% 100% no-repeat;
+  border-radius:18px;box-shadow:0 14px 36px rgba(0,0,0,.55);overflow:hidden}
 #cal.open{transform:translateX(0)}
-#cal::before{content:"";position:absolute;inset:8px;border:1px solid rgba(217,181,106,.35);border-radius:0 12px 12px 0;pointer-events:none}
 .cback{position:absolute;left:12px;top:12px;z-index:6;width:30px;height:30px;border-radius:50%;
   background:#fffdf4;border:1.5px solid #c9a55c;color:#5a4632;font-size:16px;font-weight:700;
   display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.4);transition:transform .12s}
 .cback:active{transform:scale(.88)}
-.banner{margin:10px 26px 0;padding:9px 0 10px;text-align:center;position:relative;
-  background:linear-gradient(#a03a2c,#7c2a20);border:2px solid #d9b56a;border-radius:10px;
-  box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.4)}
-.banner::before{content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
-  background:repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 8px,transparent 8px 16px)}
-.banner b{position:relative;font-size:21px;font-weight:900;color:#ffe9c4;letter-spacing:10px;text-indent:10px;text-shadow:0 1px 0 #4a140e}
-.banner i{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%) rotate(45deg);width:13px;height:13px;
-  background:#7c2a20;border-right:2px solid #d9b56a;border-bottom:2px solid #d9b56a}
-.ctabs{display:flex;justify-content:center;gap:8px;padding:18px 12px 10px}
-.ctab{font-size:12.5px;font-weight:800;color:#e8cfa8;letter-spacing:2px;padding:7px 16px;border-radius:14px;
-  border:1.5px solid rgba(217,181,106,.4);transition:all .15s}
-.ctab.on{background:#fffdf4;color:#5a4632;border-color:#d9b56a;box-shadow:0 2px 6px rgba(0,0,0,.35)}
-.ctab.on::after{content:"▾";display:block;text-align:center;color:#c9a55c;font-size:9px;line-height:1;margin-top:-1px}
+/* 页签三钮（日/周/月，图一示意）：暗棕卡图标在上文字在下；选中=金描边+猩红底+白字+底部小金尖（「日历」横幅已烧死在底框图里，旧 .banner 退役） */
+.ctabs{display:flex;justify-content:center;gap:8px;padding:calc(33% + 6px) 16px 8px;position:relative;left:-5px} /* 横幅间隙≈12px（再上移8px）+整行左移5px（用户目检） */
+.ctab{flex:1;max-width:84px;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;
+  padding:8px 0 7px;border-radius:12px;font-size:10.5px;font-weight:800;color:#e8cfa8;letter-spacing:1px;
+  background:linear-gradient(160deg,#43302a,#382520);border:2px solid #5c3f30;
+  box-shadow:inset 0 1px 0 rgba(255,235,190,.12),0 3px 8px rgba(0,0,0,.35);transition:all .15s}
+.ctab i{font-style:normal;font-size:15px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.ctab:active{transform:scale(.94)}
+.ctab.on{background:linear-gradient(160deg,#a83b2c,#7c2a20);border-color:#f0d9a8;color:#fff6e0;
+  box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.22),0 3px 10px rgba(0,0,0,.45)}
+.ctab.on::after{content:"";position:absolute;left:50%;bottom:-6.5px;width:11px;height:11px;transform:translateX(-50%) rotate(45deg);
+  background:#7c2a20;border-right:2px solid #f0d9a8;border-bottom:2px solid #f0d9a8}
 /* 心形月历：心形=clip-path，发光用父级 filter（clip 内会被裁） */
-.cgrid{padding:2px 14px 0}
-.cweek{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10.5px;color:#c9a55c;font-weight:700;padding-bottom:2px}
+/* 三视图模块框（②月历/③备忘切图未到，先用临时暗红金边框占位） */
+.cgrid{padding:2px 4px 0}
+#vMonth,#vWeek,#vDay{margin:8px 18px 0;padding:8px 6px 6px;border-radius:14px;position:relative;left:-5px;
+  background:rgba(52,28,22,.55);border:2px solid rgba(224,185,106,.45);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.cweek{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:9.5px;color:#c9a55c;font-weight:700;padding-bottom:1px}
 .cweek b:nth-child(6),.cweek b:nth-child(7){color:#e06a55}
 .crow{display:grid;grid-template-columns:repeat(7,1fr)}
-.day{position:relative;height:44px}
-.day .h{position:absolute;left:50%;top:50%;width:34px;height:31px;transform:translate(-50%,-58%);display:block;transition:transform .15s;
+.day{position:relative;height:37px}
+.day .h{position:absolute;left:50%;top:50%;width:34px;height:31px;transform:translate(-50%,-58%) scale(var(--hs,1));display:block;transition:transform .15s;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45));
   clip-path:path("M17,31 C17,31 1.5,19.5 1.5,10.5 A8.2,8.2 0 0 1 17,7.6 A8.2,8.2 0 0 1 32.5,10.5 C32.5,19.5 17,31 17,31 Z");
   background:#43261e}
-.day .h b{position:absolute;left:0;right:0;top:7px;text-align:center;font-size:11.5px;font-weight:800;color:#8f6f5a}
+.day .h b{position:absolute;left:0;right:0;top:6px;text-align:center;font-size:10px;font-weight:800;color:#8f6f5a}
 .day.ev{filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 .day.ev .h{background:#a03a2c}
 .day.ev .h b{color:#ffe9c4}
@@ -438,55 +410,70 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .day.today .h{background:linear-gradient(160deg,#f0d9a8,#d9b56a)}
 .day.today .h b{color:#6b3a20}
 /* 选中态：深一度圆圈框住日期 */
-.day.sel::before{content:"";position:absolute;left:50%;top:50%;width:40px;height:40px;border-radius:50%;
+.day.sel::before{content:"";position:absolute;left:50%;top:50%;width:36px;height:36px;border-radius:50%;
   transform:translate(-50%,-58%);border:2px solid #e8c883;background:rgba(0,0,0,.22);box-shadow:inset 0 0 6px rgba(0,0,0,.3)}
-.day.sel .h{transform:translate(-50%,-58%) scale(1.06)}
-.day:active .h{transform:translate(-50%,-58%) scale(.9)}
-/* 两视图切换（日/月） */
-#vDay{display:none}
-#cal.v-day #vMonth{display:none}
+.day.sel .h{transform:translate(-50%,-58%) scale(calc(var(--hs,1)*1.06))}
+.day:active .h{transform:translate(-50%,-58%) scale(calc(var(--hs,1)*.9))}
+/* 三视图切换（日/周/月）：周视图=本周 7 心 */
+#vDay,#vWeek{display:none}
+#cal.v-day #vMonth,#cal.v-week #vMonth{display:none}
+#cal.v-week #vWeek{display:block}
 #cal.v-day #vDay{display:block}
 #cal.v-day .mrows{display:none}
 #cal.v-day .clegend{display:none}
-/* 日视图：竖版时刻流 */
+/* 周视图：竖排日卡（一天一卡，点卡展开全部；D 同款竖列节奏） */
+.wrow{display:flex;flex-direction:column;gap:7px;padding:2px 0}
+.wcard{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;border-radius:12px;
+  background:#fbf3df;color:#4a3826;box-shadow:0 2px 7px rgba(0,0,0,.32);text-align:left;transition:transform .12s}
+.wcard:active{transform:scale(.98)}
+.wcard .whd{flex:0 0 46px;text-align:center;border-right:1px solid rgba(160,58,44,.2);padding-right:8px}
+.wcard .wwd{display:block;font-size:9.5px;font-weight:800;color:#7c2a20}
+.wcard .wdn{display:block;font-size:15px;font-weight:900;color:#4a3826;line-height:1.2}
+.wcard .wbd{flex:1;min-width:0}
+.wcard .wcn{display:inline-block;font-size:8.5px;font-weight:800;color:#ffe9c4;background:linear-gradient(160deg,#a03a2c,#7c2a20);
+  border-radius:7px;padding:1px 6px;margin-bottom:2px}
+.wcard .wpv{display:block;font-size:9.5px;color:#6b5138;line-height:1.55}
+.wcard.today{box-shadow:0 0 0 1.5px #d9b56a,0 2px 7px rgba(0,0,0,.32)}
+.wcard.open{box-shadow:0 0 0 1.5px #c9a55c,0 3px 9px rgba(0,0,0,.35);background:#fffdf6}
+.wcard .wmore{flex:none;font-size:8.5px;color:#8a7052;font-weight:700}
+/* 日视图：早晚分段（☀️上午/🌤️下午/🌙晚上/随时，D 方案落地） */
 .dday{display:flex;align-items:center;justify-content:center;gap:22px;padding:12px 0 8px}
 .dnav{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(217,181,106,.5);color:#e8cfa8;font-size:16px;
   display:grid;place-items:center;background:rgba(255,255,255,.04);transition:transform .12s}
 .dnav:active{transform:scale(.9)}
 .dhead .dhd{font-size:15px;font-weight:900;color:#f0e6cc;letter-spacing:1px}
-.dtline{position:relative;padding:4px 16px 10px}
-.titem{position:relative;padding:7px 0}
-.titem::before{content:"";position:absolute;left:60px;top:0;bottom:0;width:2px;background:rgba(217,181,106,.28)}
-.titem:last-child::before{bottom:auto;height:50%}
-.ttime{position:absolute;left:0;top:50%;transform:translateY(-50%);width:46px;text-align:center;padding:3px 0;
-  border-radius:9px;background:rgba(240,217,168,.14);border:1px solid rgba(217,181,106,.38);
-  color:#e8cfa8;font-size:10.5px;font-weight:800;z-index:1}
-.tdot{position:absolute;left:56px;top:50%;transform:translateY(-50%);width:11px;height:11px;border-radius:50%;
-  background:#2a1712;border:2.5px solid #c9a55c;z-index:1}
-.tcard{margin-left:82px;width:calc(100% - 82px);display:flex;align-items:center;gap:9px;padding:9px 10px;
-  border-radius:13px;background:#fbf3df;color:#4a3826;box-shadow:0 2px 7px rgba(0,0,0,.32);
+.dtline{position:relative;padding:4px 14px 8px}
+.dgh{display:flex;align-items:center;gap:7px;margin:8px 2px 6px}
+.dgh b{font-size:11.5px;color:#f0d9a8;letter-spacing:1px}
+.dgh span{font-size:9px;color:#c9a887}
+.dgh i{flex:1;height:1px;background:linear-gradient(90deg,rgba(217,181,106,.45),transparent)}
+.tcard{display:flex;align-items:center;gap:8px;width:100%;margin-bottom:6px;padding:8px 9px;
+  border-radius:11px;background:#fbf3df;color:#4a3826;box-shadow:0 2px 7px rgba(0,0,0,.32);
   text-align:left;transition:transform .12s}
 .tcard:active{transform:scale(.97)}
+.ttime{flex:none;width:40px;text-align:center;padding:2px 0;border-radius:8px;
+  background:rgba(160,58,44,.1);border:1px solid rgba(160,58,44,.32);
+  color:#7c2a20;font-size:9.5px;font-weight:800}
 .tico{width:30px;height:30px;flex:none;border-radius:50%;background:linear-gradient(160deg,#a03a2c,#7c2a20);
   display:grid;place-items:center;font-size:15px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
 .tmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .ttl{font-size:12px;font-weight:800;color:#4a3826;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tsub{font-size:9.5px;font-weight:700;color:#8a7052}
-.tcard.done{opacity:.82}
+.tcard.done{opacity:.78}
 .tcard.done .ttl{text-decoration:line-through;color:#8a7052}
 .ttog{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #c9a55c;color:transparent;
   display:grid;place-items:center;font-size:11px;font-weight:900;transition:all .12s}
 .tcard.done .ttog{background:#c9a55c;color:#fffdf4}
-.dempty{margin:10px 30px 14px;padding:18px 10px;border:1.5px dashed rgba(217,181,106,.4);border-radius:12px;
+.dempty{margin:10px 18px 10px;padding:18px 10px;border:1.5px dashed rgba(217,181,106,.4);border-radius:12px;
   text-align:center;font-size:10.5px;color:rgba(232,207,168,.55)}
 /* 备忘输入框 + 自绘时间滑动选择器（7 项可视+滑动+中央金带） */
-.mform{display:none;gap:6px;padding:8px 14px 2px;align-items:center}
+.mform{display:none;flex-wrap:wrap;gap:5px;padding:8px 10px 12px;align-items:center}
 .mform.show{display:flex}
 .mform input{min-width:0;height:30px;border:1.5px solid #c9a55c;border-radius:9px;background:#fffdf8;padding:0 6px;
   font-size:12px;color:#4a3826;outline:none}
 .mform input:focus{border-color:#a03a2c}
-.tsel{width:52px;height:30px;flex:none;border:1.5px solid #c9a55c;border-radius:9px;background:#fffdf8;
-  color:#4a3826;font-size:12.5px;font-weight:800;text-align:center;letter-spacing:2px;transition:transform .12s}
+.tsel{width:46px;height:28px;flex:none;border:1.5px solid #c9a55c;border-radius:9px;background:#fffdf8;
+  color:#4a3826;font-size:12px;font-weight:800;text-align:center;letter-spacing:1px;transition:transform .12s}
 .tsel:active{transform:scale(.94)}
 .tsep{font-style:normal;font-weight:900;color:#8a7052;flex:none}
 .tpick{display:none;position:absolute;left:10px;right:10px;bottom:8px;z-index:6;background:#fffdf6;
@@ -504,25 +491,24 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   color:#6b5642;scroll-snap-align:center}
 .topt.on{color:#3a2d20}
 .topt:active{background:rgba(201,165,92,.22)}
-#mTxt{flex:1}
-.mform .mk{width:30px;height:30px;border-radius:50%;flex:none;font-size:13px;font-weight:800;display:grid;place-items:center}
+#mTxt{flex:1 1 100%;order:9;min-width:0}
+.mform .mk{width:28px;height:28px;border-radius:50%;flex:none;font-size:13px;font-weight:800;display:grid;place-items:center}
 #mOk{background:linear-gradient(#a03a2c,#7c2a20);color:#ffe9c4}
 #mNo{border:1.5px solid #c9a55c;color:#8a6b3a;background:#fffdf8}
-.day .paw{position:absolute;left:50%;top:0;transform:translateX(-72%);font-size:11px;pointer-events:none}
-.clegend{display:flex;justify-content:center;gap:16px;padding:6px 0 8px;font-size:10px;color:#c9a55c}
+.day .paw{position:absolute;left:50%;top:0;transform:translateX(-72%);font-size:9px;pointer-events:none}
+.clegend{display:flex;justify-content:center;gap:12px;padding:4px 0 2px;font-size:9px;color:#c9a55c}
 .clegend i{font-style:normal;display:inline-block;width:12px;height:11px;vertical-align:-1px;margin-right:4px;
   clip-path:path("M6,11 C6,11 .5,7 .5,3.8 A2.9,2.9 0 0 1 6,2.7 A2.9,2.9 0 0 1 11.5,3.8 C11.5,7 6,11 6,11 Z")}
 .clegend .lg-ev i{background:#a03a2c}
 .clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
 /* 备忘卡 */
-.memo{flex:1;min-height:0;margin:2px 14px 14px;background:#fbf3df;border:1.5px solid #e0cda2;border-radius:14px;
+.memo{flex:1;min-height:0;margin:10px 18px 20px;position:relative;left:-5px;background:#fbf3df;border:1.5px solid #e0cda2;border-radius:14px;
   box-shadow:0 6px 16px rgba(0,0,0,.4);display:flex;flex-direction:column;overflow:hidden;position:relative}
-.memo .mhead{padding:10px 14px 8px;border-bottom:2px dashed #e0cda2;display:flex;align-items:baseline;gap:8px}
-.memo .mdate{font-size:15px;font-weight:800;color:#5a4632}
-.memo .msub{font-size:10.5px;color:#9a8163}
-.memo .mtitle{flex:1;text-align:right;font-size:11.5px;font-weight:800;color:#7c2a20;letter-spacing:1px}
-.mrows{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 6px}
-.mrow{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:9px 0;border-bottom:1px dashed #e8d5ac;font-size:12.5px;color:#4a3826}
+.memo .mhead{padding:8px 10px 6px;border-bottom:2px dashed #e0cda2;display:flex;align-items:center;gap:8px}
+.memo .mdate,.memo .msub{display:none} /* 图二备忘卡只有标题+添加钮，日期/天气暂隐（模块③切图到位再定稿） */
+.memo .mtitle{flex:1;font-size:12.5px;font-weight:900;color:#5a4632;letter-spacing:2px}
+.mrows{flex:1;min-height:0;overflow-y:auto;padding:4px 12px 6px}
+.mrow{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:8px 0;border-bottom:1px dashed #e8d5ac;font-size:12px;color:#4a3826}
 .mrow:last-child{border-bottom:none}
 .mrow .cb{width:20px;height:20px;border:2px solid #c9a55c;border-radius:6px;background:#fffdf8;flex:none;
   display:grid;place-items:center;color:#7c9b6a;font-size:13px;font-weight:800;transition:all .15s}
@@ -530,10 +516,11 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .mrow.done .mt{color:#9a8163;text-decoration:line-through}
 .mrow .mt{flex:1}
 .mrow .me{font-size:15px}
-.memo .mfoot{padding:8px 14px 12px}
-.madd{width:100%;height:38px;border:2px dashed #c9a55c;border-radius:12px;background:rgba(217,181,106,.12);
-  color:#8a6b3a;font-size:12.5px;font-weight:800;letter-spacing:2px;transition:all .15s}
-.madd:active{transform:scale(.97);background:rgba(217,181,106,.22)}
+/* 添加备忘=头部右侧深棕胶囊（图二：暗底金字+金描边），mfoot 整行退役 */
+.memo .madd{flex:none;height:26px;padding:0 10px;border-radius:13px;border:1.5px solid #c9a55c;
+  background:linear-gradient(160deg,#4a332a,#3a2420);color:#f0d9a8;font-size:10.5px;font-weight:800;letter-spacing:1px;
+  display:flex;align-items:center;gap:4px;transition:all .15s}
+.memo .madd:active{transform:scale(.93)}
 </style>
 </head>
 <body>
@@ -550,9 +537,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <button class="qb qb-save" title="保存布局">保存</button>
   <button class="qb qb-reset" title="重置布局">重置</button>
 </div>
-<!-- 装修底边栏（造景/装修/主题） -->
+<!-- 装修底边栏（批16：切图底板+造景/装修/主题 分类回退） -->
 <div id="decoBar">
-  <div class="bar-edge"><i></i><b></b><i></i><button class="bar-close" id="barClose" title="收起装修面板">▾ 收起</button></div>
   <div id="tabs"></div>
   <div id="subs"></div>
   <div id="grid"></div>
@@ -585,33 +571,22 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- 日记手帐书（批6：三段版 封面→历史→写日记，点右侧菜单「日记本」从左滑入） -->
 <div id="dimVeil" aria-hidden="true"></div>
 <section id="book" class="st-cover" aria-label="日记手帐">
-  <div class="bookmark" aria-hidden="true"></div>
-  <span class="charm" aria-hidden="true">🦊</span>
-  <button class="bback" id="bBack" title="返回">‹</button>
   <div class="pg pg-cover" id="pgCover" title="翻开日记">
-    <div class="cv-frame"><img src="icon/头像框.png" alt="小猫头像"></div>
-    <div class="cv-title"><i>🔥</i>小猫日记<i>☕</i></div>
-    <div class="cv-sub">· 记录点滴 ·</div>
-    <div class="cv-hint">点一下翻开</div>
-    <button class="cv-next" id="cvNext" title="翻开日记">›</button>
+    <img class="cv-img" src="assets/ui/diary-cover.png" alt="小猫日记">
+    <div class="cv-hint">· 点一下翻开 ·</div>
   </div>
   <div class="pg pg-list">
-    <div class="ls-head">
-      <img src="icon/头像框.png" alt="猫头贴纸">
-      <div class="tt">写日记</div>
-      <button class="ls-add" id="dAdd" title="写今天的日记">＋</button>
-    </div>
+    <button class="d-add" id="dAdd" title="写今天的日记"><img src="assets/ui/btn-diary-write.png" alt="写日记"></button>
     <div id="dList"></div>
+    <span id="dPage">1 / 1 页</span>
     <div class="pgr">
-      <button class="pn" id="dPrev" title="上一页">‹</button>
-      <button class="sortB" id="dSort" title="切换排序">⇅ 倒序</button>
-      <span id="dPage">1 / 1 页</span>
-      <button class="pn" id="dNext" title="下一页">›</button>
+      <button class="pn" id="dPrev" title="上一页"><img src="assets/ui/arrow-l.png" alt="上一页"></button>
+      <button class="pn" id="dNext" title="下一页"><img src="assets/ui/arrow-r.png" alt="下一页"></button>
     </div>
+    <button class="sortB" id="dSort" title="切换排序">⇅ 倒序</button>
   </div>
   <div class="pg pg-write">
     <div class="b-head">
-      <img src="icon/头像框.png" alt="猫头贴纸">
       <div class="date" id="dateLine" contenteditable="true" spellcheck="false">202X年 10月22日 (周五)</div>
       <button class="wxBtn" id="wxBtn" title="换天气">☀️</button>
     </div>
@@ -621,16 +596,13 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <button class="wr-save" id="dSaveE">写完了 ✓</button>
   </div>
 </section>
-<!-- 相册面板（批6：照相册页demo 移植，点右侧菜单「相册」左滑入） -->
+<!-- 相册面板（批11：切图版，底板整图，点暗罩/面板外收起） -->
 <section id="album" aria-label="相册">
-  <button class="a-back" id="aBack" title="收起相册">‹</button>
-  <div class="a-title">相册</div>
-  <div class="a-rule" aria-hidden="true"></div>
   <div id="aGrid"></div>
   <div class="a-pager">
-    <button class="a-arrow" id="aPrev" title="上一页">‹</button>
-    <div id="aCount">1/15</div>
-    <button class="a-arrow" id="aNext" title="下一页">›</button>
+    <button class="a-arrow" id="aPrev" title="上一页"><img src="assets/ui/arrow-al.png" alt="上一页"></button>
+    <div id="aCount">1/2</div>
+    <button class="a-arrow" id="aNext" title="下一页"><img src="assets/ui/arrow-ar.png" alt="下一页"></button>
   </div>
 </section>
 <div id="lb" aria-label="照片预览">
@@ -698,14 +670,17 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- 日历面板（批6.7：照日历界面demoA 移植，点 HUD「日历」左滑入） -->
 <section id="cal" aria-label="日历面板">
   <button class="cback" id="cBack" title="收起日历">‹</button>
-  <div class="banner"><b>日历</b><i aria-hidden="true"></i></div>
   <nav class="ctabs">
-    <button class="ctab" data-v="day">日视图</button>
-    <button class="ctab on" data-v="month">月视图</button>
+    <button class="ctab" data-v="day"><i aria-hidden="true">☀️</i>日视图</button>
+    <button class="ctab" data-v="week"><i aria-hidden="true">🗓️</i>周视图</button>
+    <button class="ctab on" data-v="month"><i aria-hidden="true">📅</i>月视图</button>
   </nav>
   <div id="vMonth">
     <div class="cweek"><b>一</b><b>二</b><b>三</b><b>四</b><b>五</b><b>六</b><b>日</b></div>
     <div class="crow" id="cGrid"></div>
+  </div>
+  <div id="vWeek">
+    <div class="wrow" id="wGrid"></div>
   </div>
   <div id="vDay">
     <div class="dday">
@@ -721,6 +696,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
       <span class="mdate" id="mDate">—</span>
       <span class="msub" id="mWx">晴</span>
       <span class="mtitle">备忘事项</span>
+      <button class="madd" id="mAdd">＋ 添加备忘</button>
     </div>
     <div class="mrows" id="mRows"></div>
     <div class="mform" id="mForm">
@@ -733,7 +709,6 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
       <button class="mk" id="mNo" title="取消">✕</button>
     </div>
     <div class="tpick" id="tPick" aria-hidden="true"><div class="tgrad"></div><div class="tlist" id="tList"></div></div>
-    <div class="mfoot"><button class="madd" id="mAdd">＋ 添加备忘</button></div>
   </div>
 </section>
 <div id="plWrap" aria-hidden="true">
@@ -1119,7 +1094,7 @@ stage.addEventListener("pointerdown",function(e){
   try{stage.setPointerCapture(e.pointerId);}catch(err){}
   pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pts.size===2){vdrag=null;pinch0=pinchSnap();} /* 第二根手指落下：转捏合模式 */
-  else if(pts.size===1){vdrag={id:e.pointerId,x:e.clientX,y:e.clientY,px:VPX,py:VPY,moved:false};}
+  else if(pts.size===1){vdrag={id:e.pointerId,x:e.clientX,y:e.clientY,px:VPX,py:VPY,moved:false,onCv:e.target===cv};}
 });
 stage.addEventListener("pointermove",function(e){
   if(pts.has(e.pointerId))pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -1136,7 +1111,7 @@ stage.addEventListener("pointermove",function(e){
 function endPtr(e){
   pts.delete(e.pointerId);
   if(pts.size<2)pinch0=null;
-  /* wasTap 单击预留期2 角色走位；装修模式点空白清选择已由 canvas handler 完成 */
+  if(vdrag&&!vdrag.moved&&vdrag.onCv&&decoMode){vdrag=null;setDecoMode(false);return;} /* 批15 决策④：装修面板展开时轻点房间空白=收起面板 */
   if(vdrag&&e.pointerId===vdrag.id)vdrag=null;
 }
 stage.addEventListener("pointerup",endPtr);
@@ -1408,7 +1383,11 @@ var ENTRIES=[
   {key:"2026-10-20",wx:"⛅",mood:1,body:"整理了房间，翻出很多旧照片，每一张都想再看看，时间过得真快呀。"},
   {key:"2026-10-19",wx:"🌧️",mood:5,body:"下了一整天雨，没出门，跟国际象棋较了一下午劲，还是输了三盘。"}
 ];
-var dSt={mood:-1},draft={mood:-1,body:""},curEdit=null,dpage=0,dWxi=0,descSort=true,PER=4;
+var PRESETS=[
+  {key:"2026-10-18",wx:"☁️",mood:2,body:"翻出了旧相册，一张一张看过去，好多事都还记得清清楚楚的。"},
+  {key:"2026-10-17",wx:"☀️",mood:3,body:"小屋来了一位客人，聊了好久，临走时还送了我们一小盆雏菊。"}
+];
+var dSt={mood:-1},draft={mood:-1,body:""},curEdit=null,dpage=0,dWxi=0,descSort=true,PER=6;
 function fullToday(){var d=new Date(),w=["周日","周一","周二","周三","周四","周五","周六"];return d.getFullYear()+"年 "+(d.getMonth()+1)+"月 "+d.getDate()+"日 ("+w[d.getDay()]+")"}
 function todayKey(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function fmtKey(k){var p=k.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]),w=["周日","周一","周二","周三","周四","周五","周六"];return (+p[1])+"月"+(+p[2])+"日 "+w[d.getDay()]}
@@ -1441,9 +1420,13 @@ function renderList(){
   list.slice(dpage*PER,dpage*PER+PER).forEach(function(e){
     var c=document.createElement("button");
     c.className="dcard";
-    c.innerHTML='<div class="dd">'+(e.dd?shortDate(e.dd):fmtKey(e.key))+' · '+e.wx+'</div>'
-      +'<div class="ds">'+(e.body||"").replace(/<[^>]*>/g," ")+'</div>'
-      +'<div class="dfoot"><span class="dm">'+(MOODS[e.mood]||"😌")+'</span></div>';
+    var m=(e.dd?shortDate(e.dd):fmtKey(e.key)).match(/(\d+)月\s*(\d+)日/);
+    var ym=e.dd&&/(\d{4})年/.exec(e.dd),yr=ym?ym[1]:String(e.key).split("-")[0];
+    var dot=yr+"."+(m?("0"+m[1]).slice(-2):"00")+"."+(m?("0"+m[2]).slice(-2):"00");
+    /* 大日期位暂时留空（用户指示），保留占位宽度待后续放图 */
+    c.innerHTML='<div class="dnum" aria-hidden="true"></div>'
+      +'<div class="dright"><div class="dd">'+dot+'</div>'
+      +'<div class="ds">'+(e.body||"").replace(/<[^>]*>/g," ")+'</div></div>';
     c.addEventListener("click",function(){openEntry(e.key)});
     box.appendChild(c);
   });
@@ -1484,12 +1467,6 @@ $("dSaveE").addEventListener("click",function(){ /* 右下「写完了」：保�
   saveAll();dpage=0;renderList();setView("list");
   toast(e.key===todayKey()?"日记已收进册子":"日记已更新");
 });
-/* bBack 语义：写→列表，列表→封面，封面→合书 */
-$("bBack").addEventListener("click",function(){
-  if(bookEl.classList.contains("st-write")){draft.mood=dSt.mood;draft.body=$("dBody").innerHTML;setView("list");renderList();}
-  else if(bookEl.classList.contains("st-list")){setView("cover")}
-  else{closeDiary()}
-});
 function saveAll(){
   try{localStorage.setItem(DIAKEY,JSON.stringify({entries:ENTRIES,draft:draft}))}catch(e){}
 }
@@ -1503,6 +1480,7 @@ function loadAll(){
 }
 function initDiary(){
   loadAll();
+  PRESETS.forEach(function(p){var has=false;for(var i=0;i<ENTRIES.length;i++)if(ENTRIES[i].key===p.key){has=true;break}if(!has)ENTRIES.push(p)});
   $("dateLine").textContent=fullToday();
   renderMoods();
 }
@@ -1530,11 +1508,11 @@ var A_PER=8,A_PAGE=0;
 function aPageCount(){return Math.ceil((PHOTOS.length+1)/A_PER)}
 function aRender(){
   var g=$("aGrid");g.innerHTML="";
-  if(A_PAGE===0){ /* 首格=New Photo 占位（拍照功能二期） */
+  if(A_PAGE===0){ /* 首格=New Photo 占位（加号=开发中提示，用户拍板：相册入口不做拍照） */
     var np=document.createElement("button");
     np.className="pcard newphoto";np.id="npCard";
-    np.innerHTML='<span class="np-plus">＋</span><span class="np-txt">New Photo</span>';
-    np.addEventListener("click",function(){openPhoto(true)}); /* New Photo=拍照入口（批6.6） */
+    np.setAttribute("aria-label","New Photo"); /* 添加照片卡整图做底，＋号烧在图里 */
+    np.addEventListener("click",function(){toast("开发中~")}); /* 相册加号=占位提示（用户拍板：此处不做拍照，拍照走底部 dock 拍照钮） */
     g.appendChild(np);
   }
   var first=A_PAGE===0?0:A_PER-1;
@@ -1544,15 +1522,16 @@ function aRender(){
       var p=PHOTOS[i];
       var b=document.createElement("button");
       b.className="pcard";b.setAttribute("data-i",i);
-      b.innerHTML='<span class="pimg"><img src="'+p.src+'" alt="'+p.t+'"></span>'
-        +'<span class="pdate">'+p.d+'</span><span class="pcap">'+p.t+'</span>';
+      b.innerHTML='<span class="pfr"><img class="pph" src="'+p.src+'" alt="'+p.t+'">'
+        +'<img class="pfr-img" src="assets/ui/photo-frame.png" alt=""></span>'
+        +'<span class="pcap">'+p.t+'</span>';
       b.addEventListener("click",function(){aOpenLb(i)});
       g.appendChild(b);
     })(i);
   }
   $("aPrev").disabled=A_PAGE===0;
   $("aNext").disabled=A_PAGE>=aPageCount()-1;
-  $("aCount").textContent=(A_PAGE+1)+"/"+PHOTOS.length; /* 页码=当前页/总照片数（1/15→2/15） */
+  $("aCount").textContent=(A_PAGE+1)+"/"+aPageCount(); /* 页码=当前页/总页数（用户拍板：如实写 1/2、2/2，不是照片数） */
 }
 function aOpenLb(i){
   var p=PHOTOS[i];
@@ -1568,7 +1547,6 @@ function closeAlbum(){albumEl.classList.remove("open");syncVeil();aCloseLb();}
 $("aPrev").addEventListener("click",function(){if(A_PAGE>0){A_PAGE--;aRender()}});
 $("aNext").addEventListener("click",function(){if(A_PAGE<aPageCount()-1){A_PAGE++;aRender()}});
 $("lb").addEventListener("click",function(){aCloseLb()});
-$("aBack").addEventListener("click",function(){closeAlbum()});
 /* 点面板外右侧空白也可关（demo 同款）；灯箱点击只关灯箱不收面板 */
 document.addEventListener("click",function(e){
   if(!albumEl.classList.contains("open"))return;
@@ -1971,7 +1949,7 @@ $("dCharImg").addEventListener("click",function(){
   dSay(dPickLine(DCLICK_LINES));
 });
 dLoadState();
-/* ═══ 装修底边栏（期1.5 批2）：造景=家具卡真实摆放 / 装修=墙地配色卡 / 主题=配色预设一键换 ═══ */
+/* ═══ 装修底边栏（批16）：造景/装修/主题 三页签分类回退，底板=切图面板（批15 槽位擦除成果保留） ═══ */
 var curTab=0,curSub=0;
 var CAT=[
   {label:"造景",subs:[
@@ -2023,61 +2001,66 @@ function renderGrid(){
   var sub=CAT[curTab].subs[curSub];
   if(sub.ids){ /* 家具卡：点击=真实放进房间 */
     sub.ids.forEach(function(id){
-      var def=DEF_MAP[id];if(!def)return;
-      var card=document.createElement("div");card.className="card";
-      var img=document.createElement("div");img.className="cimg";
-      var im=document.createElement("img");im.src=def.src;im.alt=def.name;img.appendChild(im);
-      var nm=document.createElement("div");nm.className="cname";nm.textContent=def.name;nm.title=def.name;
-      var ow=document.createElement("div");ow.className="cown";ow.dataset.id=id;ow.textContent="拥有：0";
-      card.appendChild(img);card.appendChild(nm);card.appendChild(ow);
-      card.addEventListener("click",function(){
-        var it=addFurniture(id);
-        if(it){select(it);updateOwned();toast("「"+def.name+"」已放进房间，拖到喜欢的位置");}
-      });
-      elGrid.appendChild(card);
+      var c2=makeFurnCard(id);
+      if(c2)elGrid.appendChild(c2);
     });
   }else if(sub.swatches){ /* 墙面/地板配色卡（墙面=两堵墙一起换；「custom」卡=方案B内嵌双滑条自定义） */
-    var isWall=curTab===1&&curSub===0;
-    sub.swatches.forEach(function(sw){
-      var card=document.createElement("div");card.className="card";
-      var swd=document.createElement("div");swd.className="swatch";
-      var nm=document.createElement("div");nm.className="cname";nm.textContent=sw[1];
-      if(sw[0]==="custom"){ /* 自定义色卡（方案B）：点击展开内嵌双滑条（墙面双墙同换/地板换地板，cCustomApply） */
-        swd.id=isWall?"cCardSw":"cCardSwF";
-        swd.style.background="linear-gradient(135deg,#f5e6d3,#e9c8cf,#3a2430)";
-        swd.style.cssText+=";display:grid;place-items:center;color:#fff;font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)";
-        swd.textContent="🎨";
-        card.appendChild(swd);card.appendChild(nm);
-        card.addEventListener("click",function(){cslTarget=isWall?"wall":"floor";$("cSlid").classList.toggle("open");});
-      }else{
-        swd.style.background=sw[0];
-        card.appendChild(swd);card.appendChild(nm);
-        card.addEventListener("click",function(){
-          if(isWall){
-            setDecor("wallBack",{type:"color",value:sw[0],fb:sw[0]});
-            setDecor("wallLeft",{type:"color",value:sw[0],fb:sw[0]});
-          }else{
-            setDecor("floor",{type:"color",value:sw[0],fb:sw[0]});
-          }
-          toast("已换上「"+sw[1]+"」");
-        });
-      }
-      elGrid.appendChild(card);
-    });
+    sub.swatches.forEach(function(sw){elGrid.appendChild(makeSwCard(sw,curTab===1&&curSub===0));});
   }else if(sub.themes){ /* 主题卡：三色条预览，一键换地板+两墙（主题页签下平铺 4 套） */
-    sub.themes.forEach(function(th){
-      var card=document.createElement("div");card.className="card";
-      var t3=document.createElement("div");t3.className="theme3";
-      [th.theme.back,th.theme.left,th.theme.floor].forEach(function(c2){
-        var i2=document.createElement("i");i2.style.background=c2;t3.appendChild(i2);
-      });
-      var nm=document.createElement("div");nm.className="cname";nm.textContent=th.n;
-      card.appendChild(t3);card.appendChild(nm);
-      card.addEventListener("click",function(){applyTheme(th.theme);toast("主题已切换："+th.n);});
-      elGrid.appendChild(card);
+    sub.themes.forEach(function(th){elGrid.appendChild(makeThemeCard(th));});
+  }
+  updateOwned(); /* 渲染后刷新「拥有：N」 */
+}
+function makeFurnCard(id){ /* 家具卡：点击=真实放进房间 */
+  var def=DEF_MAP[id];if(!def)return null;
+  var card=document.createElement("div");card.className="card";
+  var img=document.createElement("div");img.className="cimg";
+  var im=document.createElement("img");im.src=def.src;im.alt=def.name;img.appendChild(im);
+  var nm=document.createElement("div");nm.className="cname";nm.textContent=def.name;nm.title=def.name;
+  var ow=document.createElement("div");ow.className="cown";ow.dataset.id=id;ow.textContent="拥有：0";
+  card.appendChild(img);card.appendChild(nm);card.appendChild(ow);
+  card.addEventListener("click",function(){
+    var it=addFurniture(id);
+    if(it){select(it);updateOwned();toast("「"+def.name+"」已放进房间，拖到喜欢的位置");}
+  });
+  return card;
+}
+function makeSwCard(sw,isWall){ /* 墙面/地板配色卡；「custom」卡=方案B内嵌双滑条（墙面双墙同换/地板换地板，cCustomApply） */
+  var card=document.createElement("div");card.className="card";
+  var swd=document.createElement("div");swd.className="swatch";
+  var nm=document.createElement("div");nm.className="cname";nm.textContent=sw[1];
+  if(sw[0]==="custom"){
+    swd.id=isWall?"cCardSw":"cCardSwF";
+    swd.style.background="linear-gradient(135deg,#f5e6d3,#e9c8cf,#3a2430)";
+    swd.style.cssText+=";display:grid;place-items:center;color:#fff;font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)";
+    swd.textContent="🎨";
+    card.appendChild(swd);card.appendChild(nm);
+    card.addEventListener("click",function(){cslTarget=isWall?"wall":"floor";$("cSlid").classList.toggle("open");});
+  }else{
+    swd.style.background=sw[0];
+    card.appendChild(swd);card.appendChild(nm);
+    card.addEventListener("click",function(){
+      if(isWall){
+        setDecor("wallBack",{type:"color",value:sw[0],fb:sw[0]});
+        setDecor("wallLeft",{type:"color",value:sw[0],fb:sw[0]});
+      }else{
+        setDecor("floor",{type:"color",value:sw[0],fb:sw[0]});
+      }
+      toast("已换上「"+sw[1]+"」");
     });
   }
-  updateOwned(); /* v22bar2：渲染后刷新「拥有：N」 */
+  return card;
+}
+function makeThemeCard(th){ /* 主题卡：三色条预览，一键换地板+两墙 */
+  var card=document.createElement("div");card.className="card";
+  var t3=document.createElement("div");t3.className="theme3";
+  [th.theme.back,th.theme.left,th.theme.floor].forEach(function(c2){
+    var i2=document.createElement("i");i2.style.background=c2;t3.appendChild(i2);
+  });
+  var nm=document.createElement("div");nm.className="cname";nm.textContent=th.n;
+  card.appendChild(t3);card.appendChild(nm);
+  card.addEventListener("click",function(){applyTheme(th.theme);toast("主题已切换："+th.n);});
+  return card;
 }
 function updateOwned(){ /* v22bar2：「拥有：N」=该家具已在房间里摆放的数量（实时） */
   elGrid.querySelectorAll(".cown").forEach(function(o){
@@ -2091,7 +2074,7 @@ function applyTheme(t){
   setDecor("wallBack",{type:"color",value:t.back,fb:t.back});
   setDecor("wallLeft",{type:"color",value:t.left,fb:t.left});
 }
-$("barClose").addEventListener("click",function(){setDecoMode(false);});
+/* 批15：收起按钮退役——面板展开时轻点房间空白即收起（决策④，见 endPtr 轻点判定） */
 /* v22bar2：网格纵向滚动，滚轮/触摸板原生生效，无需映射 */
 document.querySelector(".qb-save").addEventListener("click",function(){saveState();toast("布局已保存");});
 document.querySelector(".qb-reset").addEventListener("click",function(){
@@ -2167,13 +2150,38 @@ function loadCal(){
 }
 function calSetView(v){
   calView=v;
-  calEl.classList.remove("v-day");
+  calEl.classList.remove("v-day","v-week");
   if(v==="day")calEl.classList.add("v-day");
+  if(v==="week")calEl.classList.add("v-week");
   document.querySelectorAll(".ctab").forEach(function(t){
     t.classList.toggle("on",t.getAttribute("data-v")===v);
   });
   if(v==="month")calRender();
+  if(v==="week")renderWeek();
   if(v==="day")renderDay();
+}
+/* 周视图：竖排日卡（D 同款竖列；点卡选中那天并展开/收起全部事项，selKey 联动月历） */
+var wOpen=null;
+function renderWeek(){
+  var g=$("wGrid");g.innerHTML="";
+  var p=selKey.split("-"),base=new Date(+p[0],+p[1]-1,+p[2]);
+  var monday=new Date(base.getFullYear(),base.getMonth(),base.getDate()-((base.getDay()+6)%7));
+  var wname=["周一","周二","周三","周四","周五","周六","周日"];
+  for(var i=0;i<7;i++){
+    (function(i){
+      var dy=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+i);
+      var key=kOf(dy.getFullYear(),dy.getMonth(),dy.getDate());
+      var rows=EV[key]||[],open=(wOpen===key);
+      var pv=(open?rows:rows.slice(0,2)).map(function(r){return "· "+r.txt}).join("<br>");
+      var b=document.createElement("button");
+      b.className="wcard"+(key===kOf(Y,M,TODAY)?" today":"")+(key===selKey?" sel":"")+(open?" open":"");
+      b.innerHTML='<span class="whd"><span class="wwd">'+wname[i]+(key===kOf(Y,M,TODAY)?" · 今天":"")+(key===PAW?" 🐾":"")+'</span><span class="wdn">'+dy.getDate()+' 日</span></span>'
+        +'<span class="wbd"><span class="wcn">'+rows.length+' 件</span><span class="wpv">'+(pv||"<span style='opacity:.55'>暂无安排</span>")+"</span></span>"
+        +(!open&&rows.length>2?'<span class="wmore">+'+(rows.length-2)+"</span>":"");
+      b.addEventListener("click",function(){wOpen=(wOpen===key?null:key);selKey=key;renderWeek();renderMemo();});
+      g.appendChild(b);
+    })(i);
+  }
 }
 document.querySelectorAll(".ctab").forEach(function(t){
   t.addEventListener("click",function(){calSetView(t.getAttribute("data-v"))});
@@ -2219,22 +2227,28 @@ function renderMemo(){
     box.appendChild(row);
   });
 }
-/* 日视图：竖版时刻流（时刻签+金节点+奶油卡，按时间排序；点卡编辑/点 ✓ 切完成） */
+/* 日视图：早晚分段（☀️上午/🌤️下午/🌙晚上，未定时间归「随时」；点卡编辑/点 ✓ 切完成） */
 function tMin(t){var m=/^(\d{1,2}):(\d{2})$/.exec(t||"");return m?(+m[1])*60+(+m[2]):null}
 function renderDay(){
   var p=selKey.split("-"),dy=new Date(+p[0],+p[1]-1,+p[2]);
   $("dHead").innerHTML='<span class="dhd">'+(dy.getMonth()+1)+"月"+dy.getDate()+"日</span>";
   var list=(EV[selKey]||[]).map(function(it,i){return{it:it,i:i,m:tMin(it.t)}})
     .sort(function(a,b){return (a.m===null?9999:a.m)-(b.m===null?9999:b.m)});
-  var html="";
+  var G=[{n:"☀️ 上午"},{n:"🌤️ 下午"},{n:"🌙 晚上"},{n:"⏳ 随时"}];
+  var counts={a:0,b:0,c:0,x:0};
+  list.forEach(function(o){counts[o.m===null?"x":(o.m<720?"a":(o.m<1080?"b":"c"))]++});
+  var html="",last=null;
   list.forEach(function(o){
-    var it=o.it;
-    html+='<div class="titem"><span class="ttime">'+(it.t||"--:--")+'</span><span class="tdot"></span>'
-      +'<button class="tcard'+(it.done?" done":"")+'" data-i="'+o.i+'" title="'+it.t+" "+it.txt+'">'
+    var it=o.it,gk=o.m===null?"x":(o.m<720?"a":(o.m<1080?"b":"c"));
+    if(gk!==last){last=gk;
+      html+='<div class="dgh"><b>'+G[{a:0,b:1,c:2,x:3}[gk]].n+'</b><span>'+counts[gk]+' 件事</span><i></i></div>';
+    }
+    html+='<button class="tcard'+(it.done?" done":"")+'" data-i="'+o.i+'" title="'+it.t+" "+it.txt+'">'
+      +'<span class="ttime">'+(it.t||"--:--")+'</span>'
       +'<span class="tico">'+(it.e||"📝")+'</span>'
       +'<span class="tmain"><span class="ttl">'+it.txt+'</span>'
       +(it.done?'<span class="tsub">已完成</span>':"")
-      +'</span><span class="ttog" title="标记完成">✓</span></button></div>';
+      +'</span><span class="ttog" title="标记完成">✓</span></button>';
   });
   $("dTl").innerHTML=html||'<div class="dempty">这一天还没有安排 · 点下面「＋ 添加备忘」写一条</div>';
   $("dTl").querySelectorAll(".tcard").forEach(function(c){
