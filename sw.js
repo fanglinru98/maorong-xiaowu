@@ -3,7 +3,7 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v4';
+const CACHE_VER = 'maoor-v5';
 const PRECACHE = [
   './index.html',
   './manifest.json',
@@ -27,7 +27,8 @@ const PRECACHE = [
   './assets/ui/deco-panel.png','./assets/ui/cal-panel.png',
   './assets/ui/diary-cover.png','./assets/ui/diary-page.png','./assets/ui/diary-card.png','./assets/ui/btn-diary-write.png',
   './assets/ui/album-panel.png','./assets/ui/album-add.png','./assets/ui/photo-frame.png',
-  './assets/ui/arrow-l.png','./assets/ui/arrow-r.png','./assets/ui/arrow-al.png','./assets/ui/arrow-ar.png'
+  './assets/ui/arrow-l.png','./assets/ui/arrow-r.png','./assets/ui/arrow-al.png','./assets/ui/arrow-ar.png',
+  './assets/ui/avatar-frame.png','./assets/ui/avatar-face.png'
 ];
 
 /* 安装：预缓存核心文件（单个文件 404 也不影响整体安装） */
