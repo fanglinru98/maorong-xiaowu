@@ -3,7 +3,7 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v6';
+const CACHE_VER = 'maoor-v7';
 const PRECACHE = [
   './index.html',
   './manifest.json',
@@ -20,6 +20,14 @@ const PRECACHE = [
   './assets/2.5d/f282.png','./assets/2.5d/f283.png','./assets/2.5d/f284.png','./assets/2.5d/f285.png',
   './assets/2.5d/f286.png','./assets/2.5d/f287.png','./assets/2.5d/f288.png','./assets/2.5d/f289.png',
   './assets/2.5d/f290.png','./assets/2.5d/f291.png','./assets/2.5d/f292.png',
+  /* 2.5d 家具 v22pack 新增 19 张（f293-f311，工作台家具包上架） */
+  './assets/2.5d/f293.png','./assets/2.5d/f294.png','./assets/2.5d/f295.png','./assets/2.5d/f296.png',
+  './assets/2.5d/f297.png','./assets/2.5d/f298.png','./assets/2.5d/f299.png','./assets/2.5d/f300.png',
+  './assets/2.5d/f301.png','./assets/2.5d/f302.png','./assets/2.5d/f303.png','./assets/2.5d/f304.png',
+  './assets/2.5d/f305.png','./assets/2.5d/f306.png','./assets/2.5d/f307.png','./assets/2.5d/f308.png',
+  './assets/2.5d/f309.png','./assets/2.5d/f310.png','./assets/2.5d/f311.png'
+  /* 家具表（工作台「⬆ 同步到正式版」写出的那份，双击 file:// 打开也要能读） */
+  './assets/furn-pack.js','./assets/furn-pack.json',
   /* HUD 图标 8 张 */
   './icon/头像框.png','./icon/相册.png','./icon/日历.png','./icon/日记.png',
   './icon/设置.png','./icon/装修.png','./icon/换装.png','./icon/拍照.png',
