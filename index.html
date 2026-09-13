@@ -937,7 +937,7 @@ function applyDefSize(){ /* v22sync·A（用户拍板）：并表后自动把"�
     var hit=0;
     if(Math.abs((it.scale||1)-ns)>0.0005){it.scale=ns;hit=1;}
     if(it.wall){ /* 墙件：只跟沿墙宽度，层位 u/v/vh 不动 */
-      if(Math.abs((it.w||1)-nw)>0.0005){it.w=nw;it.u=Math.max(0,Math.min(ROOM.n-it.w,it.u||0));hit=1;}
+      if(Math.abs((it.w||1)-nw)>0.0005){it.w=nw;it.u=Math.max(0,Math.min(ROOM.n-it.w,it.u||0));it.v=wallFreeV(it,it.v||0);hit=1;} /* v22fix：变宽后复核占行，不与旁边挂件叠 */
     }else{
       if(Math.abs((it.w||1)-nw)>0.0005||Math.abs((it.d||1)-nd)>0.0005){it.w=nw;it.d=nd;hit=1;}
       it.gx=Math.max(0,Math.min(ROOM.n-it.w,it.gx));
@@ -948,7 +948,7 @@ function applyDefSize(){ /* v22sync·A（用户拍板）：并表后自动把"�
   }
   for(i=0;i<FURNITURE.length;i++){ /* 收尾：承托件变大/变小后，台上那件装不下就回地面 */
     it=FURNITURE[i];
-    if(it&&it.on&&!shelfCellFits(hostOf(it),it,effGX(it),effGY(it))){shelfDrop(it);ch++;}
+    if(it&&it.on&&(!hostOf(it)||!shelfCellFits(hostOf(it),it,effGX(it),effGY(it)))){shelfDrop(it);ch++;} /* v22fix：宿主没了就直接落回地面（原写法遇悬空引用会 TypeError） */
   }
   if(ch){try{toast("已按家具表更新 "+ch+" 件家具的尺寸");}catch(err){}saveSoon();}
   return ch;
@@ -962,18 +962,29 @@ var W=960,Hc=600,S=0.5,OX=480,OY=200;
 /* ── 等距几何 ── */
 function px(i,j){return OX+ROOM.cw*(i-j)*S;}
 function py(i,j){return OY+ROOM.ch*(i+j)*S;}
+function rgbNum(c){ /* v22fix：#hex 或 hsl(h,s%,l%) → [r,g,b]；其余返回 null（cCustomApply 的滑条写 hsl，原来 shade/mixHex 会算出 rgb(NaN)） */
+  var m=/^hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$/.exec(String(c||""));
+  if(m){
+    var h=+m[1]/360,s2=+m[2]/100,l=+m[3]/100,q2=l<0.5?l*(1+s2):l+s2-l*s2,p2=2*l-q2;
+    var f=function(t){t=(t%1+1)%1;return t<1/6?p2+(q2-p2)*6*t:(t<0.5?q2:t<2/3?p2+(q2-p2)*(2/3-t)*6:p2);};
+    return [Math.round(f(h+1/3)*255),Math.round(f(h)*255),Math.round(f(h-1/3)*255)];
+  }
+  if(/^#[0-9a-fA-F]{3,8}$/.test(String(c||""))){var nn=parseInt(String(c).slice(1),16);return [(nn>>16)&255,(nn>>8)&255,nn&255];}
+  return null;
+}
 function shade(hex,f){
-  var n=parseInt(hex.slice(1),16);
-  var r=Math.min(255,Math.round(((n>>16)&255)*f));
-  var g=Math.min(255,Math.round(((n>>8)&255)*f));
-  var b=Math.min(255,Math.round((n&255)*f));
+  var n=rgbNum(hex);if(!n)n=[0,0,0];
+  var r=Math.min(255,Math.round(n[0]*f));
+  var g=Math.min(255,Math.round(n[1]*f));
+  var b=Math.min(255,Math.round(n[2]*f));
   return "rgb("+r+","+g+","+b+")";
 }
 function mixHex(a,b,t){
-  var na=parseInt(a.slice(1),16),nb=parseInt(b.slice(1),16);
-  var r=Math.round(((na>>16)&255)*(1-t)+((nb>>16)&255)*t);
-  var g=Math.round(((na>>8)&255)*(1-t)+((nb>>8)&255)*t);
-  var bl=Math.round((na&255)*(1-t)+(nb&255)*t);
+  var na=rgbNum(a),nb=rgbNum(b);
+  if(!na)na=[0,0,0];if(!nb)nb=[0,0,0];
+  var r=Math.round(na[0]*(1-t)+nb[0]*t);
+  var g=Math.round(na[1]*(1-t)+nb[1]*t);
+  var bl=Math.round(na[2]*(1-t)+nb[2]*t);
   return "rgb("+r+","+g+","+bl+")";
 }
 var OUTLINE="rgba(122,84,48,.65)"; /* 期1.5 反馈：描边改棕色（原 rgba(45,35,25,.55) 近黑） */
@@ -1110,7 +1121,7 @@ function furnImg(it){
       }catch(err){}
       FIMG[ck]=e;render();
     };
-    im.onerror=function(){FIMG[ck]="err";};
+    im.onerror=function(){delete FIMG[ck];}; /* v22fix：不再永久标 "err"（一次失败断一次图），下帧重新尝试加载 */
     im.src=it.img;
   }
   var v=FIMG[ck];
@@ -1241,6 +1252,7 @@ function shelfPut(it,gx,gy){ /* 拖拽落点 → 决定上不上台面（上台�
   if(h){
     var c=shelfFreeCell(h,it,gx-h.gx,gy-h.gy);
     it.on=h.id;it.su=c[0];it.sv=c[1];
+    it.gx=Math.max(0,Math.min(ROOM.n-it.w,q(h.gx+(c[0]||0))));it.gy=Math.max(0,Math.min(ROOM.n-it.d,q(h.gy+(c[1]||0)))); /* v22fix：台账落地面格（正常读档走 eff 推导看不出，防回绑失败掉在拖动前的旧格） */
     return true;
   }
   it.on=null;it.su=0;it.sv=0;
@@ -1292,8 +1304,8 @@ function glowOf(it){ var g=it&&it.glow; if(!g||!g.c)return null;
   return g; }
 function glowSeed(it){ /* 每盏灯一个固定相位，避免多盏灯同步眨眼 */
   var s=String((it&&it.id)||""),h=0,i;
-  for(i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%997;
-  return h/997*Math.PI*2;
+  for(i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%65521; /* v22fix：997 太小两盏灯会撞相位同眨眼 */
+  return h/65521*Math.PI*2;
 }
 function glowK(g,it){ if(!g||!g.b)return 1; return 0.78+0.22*Math.sin(Date.now()/760+glowSeed(it)); }
 function glowRGBA(hex,a){
@@ -1319,7 +1331,8 @@ function glowSpotPos(it){ /* 光斑落点：地面件=足迹中心；墙灯=灯�
   if(it.wall==="left")return [px(0,it.u+it.w/2),py(0,it.u+it.w/2)];
   if(it.wall)return [px(it.u+it.w/2,0),py(it.u+it.w/2,0)];
   var h4=hugOff(it);
-  return [px(it.gx+it.w/2,it.gy+it.d/2)+h4[0],py(it.gx+it.w/2,it.gy+it.d/2)+h4[1]];
+  var egx=effGX(it),egy=effGY(it); /* v22fix：台上小物光斑跟本体走（it.gx 在上台面后是旧值） */
+  return [px(egx+it.w/2,egy+it.d/2)+h4[0],py(egx+it.w/2,egy+it.d/2)+h4[1]];
 }
 function drawGlowSpot(it){ /* 地面光斑（简化版）：足迹中心一个等距椭圆柔光，随灯色/范围/呼吸一起变 */
   var g=glowOf(it);
@@ -1378,8 +1391,8 @@ function drawItem(it){
         }
       }catch(err){}
     }else{ /* 图片未加载兜底：墙面小色块 */
-      ctx.fillStyle=it.color;ctx.fillRect(wa[0]-20,cy-40,40,40);
-      ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.strokeRect(wa[0]-20,cy-40,40,40);
+      ctx.fillStyle=it.color;ctx.fillRect(wx-20,wy-40,40,40); /* v22fix：兜底块锚到真图同款内容盒锚点，加载期也点得中 */
+      ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.strokeRect(wx-20,wy-40,40,40);
     }
     var gwl=glowOf(it); /* v22glow：墙灯的光晕，圆心略高于灯具底边（灯罩位置），lighter 提亮 */
     if(gwl){
@@ -1492,7 +1505,7 @@ function charBlocked(gx,gy){ /* 家具占地（含外扩）；墙件不挡路；
   for(var i=0;i<FURNITURE.length;i++){
     var it=FURNITURE[i];
     if(it.wall)continue;
-    if(it.on!=null&&it.on>=0)continue;
+    if(hostOf(it))continue; /* v22fix：原 it.on>=0 对字符串恒 false，小物押着宿主足迹重复挡路没问题、但头发丝级足迹外扩会误挡 */
     var x=effGX(it),y=effGY(it);
     if(gx>x-CHAR_GAP&&gx<x+(it.w||1)+CHAR_GAP&&gy>y-CHAR_GAP&&gy<y+(it.d||1)+CHAR_GAP)return true;
   }
@@ -1543,7 +1556,16 @@ function charGreet(ms){ /* v22tut2：打招呼——停下脚步、原地挥手�
 function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概率过去坐，否则随机溜达一格 */
   var c0=Math.floor(CHAR.gx),r0=Math.floor(CHAR.gy),sofa=charSofa(),p,t,c,r;
   if(sofa&&Math.random()<0.45){
-    p=charPath(c0,r0,Math.floor(effGX(sofa)+(sofa.w||1)/2),Math.floor(effGY(sofa)+(sofa.d||1)/2));
+    var sc=Math.floor(effGX(sofa)),sr=Math.floor(effGY(sofa)),sw=Math.ceil(sofa.w||1),sd=Math.ceil(sofa.d||1);
+    var bc=null,br=null,bd=1e9;
+    for(t=0;t<ROOM.n;t++)for(c=0;c<ROOM.n;c++){ /* v22fix：坐点=足迹四边相邻的空格（原目标=足迹中心格，必被沙发占住 → charPath 恒 null，坐姿从不触发） */
+      if(!charCellFree(t,c))continue;
+      var dx2=Math.max(sc-t,0,t-(sc+sw-1)),dy2=Math.max(sr-c,0,c-(sr+sd-1));
+      if(!((dx2===0&&dy2===1)||(dx2===1&&dy2===0)))continue;
+      var nd=Math.abs(t-c0)+Math.abs(c-r0);
+      if(nd<bd){bd=nd;bc=t;br=c;}
+    }
+    if(bc!==null)p=charPath(c0,r0,bc,br);
     if(p&&p.length>1){ CHAR.q=p.slice(1);CHAR.arriveSit=true;CHAR.sit=sofa;charNextSeg(now);return; }
   }
   for(t=0;t<20;t++){
@@ -1849,7 +1871,7 @@ function itemAt(sx,sy){
       var wh=fi2&&fi2.img?ww*(fi2.th/fi2.tw):ww;
       var wid2=(fi2&&fi2.img)?ww*(fi2.tw/fi2.w):ww, hei2=(fi2&&fi2.img)?wid2*fi2.th/fi2.tw:ww;
       var wx2=wa[0]+(it.ox||0)*wid2, wy2=wy+(it.oy||0)*hei2; /* v22sync：跟 drawItem 墙件分支的 ox/oy 对齐 */
-      if(sx>=wx2-ww/2-4&&sx<=wx2+ww/2+4&&sy>=wy2-wh-4&&sy<=wy2+4)return it;
+      if(sx>=wx2-wid2/2-4&&sx<=wx2+wid2/2+4&&sy>=wy2-hei2-4&&sy<=wy2+4)return it; /* v22fix：命中盒与 drawItem 实画同款内容盒（原用足迹口径 ww/wh，裁边素材点不中） */
       continue;
     }
     mx=px(effGX(it)+it.w/2,effGY(it)+it.d/2);
@@ -2039,6 +2061,10 @@ window.addEventListener("pointerup",function(){
   if(calD){calD=null;saveSoon();render();return;} /* v22q 校准结束：落档存档 */
   drag=null;saveSoon();render();
 });
+window.addEventListener("pointercancel",function(){
+  if(calD){calD=null;render();return;} /* v22fix：触摸被系统手势接管时同样收尾，否则 calD/drag 悬挂 → 无按键 mousemove 跟着光标漂移 */
+  drag=null;render();
+});
 /* v22fab：浮动三钮（尺寸/翻转/删除）接线 */
 function copySelected(){ /* v22copy：复制选中件（占格/大小%/翻转/微调/光效/台面高/小物标记 全带走），优先落在原格或台面空格 */
   if(!SEL)return;
@@ -2118,7 +2144,11 @@ $("glIp").addEventListener("click",function(){ if(!SEL)return;var g=glowEnsure()
 })();
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"){select(null);closeSettings();aCloseLb();closePolaroid();closeCal();}
-  else if((e.key==="Delete"||e.key==="Backspace")&&decoMode)removeSelected();
+  else if((e.key==="Delete"||e.key==="Backspace")&&decoMode){
+    var tg2=e.target&&e.target.tagName;
+    if(tg2&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg2))return; /* v22fix：滑条/输入框里按退格只编辑文字，不能静默删掉选中的家具 */
+    if(SEL)removeSelected();
+  }
 });
 stage.addEventListener("wheel",function(e){
   e.preventDefault();
@@ -2476,8 +2506,10 @@ function applyRestore(text){
     }
     return{ok:false,why:"写入本地存储失败，已回滚（浏览器存储可能已满）"};
   }
+  RST_PENDING=true;
   return{ok:true,ver:o.ver,date:typeof o.date==="string"?o.date:"",count:pairs.length};
 }
+var RST_PENDING=false; /* v22fix：存档码/文件恢复后内存是旧态，刷新前不许写档 */
 function showRestoreBar(r){
   var bar=$("restoreBar"),info=$("rstInfo");
   if(!bar||!info)return;
@@ -2574,7 +2606,8 @@ window.__saveHooks={
   encode:saveCodeEncode,parse:saveCodeParse,
   showBar:showRestoreBar,hideBar:hideRestoreBar,
   openCode:openCode,closeCode:closeCode,
-  last:function(){return lastExport;}
+  last:function(){return lastExport;},
+  pending:function(){return RST_PENDING;}
 };
 (function(){ /* 设置档恢复 */
   try{
@@ -2890,7 +2923,9 @@ document.querySelector(".qb-reset").addEventListener("click",function(){
 /* ── 房间布局存档：localStorage 存家具清单（def 引用制） ── */
 var saveT=null;
 function saveSoon(){lampSync();clearTimeout(saveT);saveT=setTimeout(saveState,350);} /* v22lamp：任何变动顺手刷新「一键开灯」文案 */
+function exitSave(){ if(!RST_PENDING)saveState(); } /* v22fix：退出/切后台保底统一入口 */
 function saveState(){
+  if(RST_PENDING)return; /* v22fix：存档码/文件已恢复待刷新时一律不写档，防退出时旧内存盖回新档 */
   try{
     localStorage.setItem("maoor-v22-state-v2",JSON.stringify({
       v:1,zoom:VZ,
@@ -2926,7 +2961,7 @@ function restoreState(){
       it.scale=f.scale||1;it.flip=f.flip||null;it.vh=f.vh||1; /* vh=墙件竖向占几行（老存档缺省 1，行为不变） */
       it.ox=f.ox||0;it.oy=f.oy||0; /* v22sync：资产微调（相对图片宽/高的比例偏移），老存档缺省 0 */
       if(f.foot)it.foot=1; /* v22sync·A：这件在游戏里手动改过占格 → 以后的家具表同步不再覆盖它 */
-      if("glow" in f)it.glow=f.glow||null; /* v22glow：新档以存档为准（含「关掉」的 null）；老档没这字段则沿用家具库预设（提灯自带光效） */
+      if("glow" in f)it.glow=(f.glow===true)?{c:"#ffd27a",s:1.6,i:0.95,b:1,p:1}:((f.glow&&typeof f.glow==="object")?f.glow:null); /* v22fix：老档布尔 true 归一成默认暖黄（原来 glowOf 静默不亮） */
       if("sh" in f)it.sh=Math.max(0,Math.min(6,f.sh||0)); /* v22shelf：台面高（行） */
       if("sm" in f)it.sm=f.sm?1:0;
       if("sw" in f)it.sw=f.sw||null;if("sd" in f)it.sd=f.sd||null; /* v22sync：台面范围（格，null=跟占格一样） */
@@ -2973,7 +3008,9 @@ renderTabs();renderSubs();renderGrid();
 lampSync(); /* v22lamp：进屋默认两盏灯都是灭的，按钮文案=一键开灯 */
 charHome(); /* v22char：进屋就站在最靠门口的空格上 */
 charStart(); /* v22char：进屋就自己溜达（rAF 插值，不用 CSS 过渡） */
-window.addEventListener("beforeunload",saveState);
+window.addEventListener("beforeunload",exitSave); /* v22fix */
+window.addEventListener("pagehide",exitSave); /* v22fix：iOS/微信杀进程收不到 beforeunload */
+document.addEventListener("visibilitychange",function(){if(document.hidden)exitSave();});
 /* ── v8 扭曲系统已按用户要求整体移除（v22fab）：solveH/warpDraw/四角手柄/扭曲工具条全部退役，翻转保留走画布镜像 ── */
 /* ═══ 日历面板（批6.7：照日历界面demoA 移植；月/日两视图+心形月历+时刻流+备忘卡+自绘时间选择器） ═══ */
 var calEl=$("cal"),CALK="maoor-v22-calendar-v1";
@@ -2987,6 +3024,7 @@ EV[kOf(Y,M,TODAY)]=[
 ];
 var PAW=kOf(Y,M,Math.max(1,TODAY-3)),TK=kOf(Y,M,TODAY),selKey=TK,editingIdx=-1;
 var calView="month";
+function escH(s){return String(s==null?"":s).replace(/[&<>"']/g,function(ch){return{"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","'":"&#39;"}[ch]||ch;});} /* v22fix：日历文本进 innerHTML 前统一转义（存档码/存档文件导入可直接写入 EV） */
 function saveCal(){try{localStorage.setItem(CALK,JSON.stringify({ev:EV}))}catch(e){}}
 function loadCal(){
   try{
@@ -3019,7 +3057,7 @@ function renderWeek(){
       var dy=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+i);
       var key=kOf(dy.getFullYear(),dy.getMonth(),dy.getDate());
       var rows=EV[key]||[],open=(wOpen===key);
-      var pv=(open?rows:rows.slice(0,2)).map(function(r){return "· "+r.txt}).join("<br>");
+      var pv=(open?rows:rows.slice(0,2)).map(function(r){return "· "+escH(r.txt)}).join("<br>");
       var b=document.createElement("button");
       b.className="wcard"+(key===kOf(Y,M,TODAY)?" today":"")+(key===selKey?" sel":"")+(open?" open":"");
       b.innerHTML='<span class="whd"><span class="wwd">'+wname[i]+(key===kOf(Y,M,TODAY)?" · 今天":"")+(key===PAW?" 🐾":"")+'</span><span class="wdn">'+dy.getDate()+' 日</span></span>'
@@ -3056,9 +3094,9 @@ function calRender(){
 }
 /* 备忘卡：跟随选中日 */
 function renderMemo(){
-  var d=new Date(Y,M,parseInt(selKey.split("-")[2],10));
+  var kp=selKey.split("-"),d=new Date(+kp[0],(+kp[1]||1)-1,(+kp[2])||1); /* v22fix：从 selKey 三段构造日期，跨月 stepDay 不再回滚到当前月 */
   var w=["周日","周一","周二","周三","周四","周五","周六"];
-  $("mDate").textContent=(M+1)+"月"+d.getDate()+"日（"+w[d.getDay()]+"）";
+  $("mDate").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日（"+w[d.getDay()]+"）";
   var rows=EV[selKey]||[];
   var box=$("mRows");box.innerHTML="";
   if(!rows.length){
@@ -3070,7 +3108,7 @@ function renderMemo(){
   rows.forEach(function(r){
     var row=document.createElement("button");
     row.className="mrow"+(r.done?" done":"");
-    row.innerHTML='<span class="cb" aria-hidden="true"></span><span class="mt">'+r.t+" "+r.txt+'</span><span class="me">'+r.e+'</span>';
+    row.innerHTML='<span class="cb" aria-hidden="true"></span><span class="mt">'+escH(r.t)+" "+escH(r.txt)+'</span><span class="me">'+escH(r.e||"")+'</span>';
     row.addEventListener("click",function(){r.done=!r.done;renderMemo();saveCal();});
     box.appendChild(row);
   });
@@ -3091,10 +3129,10 @@ function renderDay(){
     if(gk!==last){last=gk;
       html+='<div class="dgh"><b>'+G[{a:0,b:1,c:2,x:3}[gk]].n+'</b><span>'+counts[gk]+' 件事</span><i></i></div>';
     }
-    html+='<button class="tcard'+(it.done?" done":"")+'" data-i="'+o.i+'" title="'+it.t+" "+it.txt+'">'
+    html+='<button class="tcard'+(it.done?" done":"")+'" data-i="'+o.i+'" title="'+escH(it.t+" "+it.txt)+'">'
       +'<span class="ttime">'+(it.t||"--:--")+'</span>'
       +'<span class="tico">'+(it.e||"📝")+'</span>'
-      +'<span class="tmain"><span class="ttl">'+it.txt+'</span>'
+      +'<span class="tmain"><span class="ttl">'+escH(it.txt)+'</span>'
       +(it.done?'<span class="tsub">已完成</span>':"")
       +'</span><span class="ttog" title="标记完成">✓</span></button>';
   });
@@ -3295,6 +3333,7 @@ function tutStart(){
   setTimeout(tutNext,450);
 }
 function tutNext(){
+  if(!tutOn)return; /* v22fix：450ms 内点跳过引导后，迟到的 tutNext 不再残留洞/气泡 */
   tutI++;
   if(tutI>=TUT_STEPS.length){tutFinish();return} /* v22tut2：末步之后直接收尾（原「点换装→点小猫」真互动收尾按用户要求取消） */
   tutShow(TUT_STEPS[tutI]);

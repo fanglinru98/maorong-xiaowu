@@ -23,27 +23,8 @@
    "src": "assets/2.5d/f305.png"
   },
   {
-   "fid": "f299",
-   "name": "书架",
-   "cat": "柜子",
-   "w": 1,
-   "d": 2,
-   "h": 40,
-   "scale": 0.735,
-   "ox": 0.02,
-   "oy": -0.06,
-   "flip": null,
-   "sm": 0,
-   "sh": 0,
-   "sw": null,
-   "sd": null,
-   "glow": null,
-   "wall": false,
-   "src": "assets/2.5d/f299.png"
-  },
-  {
    "fid": "f303",
-   "name": "晾衣架",
+   "name": "衣架",
    "cat": "摆件",
    "w": 1,
    "d": 2,
@@ -99,25 +80,6 @@
    "src": "assets/2.5d/f295.png"
   },
   {
-   "fid": "f304",
-   "name": "床边柜",
-   "cat": "柜子",
-   "w": 1,
-   "d": 1,
-   "h": 40,
-   "scale": 0.733,
-   "ox": 0.1932,
-   "oy": -0.1496,
-   "flip": null,
-   "sm": 0,
-   "sh": 0.75,
-   "sw": null,
-   "sd": null,
-   "glow": null,
-   "wall": false,
-   "src": "assets/2.5d/f304.png"
-  },
-  {
    "fid": "f300",
    "name": "电视",
    "cat": "桌台",
@@ -138,7 +100,7 @@
   },
   {
    "fid": "f294",
-   "name": "壁炉",
+   "name": "图壁炉",
    "cat": "摆件",
    "w": 1,
    "d": 1,
@@ -176,7 +138,7 @@
   },
   {
    "fid": "f296",
-   "name": "挂画",
+   "name": "相框",
    "cat": "氛围",
    "w": 2,
    "d": 2,
@@ -197,12 +159,12 @@
    "fid": "f298",
    "name": "红酒方杯",
    "cat": "摆件",
-   "w": 1,
-   "d": 1,
+   "w": 0.25,
+   "d": 0.25,
    "h": 40,
    "scale": 0.3,
    "ox": null,
-   "oy": -0.3,
+   "oy": -0.1,
    "flip": null,
    "sm": 1,
    "sh": 0,
@@ -213,34 +175,15 @@
    "src": "assets/2.5d/f298.png"
   },
   {
-   "fid": "f302",
-   "name": "长桌",
-   "cat": "桌台",
-   "w": 2,
-   "d": 1,
-   "h": 40,
-   "scale": 1.14,
-   "ox": -0.0027,
-   "oy": 0.0446,
-   "flip": null,
-   "sm": 0,
-   "sh": 0.75,
-   "sw": null,
-   "sd": null,
-   "glow": null,
-   "wall": false,
-   "src": "assets/2.5d/f302.png"
-  },
-  {
    "fid": "f297",
-   "name": "留声机",
+   "name": "留音机",
    "cat": "摆件",
-   "w": 1,
-   "d": 1,
+   "w": 0.5,
+   "d": 0.5,
    "h": 40,
-   "scale": 0.539,
+   "scale": null,
    "ox": 0.08,
-   "oy": -0.14,
+   "oy": -0.04,
    "flip": null,
    "sm": 1,
    "sh": 1,
@@ -252,14 +195,14 @@
   },
   {
    "fid": "f306",
-   "name": "玫瑰花盆",
+   "name": "玫瑰花",
    "cat": "摆件",
-   "w": 1,
-   "d": 1,
+   "w": 0.25,
+   "d": 0.25,
    "h": 40,
-   "scale": 0.408,
+   "scale": 1.36,
    "ox": null,
-   "oy": -0.3,
+   "oy": -0.08,
    "flip": null,
    "sm": 1,
    "sh": 0,
@@ -309,12 +252,12 @@
   },
   {
    "fid": "f308",
-   "name": "棋盘",
+   "name": "象棋棋盘",
    "cat": "摆件",
-   "w": 0.5,
-   "d": 0.5,
+   "w": 0.75,
+   "d": 0.75,
    "h": 40,
-   "scale": 0.926,
+   "scale": 0.857,
    "ox": null,
    "oy": null,
    "flip": null,
@@ -328,7 +271,7 @@
   },
   {
    "fid": "f310",
-   "name": "红酒瓶",
+   "name": "红酒",
    "cat": "摆件",
    "w": 0.25,
    "d": 0.25,
@@ -363,19 +306,76 @@
    "glow": null,
    "wall": false,
    "src": "assets/2.5d/f311.png"
+  },
+  {
+   "fid": "f312",
+   "name": "边柜",
+   "cat": "柜子",
+   "w": 1,
+   "d": 1,
+   "h": 40,
+   "scale": 0.926,
+   "ox": -0.047,
+   "oy": -0.05,
+   "flip": null,
+   "sm": 0,
+   "sh": 0.9,
+   "sw": null,
+   "sd": null,
+   "glow": null,
+   "wall": false,
+   "src": "assets/2.5d/f312.png"
+  },
+  {
+   "fid": "f304",
+   "name": "书架",
+   "cat": "柜子",
+   "w": 0.75,
+   "d": 2,
+   "h": 40,
+   "scale": null,
+   "ox": 0.02,
+   "oy": null,
+   "flip": null,
+   "sm": 0,
+   "sh": 0,
+   "sw": null,
+   "sd": null,
+   "glow": null,
+   "wall": false,
+   "src": "assets/2.5d/f304.png"
+  },
+  {
+   "fid": "f299",
+   "name": "长桌",
+   "cat": "桌台",
+   "w": 3.25,
+   "d": 1.25,
+   "h": 40,
+   "scale": null,
+   "ox": 0.037,
+   "oy": -0.055,
+   "flip": null,
+   "sm": 0,
+   "sh": 0.7,
+   "sw": null,
+   "sd": null,
+   "glow": null,
+   "wall": false,
+   "src": "assets/2.5d/f299.png"
   }
  ],
  "layout": [
   {
    "fid": "f305",
    "gx": 0,
-   "gy": 4.5,
+   "gy": 0,
    "flip": null
   },
   {
    "fid": "f301",
-   "gx": 3,
-   "gy": 1.5,
+   "gx": 1.75,
+   "gy": 5,
    "flip": null
   },
   {
@@ -385,9 +385,16 @@
    "flip": null
   },
   {
-   "fid": "f304",
-   "gx": 0.75,
-   "gy": 1.75,
+   "fid": "f296",
+   "wall": "left",
+   "u": 1.25,
+   "v": 3.25,
+   "flip": "1"
+  },
+  {
+   "fid": "f297",
+   "gx": 2.5,
+   "gy": 1.5,
    "flip": null
   },
   {
@@ -400,6 +407,24 @@
    "fid": "f311",
    "gx": 5.25,
    "gy": 4.25,
+   "flip": null
+  },
+  {
+   "fid": "f312",
+   "gx": 2.25,
+   "gy": 0.25,
+   "flip": null
+  },
+  {
+   "fid": "f304",
+   "gx": 0,
+   "gy": 2.25,
+   "flip": null
+  },
+  {
+   "fid": "f299",
+   "gx": 3.5,
+   "gy": 0,
    "flip": null
   }
  ],
@@ -419,10 +444,10 @@
    "桌台": [
     "f295",
     "f300",
-    "f302"
+    "f299"
    ],
    "柜子": [
-    "f299",
+    "f312",
     "f304"
    ],
    "摆件": [
