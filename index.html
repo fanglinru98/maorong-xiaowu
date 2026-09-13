@@ -213,7 +213,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .d-card.sel::after{content:"✓";position:absolute;right:-6px;top:-6px;width:23px;height:23px;border-radius:50%;
   background:#3a2d20;color:#fdf6e3;font-size:12.5px;font-weight:700;display:grid;place-items:center;
   border:2px solid #fffdf4;box-shadow:0 2px 5px rgba(0,0,0,.25)}
-/* ═══ 新手引导（批17）：聚光灯导览 + 换装点猫真实互动收尾；场景三步（床/茶几/壁炉）等初始布局定稿后补 ═══ */
+/* ═══ 新手引导（批17/v22tut2）：聚光灯导览 7 步＝打招呼→装修→换装→相册→日历→日记→头像；每步点一下继续，末步点一下收尾 ═══ */
 #tut{position:absolute;inset:0;z-index:52;display:none;pointer-events:none} /* 容器恒不拦截：收尾阶段点击穿透到换装/小猫；挡板由 #tutVeil 负责 */
 #tut.on{display:block}
 #tutVeil{position:absolute;inset:0;pointer-events:none}
@@ -824,9 +824,9 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* ── 配置表（装修接口：以后换壁纸/地板/家具只动这里） ── */
 var ROOM={n:8,cw:100,ch:50,wallH:800,wallT:0.24,floorT:24}; /* 期1.5 反馈：墙高 400→800（向上延长一倍） */
 var DECOR={
-  floor:   {type:"color",value:"#d2b48c",fb:"#d2b48c"},   /* type:"img" 时 value=贴图地址, fb=兜底色 */
-  wallBack:{type:"color",value:"#f5e6d3",fb:"#f5e6d3"},   /* 右后墙（沿 P(0,0)→P(n,0) 棱） */
-  wallLeft:{type:"color",value:"#ece0cd",fb:"#ece0cd"},   /* 左后墙（沿 P(0,0)→P(0,n) 棱） */
+  floor:   {type:"color",value:"hsl(8,59%,36%)",fb:"hsl(8,59%,36%)"},   /* v22seed：初始=用户定稿配色（原 #d2b48c）；type:"img" 时 value=贴图地址, fb=兜底色 */
+  wallBack:{type:"color",value:"hsl(17,50%,11%)",fb:"hsl(17,50%,11%)"},   /* 右后墙（沿 P(0,0)→P(n,0) 棱） */
+  wallLeft:{type:"color",value:"hsl(17,50%,11%)",fb:"hsl(17,50%,11%)"},   /* 左后墙（沿 P(0,0)→P(0,n) 棱） */
   grid:true
 };
 var FURNITURE=[]; /* 运行时家具实例表 */
@@ -1533,6 +1533,12 @@ function charNextSeg(now){ /* 走向队列里的下一格（起点=当前位置�
 }
 function charSay(now,ms,txt){ /* v22sit：第三参给动作台词，省略=随机闲聊 */
   CHAR.bubble=(txt&&txt.length)?txt:CHAR_SAY[Math.floor(Math.random()*CHAR_SAY.length)];CHAR.bubbleU=now+(ms||2400); }
+function charGreet(ms){ /* v22tut2：打招呼——停下脚步、原地挥手（greet-1/greet-2 交替）；时间基准与 charLoop 一致（Date.now） */
+  var t=Date.now();
+  CHAR.mode="idle";CHAR.q=[];CHAR.arriveSit=false;CHAR.sit=null;
+  CHAR.greetT0=t;CHAR.greetU=t+(ms||2400);
+  render();
+}
 function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概率过去坐，否则随机溜达一格 */
   var c0=Math.floor(CHAR.gx),r0=Math.floor(CHAR.gy),sofa=charSofa(),p,t,c,r;
   if(sofa&&Math.random()<0.45){
@@ -1549,6 +1555,7 @@ function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概�
 }
 function charUpdate(now){ /* 推进一帧（时间由外部给，测试可喂假时间）；返回是否还需要继续跑 */
   if(!charVisible()){CHAR.mode="idle";CHAR.q=[];return false;}
+  if(CHAR.greetU&&now<CHAR.greetU)return true; /* v22tut2：打招呼期间站着挥手，不寻路 */
   var busy=false;
   if(CHAR.bubbleU){ if(now>=CHAR.bubbleU){CHAR.bubble="";CHAR.bubbleU=0;} else busy=true; }
   if(CHAR.mode==="walk"){
@@ -1572,6 +1579,7 @@ function charUpdate(now){ /* 推进一帧（时间由外部给，测试可喂假
   return busy;
 }
 function charFrame(now){
+  if(CHAR.greetU&&now<CHAR.greetU)return ((Math.floor((now-CHAR.greetT0)/280)%2)?"greet-2":"greet-1"); /* v22tut2：挥手两帧交替 */
   if(CHAR.mode==="sit")return (CHAR_SIT[CHAR.sitPose]||CHAR_SIT.cross).img;
   if(CHAR.mode!=="walk")return "stand";
   var a=CHAR_FRAMES[CHAR.dir]||CHAR_FRAMES.r;
@@ -1707,7 +1715,7 @@ function drawCalib(){ /* v22q 校准：在承托件上方画一条水平高度�
 /* ═══ 画面缩放与拖拽（期1.5 批1：v22view 引擎移植自正式版 V21） ═══
    滚轮/双指捏合缩放 1~2.5 倍；空白处拖拽平移；平移范围随倍数钳制，1 倍不可拖（有界）。
    HUD/dock 在 screen 层不随动；等距房间在 scene 层跟随 --zoom/--panX/--panY。 */
-var VZ=1,VPX=0,VPY=0,VZMIN=1,VZMAX=2.5;
+var VZ=1.4,VPX=0,VPY=0,VZMIN=1,VZMAX=2.5; /* v22seed：初始缩放 1.4（用户定稿，原 1）；存档里有 zoom 时以存档为准 */
 function clampPan(){
   var r=stage.getBoundingClientRect();
   var rx=Math.max(0,r.width*(VZ-1)/2),ry=Math.max(0,r.height*(VZ-1)/2);
@@ -2932,7 +2940,25 @@ function restoreState(){
     render();
   }catch(err){}
 }
-function seedFurniture(){ /* 期1.5 反馈：初始不预置家具，空房间由用户自己布置 */ }
+function seedFurniture(){ /* v22seed：新玩家（无存档/空存档）的初始摆放——用户在自己存档里摆好后导出的定稿布局：
+   单人床 f305 在 (0,0) 2×2、单人沙发 f301 在 (4,2) 1×1（尺寸与微调值照抄存档；家具包没并进来时静默跳过） */
+  var SEED=[
+    {def:"f305",gx:0,gy:0,w:2,d:2,scale:0.97,ox:0.03,oy:-0.04,sh:0.55},
+    {def:"f301",gx:4,gy:2,w:1,d:1,scale:1.065,ox:0.0452,oy:-0.0347,sh:0.55}
+  ];
+  var i,s,it;
+  for(i=0;i<SEED.length;i++){
+    s=SEED[i];
+    if(!DEF_MAP[s.def])continue; /* 缺定义（家具包没加载）就当这件不存在，不炸 */
+    it=addFurniture(s.def,s.gx,s.gy);
+    if(!it)continue;
+    it.w=Math.max(Q,Math.min(ROOM.n,q(s.w||1)));
+    it.d=Math.max(Q,Math.min(ROOM.n,q(s.d||1)));
+    it.scale=s.scale||1;it.ox=s.ox||0;it.oy=s.oy||0;
+    if(s.sh)it.sh=s.sh;
+  }
+  render();
+}
 mergePack(window.__MAOOR_PACK); /* v22sync：先把工作台同步过来的家具表并进来，再读存档/铺底边栏 */
 restoreState();
 renderTabs();renderSubs();renderGrid();
@@ -3196,7 +3222,7 @@ loadCal();calRender();renderMemo();
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
   hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
-  CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,drawChar:drawChar, /* v22char 测试入口 */
+  CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,drawChar:drawChar,charGreet:charGreet,seedFurniture:seedFurniture, /* v22char 测试入口 */
   addFurniture:addFurniture,
   mergePack:mergePack,applyDefSize:applyDefSize,PACKIDS:PACKIDS,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
   selectAt:function(x,y){var it=itemAt(x,y);select(it);return it?it.id:null;},
@@ -3242,14 +3268,17 @@ __roomHooks.avatarState=function(lv,prog){
   if(typeof prog==="number"){AVPROG=prog;$("avProg").style.width=Math.round(prog*100)+"%"}
   return{lv:AVLV,prog:AVPROG};
 };
-/* ═══ 新手引导（批17）：聚光灯导览（方案A）+ 换装点猫真实互动收尾 ═══ */
+/* ═══ 新手引导（批17/v22tut2）：聚光灯导览（方案A）7 步；第 1 步聚光打在角色身上并挥手打招呼 ═══ */
 var TUTKEY="maoor-v22-tutorial-v1";
 var tutEl=$("tut"),tutVeil=$("tutVeil"),tutHole=$("tutHole"),tutBub=$("tutBub"),tutFinger=$("tutFinger");
-var TUT_STEPS=[ /* 场景三步（床/茶几/壁炉）等初始布局定稿后插入 */
-  {sel:"mAlbum",pos:"left",t:"点击相册，查看你的照片吧~"},
-  {sel:"avatarStack",pos:"right",t:"这里是你的角色信息，可以查看等级和进度哦~"},
-  {sel:"mCalendar",pos:"left",t:"点击日历，查看每日任务和活动~"},
-  {sel:"mDiary",pos:"left",t:"点击日记，记录你的心情与故事吧~"}
+var TUT_STEPS=[ /* v22tut2（用户定稿顺序）：打招呼→装修→换装→相册→日历→日记→头像。pos=气泡尾巴朝向，切图最后微调时再动 */
+  {char:1,greet:2400,pos:"top",t:"你好呀，我是彻子~ 欢迎来到你的小屋！点一下继续吧"},
+  {sel:"dDecor",pos:"top",t:"这是装修模式，点它可以换墙色、摆家具、调光效"},
+  {sel:"dDress",pos:"top",t:"这是换装，可以给角色搭配不同的衣服"},
+  {sel:"mAlbum",pos:"left",t:"这是相册，你拍的照片都会收在这里"},
+  {sel:"mCalendar",pos:"left",t:"这是日历，每天的任务和活动记在这儿"},
+  {sel:"mDiary",pos:"left",t:"这是日记本，写下每天的心情与故事"},
+  {sel:"avatarStack",pos:"right",t:"这里是你的角色信息，能看等级和进度"}
 ];
 var tutI=-1,tutOn=false,tutFin=0,tutCur=null; /* tutFin: 0=普通步 1=待点换装 2=待点小猫 */
 function tutStart(){
@@ -3259,7 +3288,7 @@ function tutStart(){
 }
 function tutNext(){
   tutI++;
-  if(tutI>=TUT_STEPS.length){tutFinaleA();return}
+  if(tutI>=TUT_STEPS.length){tutFinish();return} /* v22tut2：末步之后直接收尾（原「点换装→点小猫」真互动收尾按用户要求取消） */
   tutShow(TUT_STEPS[tutI]);
 }
 function tutRect(el){
@@ -3267,11 +3296,24 @@ function tutRect(el){
   var k=FITK||1; /* .screen 有 transform:scale(FITK)：视口 rect 已含缩放，除回去换 #tut 局部设计坐标 */
   return{l:(r.left-sr.left)/k,t:(r.top-sr.top)/k,w:r.width/k,h:r.height/k,sw:sr.width/k,sh:sr.height/k};
 }
+function tutCharRect(){ /* v22tut2：角色屏幕框（第 1 步把聚光灯打在角色身上）；canvas 逻辑坐标→视口→#tut 局部设计坐标 */
+  var cv=document.getElementById("roomIso");
+  if(!cv||!W)return null;
+  var sr=tutEl.getBoundingClientRect(),cr=cv.getBoundingClientRect(),k=FITK||1;
+  var sc=cr.width/W,cxl=px(CHAR.gx,CHAR.gy),byl=py(CHAR.gx,CHAR.gy),dh=charDH(),dw=dh*0.62;
+  return{l:(cr.left-sr.left)/k+(cxl-dw/2)*sc/k,t:(cr.top-sr.top)/k+(byl-dh)*sc/k,w:dw*sc/k,h:dh*sc/k,sw:sr.width/k,sh:sr.height/k};
+}
 function tutShow(s){
   tutCur=s;
-  var el=document.getElementById(s.sel);
-  if(!el){tutNext();return} /* 目标缺失自动跳步（防旧档/改版空引用） */
-  var r=tutRect(el),p=6,bx,by;
+  var r=null,el=null;
+  if(s.char){ r=tutCharRect(); if(s.greet)charGreet(s.greet); } /* 打招呼步：角色原地挥手 */
+  else{
+    el=document.getElementById(s.sel);
+    if(!el){tutNext();return} /* 目标缺失自动跳步（防旧档/改版空引用） */
+    r=tutRect(el);
+  }
+  if(!r){tutNext();return}
+  var p=6,bx,by;
   tutHole.style.left=(r.l-p)+"px";tutHole.style.top=(r.t-p)+"px";
   tutHole.style.width=(r.w+p*2)+"px";tutHole.style.height=(r.h+p*2)+"px";
   tutHole.style.opacity="1";
@@ -3288,18 +3330,11 @@ function tutShow(s){
   void tutBub.offsetWidth;tutBub.classList.add("on");
   tutFinger.classList.remove("on");
   setTimeout(function(){
-    var r2=tutRect(el);
+    var r2=(s.char?tutCharRect():tutRect(el));
+    if(!r2)return;
     tutFinger.style.left=(r2.l+r2.w/2-13)+"px";tutFinger.style.top=(r2.t+r2.h+6)+"px";
     tutFinger.classList.add("on");
   },60);
-}
-function tutFinaleA(){ /* 收尾A：点「换装」真实打开更衣室（引导层放行点击） */
-  tutFin=1;tutEl.classList.remove("blocking");
-  tutShow({sel:"dDress",pos:"top",t:"点击换装，为角色搭配不同的服装吧~"});
-}
-function tutFinaleB(){ /* 收尾B：更衣室里点小猫（真互动：微晃+台词+爱心） */
-  tutFin=2;
-  tutShow({sel:"dCharImg",pos:"top",t:"点点它，打个招呼吧~"});
 }
 function tutFinish(msg){
   tutOn=false;tutFin=0;
@@ -3310,21 +3345,18 @@ function tutFinish(msg){
 }
 tutVeil.addEventListener("pointerdown",function(){if(tutOn&&tutFin===0)tutNext();});
 tutSkip.addEventListener("click",function(e){e.stopPropagation();tutFinish();});
-$("dDress").addEventListener("click",function(){
-  if(tutFin===1)setTimeout(function(){if(dressEl.classList.contains("show"))tutFinaleB();},420);
-});
-$("dBack").addEventListener("click",function(){if(tutOn&&tutFin>=1)tutFinish();});
-$("dCharImg").addEventListener("click",function(){if(tutFin===2)tutFinish("引导完成~ 尽情打扮你的小猫吧！");});
+/* v22tut2：第 3 步只介绍换装功能（不点进去），原「点换装→点小猫」真互动收尾按用户要求取消，三处接线一并撤销 */
 $("rowTutorial").addEventListener("click",function(){closeSettings();setTimeout(tutStart,380);});
-var TUT_LOOP=true; /* 验收循环开关：true=每次打开游戏都自动重放新手引导（反复找问题用，验收后改回 false 恢复只弹一次） */
+var TUT_LOOP=false; /* v22tut2：验收完毕，恢复"只弹一次"（无 maoor-v22-tutorial-v1 标记才自动弹） */
 (function(){
   if(/jsdom/i.test(navigator.userAgent))return; /* 自动化测试不自动弹，由测试钩子手动驱动 */
   if(TUT_LOOP){setTimeout(tutStart,600);return}
   try{if(!localStorage.getItem(TUTKEY))setTimeout(tutStart,600)}catch(e){}
 })();
-window.__roomHooks.tutState=function(){return{on:tutOn,fin:tutFin,step:tutI,total:TUT_STEPS.length+2}};
+window.__roomHooks.tutState=function(){return{on:tutOn,fin:tutFin,step:tutI,total:TUT_STEPS.length}};
 window.__roomHooks.tutStart=tutStart;
 window.__roomHooks.tutFinish=tutFinish;
+window.__roomHooks.tutCharRect=tutCharRect;
 /* ── 屏幕适配（方案A）：手机壳等比缩放铺满视口 + canvas 精度同步（第0批） ── */
 var FITK=1;
 (function(){
