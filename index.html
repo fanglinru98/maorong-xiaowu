@@ -1426,6 +1426,185 @@ function drawWallGrid(){ /* 墙面格子：装修模式显示——竖线每格 
   }
   ctx.strokeStyle="rgba(90,80,68,"+(0.18*gridFade).toFixed(3)+")";ctx.lineWidth=1;ctx.stroke();
 }
+/* ═══ 期2 房间角色（v22char）：进屋即在 · 走来走去 · 绕开家具 · 偶尔坐单人沙发 · 偶尔台词泡泡 ═══
+   位置=连续格位（单位：格）；位移一律 rAF 插值（项目规矩：禁 CSS transition，减弱动效开关会吞过渡）；
+   寻路=1 格格点 4 向 BFS + 家具足迹外扩 CHAR_GAP 格 → 碰到前面有家具会绕开、不穿过去；
+   坐姿只给「单人沙发 f301」（用户定），坐点=沙发自身坐标（挪沙发即挪坐点）；
+   装修模式下角色整体隐藏（charVisible 为假 → 不画也不走），退出装修/保存后自动回来。 */
+var CHAR_SPEED=1.6;        /* 走路速度：格/秒 */
+var CHAR_STEP=160;         /* 走路动画帧时长 ms */
+var CHAR_GAP=0.3;          /* 寻路外扩（格）：绕开家具身位，不擦着边框走 */
+var CHAR_H=1.55;           /* 角色身高：格宽的倍数（绘制用，实机看过再调） */
+var CHAR_SEAT=0.42;        /* 坐高：臀部停在沙发内容盒高度的这个比例（改这个数即改坐姿落点） */
+var CHAR_FRAMES={l:["walk-l-1","walk-l-2","walk-l-3","walk-l-2"],r:["walk-r-1","walk-r-2","walk-r-3","walk-r-4"]};
+var CHAR_SAY=["今天也要好好布置小屋呀","这个角落好舒服","要不要换个家具位置呢？","有点想吃下午茶…","阳光真好呀","新书放哪一格好呢"];
+var CHAR={on:true,mode:"idle",gx:3.6,gy:6.4,fx:3.6,fy:6.4,tx:3.6,ty:6.4,t0:0,dur:0,q:[],dir:"r",sit:null,sitU:0,arriveSit:false,bubble:"",bubbleU:0,next:900};
+var CIMG={};
+function charVisible(){return CHAR.on&&!decoMode;}
+function charSofa(){ /* 坐姿只给单人沙发（f301）：房间里第一件就是它 */
+  for(var i=0;i<FURNITURE.length;i++)if(FURNITURE[i].def==="f301")return FURNITURE[i];
+  return null;
+}
+function charBlocked(gx,gy){ /* 家具占地（含外扩）；墙件不挡路；台面上的小物本身不挡路（承托件挡） */
+  for(var i=0;i<FURNITURE.length;i++){
+    var it=FURNITURE[i];
+    if(it.wall)continue;
+    if(it.on!=null&&it.on>=0)continue;
+    var x=effGX(it),y=effGY(it);
+    if(gx>x-CHAR_GAP&&gx<x+(it.w||1)+CHAR_GAP&&gy>y-CHAR_GAP&&gy<y+(it.d||1)+CHAR_GAP)return true;
+  }
+  return false;
+}
+function charCellFree(c,r){
+  if(c<0||r<0||c>=ROOM.n||r>=ROOM.n)return false;
+  return !charBlocked(c+0.5,r+0.5);
+}
+function charPath(c0,r0,c1,r1){ /* 4 向 BFS 避障；返回 [[c,r]…]（含起点）或 null（到不了/终点被占） */
+  if(!charCellFree(c1,r1))return null;
+  var seen={},q=[],head=0,i,cur,found=null;
+  seen[c0+","+r0]=1;q.push([c0,r0,null]);
+  while(head<q.length){
+    cur=q[head++];
+    if(cur[0]===c1&&cur[1]===r1){found=cur;break;}
+    var nb=[[cur[0]+1,cur[1]],[cur[0]-1,cur[1]],[cur[0],cur[1]+1],[cur[0],cur[1]-1]];
+    for(i=0;i<4;i++){
+      var nc=nb[i][0],nr=nb[i][1],k=nc+","+nr;
+      if(nc<0||nr<0||nc>=ROOM.n||nr>=ROOM.n)continue;
+      if(seen[k]||!charCellFree(nc,nr))continue;
+      seen[k]=1;q.push([nc,nr,cur]);
+    }
+  }
+  if(!found)return null;
+  var out=[];
+  for(cur=found;cur;cur=cur[2])out.unshift([cur[0],cur[1]]);
+  return out;
+}
+function charNextSeg(now){ /* 走向队列里的下一格（起点=当前位置，rAF 插值到格心） */
+  var wp=CHAR.q[0];
+  CHAR.fx=CHAR.gx;CHAR.fy=CHAR.gy;
+  CHAR.tx=wp[0]+0.5;CHAR.ty=wp[1]+0.5;
+  var dx=CHAR.tx-CHAR.fx,dy=CHAR.ty-CHAR.fy;
+  CHAR.dur=Math.max(60,Math.sqrt(dx*dx+dy*dy)/CHAR_SPEED*1000);
+  CHAR.t0=now;CHAR.mode="walk";
+  var sx=dx-dy; /* 屏幕横向：+i 往右下走、+j 往左下走 */
+  if(Math.abs(sx)>0.01)CHAR.dir=sx>0?"r":"l";
+}
+function charSay(now,ms){ CHAR.bubble=CHAR_SAY[Math.floor(Math.random()*CHAR_SAY.length)];CHAR.bubbleU=now+(ms||2400); }
+function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概率过去坐，否则随机溜达一格 */
+  var c0=Math.floor(CHAR.gx),r0=Math.floor(CHAR.gy),sofa=charSofa(),p,t,c,r;
+  if(sofa&&Math.random()<0.45){
+    p=charPath(c0,r0,Math.floor(effGX(sofa)+(sofa.w||1)/2),Math.floor(effGY(sofa)+(sofa.d||1)/2));
+    if(p&&p.length>1){ CHAR.q=p.slice(1);CHAR.arriveSit=true;CHAR.sit=sofa;charNextSeg(now);return; }
+  }
+  for(t=0;t<20;t++){
+    c=Math.floor(Math.random()*ROOM.n);r=Math.floor(Math.random()*ROOM.n);
+    if(c===c0&&r===r0)continue;
+    p=charPath(c0,r0,c,r);
+    if(p&&p.length>1){ CHAR.q=p.slice(1);CHAR.arriveSit=false;charNextSeg(now);return; }
+  }
+  CHAR.next=now+3000; /* 房间被塞满、哪都去不了：原地待着 */
+}
+function charUpdate(now){ /* 推进一帧（时间由外部给，测试可喂假时间）；返回是否还需要继续跑 */
+  if(!charVisible()){CHAR.mode="idle";CHAR.q=[];return false;}
+  var busy=false;
+  if(CHAR.bubbleU){ if(now>=CHAR.bubbleU){CHAR.bubble="";CHAR.bubbleU=0;} else busy=true; }
+  if(CHAR.mode==="walk"){
+    var t=CHAR.dur>0?(now-CHAR.t0)/CHAR.dur:1;
+    if(t>=1){
+      var wp=CHAR.q.shift()||[Math.floor(CHAR.gx),Math.floor(CHAR.gy)];
+      CHAR.gx=wp[0]+0.5;CHAR.gy=wp[1]+0.5;
+      if(CHAR.q.length){charNextSeg(now);busy=true;}
+      else if(CHAR.arriveSit&&CHAR.sit){CHAR.mode="sit";CHAR.sitU=now+5000+Math.random()*7000;CHAR.arriveSit=false;charSay(now,2600);busy=true;}
+      else{CHAR.mode="idle";CHAR.arriveSit=false;CHAR.next=now+1600+Math.random()*3600;if(Math.random()<0.35)charSay(now,2200);busy=true;}
+    }else{ CHAR.gx=CHAR.fx+(CHAR.tx-CHAR.fx)*t;CHAR.gy=CHAR.fy+(CHAR.ty-CHAR.fy)*t;busy=true; }
+  }else if(CHAR.mode==="sit"){
+    if(!CHAR.sit||FURNITURE.indexOf(CHAR.sit)<0){CHAR.mode="idle";CHAR.sit=null;CHAR.next=now+600;busy=true;}
+    else if(now>=CHAR.sitU){CHAR.mode="idle";CHAR.sit=null;CHAR.next=now+1200+Math.random()*2000;busy=true;}
+    else busy=true;
+  }else if(now>=CHAR.next){ charPlan(now);busy=true; }
+  return busy;
+}
+function charFrame(now){
+  if(CHAR.mode==="sit")return "sit-cross";
+  if(CHAR.mode!=="walk")return "stand";
+  var a=CHAR_FRAMES[CHAR.dir]||CHAR_FRAMES.r;
+  return a[Math.floor(now/CHAR_STEP)%a.length];
+}
+function charImg(name){ /* 角色帧缓存：不做逐帧裁边——24 帧共用同一 420×554 画布、脚底基线已对齐，裁边反而会抖 */
+  if(!(name in CIMG)){
+    CIMG[name]=null;
+    var im=new Image();
+    im.onload=function(){CIMG[name]={img:im,w:im.naturalWidth||420,h:im.naturalHeight||554};render();};
+    im.onerror=function(){CIMG[name]="err";};
+    im.src="assets/character/"+name+".png";
+  }
+  var v=CIMG[name];
+  return (v&&v!=="err")?v:null;
+}
+function charSeatLift(sofa){ /* 坐姿落点：抬到沙发内容盒高度的 CHAR_SEAT 比例（沙发换图/换大小自动跟着变） */
+  var fi=furnImg(sofa),rw=(fi&&fi.tw)?fi.tw/fi.w:1;
+  var dw2=Math.max(minPx(),ROOM.cw*((sofa.w||1)+(sofa.d||1))*S*0.92*(sofa.scale||1))*rw;
+  var dh2=dw2*((fi&&fi.tw)?fi.th/fi.tw:0.75);
+  return dh2*CHAR_SEAT;
+}
+function drawBubble(cx,by,text){ /* 台词泡泡：圆角小牌 + 小尾巴 */
+  var fs=Math.max(9,11*LWS*2);
+  ctx.font="700 "+fs+"px system-ui,'PingFang SC','Microsoft YaHei',sans-serif";
+  var m=null;try{m=ctx.measureText(text);}catch(err){}
+  var tw=(m&&isFinite(m.width)&&m.width>0)?m.width:text.length*fs;
+  var pad=9*LWS*2,h=fs+11*LWS*2,w2=tw+pad*2,r=8*LWS*2;
+  var x=cx-w2/2,y=by-h-12*LWS*2;
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w2-r,y);ctx.quadraticCurveTo(x+w2,y,x+w2,y+r);
+  ctx.lineTo(x+w2,y+h-r);ctx.quadraticCurveTo(x+w2,y+h,x+w2-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+  ctx.fillStyle="rgba(255,250,238,.96)";ctx.fill();
+  ctx.strokeStyle="rgba(160,120,64,.85)";ctx.lineWidth=1.4*LWS*2;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx-6*LWS*2,y+h-1);ctx.lineTo(cx+6*LWS*2,y+h-1);ctx.lineTo(cx,y+h+8*LWS*2);ctx.closePath();
+  ctx.fillStyle="rgba(255,250,238,.96)";ctx.fill();
+  ctx.fillStyle="#6b4f2a";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(text,cx,y+h/2+0.5);
+  ctx.textAlign="left";ctx.textBaseline="alphabetic";
+}
+function drawChar(){ /* 脚点=格心；坐姿时抬到沙发座面上 */
+  if(!charVisible())return;
+  var now=Date.now(),fi=charImg(charFrame(now));
+  if(!fi)return;
+  var dh=charDH(),dw=dh*fi.w/fi.h;
+  var cx=px(CHAR.gx,CHAR.gy),gy0=py(CHAR.gx,CHAR.gy),base=gy0;
+  if(CHAR.mode==="sit"&&CHAR.sit)base-=charSeatLift(CHAR.sit);
+  ctx.save();ctx.globalAlpha=0.20;ctx.fillStyle="#3a2a18";
+  ctx.beginPath();ctx.ellipse(cx,gy0,dw*0.30,dw*0.15,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  try{ ctx.drawImage(fi.img,0,0,fi.w,fi.h,cx-dw/2,base-dh,dw,dh); }catch(err){}
+  if(CHAR.bubble)drawBubble(cx,base-dh,CHAR.bubble);
+}
+function charDH(){ return ROOM.cw*CHAR_H*S; }
+function charHome(){ /* 进屋落脚点：从最靠门口（近角）那排往里找第一格空地 */
+  var c,r;
+  for(r=ROOM.n-1;r>=0;r--)for(c=ROOM.n-1;c>=0;c--){
+    if(charCellFree(c,r)){ CHAR.gx=c+0.5;CHAR.gy=r+0.5;CHAR.fx=CHAR.gx;CHAR.fy=CHAR.gy;CHAR.tx=CHAR.gx;CHAR.ty=CHAR.gy;return [c,r]; }
+  }
+  return null;
+}
+var charRAF=0,charTmr=0,charLast=0;
+function charLoop(){
+  charRAF=0;
+  var now=Date.now(),busy=charUpdate(now);
+  if(busy&&now-charLast>=40){charLast=now;render();} /* 40ms 节流≈25fps，与光效循环同款 */
+  if(busy||CHAR.mode!=="idle")charStart();
+  else charTmr=setTimeout(function(){charTmr=0;charStart();},Math.max(80,Math.min(4000,CHAR.next-Date.now())));
+}
+function charHasRAF(){ return typeof requestAnimationFrame==="function"; }
+function charStart(){ /* 有 rAF 走 rAF（浏览器）；没有（jsdom/老环境）退化成定时器，行为一致 */
+  if(charRAF||charTmr||!charVisible())return;
+  charRAF=charHasRAF()?requestAnimationFrame(charLoop):setTimeout(charLoop,40);
+}
+function charStop(){
+  if(charRAF){ if(charHasRAF()&&typeof cancelAnimationFrame==="function")cancelAnimationFrame(charRAF); else clearTimeout(charRAF); }
+  charRAF=0;if(charTmr)clearTimeout(charTmr);charTmr=0;
+}
 function render(){
   var k=cv.width/Math.max(1,W);
   ctx.setTransform(k,0,0,k,0,0);
@@ -1442,8 +1621,12 @@ function render(){
   drawFloor();
   for(var sp=0;sp<FURNITURE.length;sp++)drawGlowSpot(FURNITURE[sp]); /* v22glow：地面光斑画在地板之上、家具之下 */
   drawWallGrid();
-  var fs=sortFurniture(),i;
-  for(i=0;i<fs.length;i++)drawItem(fs[i]);
+  var fs=sortFurniture(),i,chDone=false,chD=CHAR.gx+CHAR.gy; /* v22char：角色按深度插进家具之间（站在家具后面会被挡住） */
+  for(i=0;i<fs.length;i++){
+    if(!chDone&&charVisible()&&chD<depKey(fs[i])){drawChar();chDone=true;}
+    drawItem(fs[i]);
+  }
+  if(!chDone&&charVisible())drawChar();
   drawShelfHint(); /* v22shelf：拖到台面上时高亮落点那一格 */
   drawCalib(); /* v22q：校准模式下画出高度线与 ¼ 格预览 */
   glowStart(); /* v22glow：有呼吸灯则维持重绘循环，否则自动停 */
@@ -1902,6 +2085,8 @@ function setDecoMode(on){
   animGrid(decoMode); /* 网格与底边栏同步渐显/渐隐（用户反馈③） */
   if(!decoMode)select(null);
   applyView(); /* v22fab：进出装修立即重钳平移（进=放宽可上拖，出=自动归位） */
+  if(decoMode)charStop();else charStart(); /* v22char：装修时角色直接消失，退出装修（保存）后自动回来 */
+  render();
   saveSoon();
 }
 $("dDecor").addEventListener("click",function(){setDecoMode(!decoMode);});
@@ -2702,6 +2887,8 @@ mergePack(window.__MAOOR_PACK); /* v22sync：先把工作台同步过来的家�
 restoreState();
 renderTabs();renderSubs();renderGrid();
 lampSync(); /* v22lamp：进屋默认两盏灯都是灭的，按钮文案=一键开灯 */
+charHome(); /* v22char：进屋就站在最靠门口的空格上 */
+charStart(); /* v22char：进屋就自己溜达（rAF 插值，不用 CSS 过渡） */
 window.addEventListener("beforeunload",saveState);
 /* ── v8 扭曲系统已按用户要求整体移除（v22fab）：solveH/warpDraw/四角手柄/扭曲工具条全部退役，翻转保留走画布镜像 ── */
 /* ═══ 日历面板（批6.7：照日历界面demoA 移植；月/日两视图+心形月历+时刻流+备忘卡+自绘时间选择器） ═══ */
@@ -2959,6 +3146,7 @@ loadCal();calRender();renderMemo();
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
   hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
+  CHAR:CHAR,CHAR_SAY:CHAR_SAY,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,drawChar:drawChar, /* v22char 测试入口 */
   addFurniture:addFurniture,
   mergePack:mergePack,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
   selectAt:function(x,y){var it=itemAt(x,y);select(it);return it?it.id:null;},
