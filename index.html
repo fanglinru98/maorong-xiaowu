@@ -1464,15 +1464,23 @@ function drawWallGrid(){ /* 墙面格子：装修模式显示——竖线每格 
    位置=连续格位（单位：格）；位移一律 rAF 插值（项目规矩：禁 CSS transition，减弱动效开关会吞过渡）；
    寻路=1 格格点 4 向 BFS + 家具足迹外扩 CHAR_GAP 格 → 碰到前面有家具会绕开、不穿过去；
    坐姿只给「单人沙发 f301」（用户定），坐点=沙发自身坐标（挪沙发即挪坐点）；
+   坐姿四种随机（v22sit：盘腿 / 捧奖杯 / 比心 / 写日记），每种带自己的动作台词，坐着期间会换一句；
    装修模式下角色整体隐藏（charVisible 为假 → 不画也不走），退出装修/保存后自动回来。 */
 var CHAR_SPEED=1.6;        /* 走路速度：格/秒 */
 var CHAR_STEP=160;         /* 走路动画帧时长 ms */
 var CHAR_GAP=0.3;          /* 寻路外扩（格）：绕开家具身位，不擦着边框走 */
-var CHAR_H=1.55;           /* 角色身高：格宽的倍数（绘制用，实机看过再调） */
+var CHAR_H=2.25;           /* 角色身高：格宽的倍数（2026-09-13 按用户红框定：约 2.25 格 ≈ 原 1.55 的 1.45 倍；改大小只动这一个数） */
 var CHAR_SEAT=0.42;        /* 坐高：臀部停在沙发内容盒高度的这个比例（改这个数即改坐姿落点） */
 var CHAR_FRAMES={l:["walk-l-1","walk-l-2","walk-l-3","walk-l-2"],r:["walk-r-1","walk-r-2","walk-r-3","walk-r-4"]};
 var CHAR_SAY=["今天也要好好布置小屋呀","这个角落好舒服","要不要换个家具位置呢？","有点想吃下午茶…","阳光真好呀","新书放哪一格好呢"];
-var CHAR={on:true,mode:"idle",gx:3.6,gy:6.4,fx:3.6,fy:6.4,tx:3.6,ty:6.4,t0:0,dur:0,q:[],dir:"r",sit:null,sitU:0,arriveSit:false,bubble:"",bubbleU:0,next:900};
+var CHAR_SIT={ /* v22sit 四种坐姿：每次坐下随机挑一种；图只用 420×554 的那几张（sit-achv 单帧 626×707 会错位，故用 -2） */
+  cross:{img:"sit-cross-2", acts:["翘着腿哼小曲","晃着脚尖打拍子"]},
+  achv: {img:"sit-achv-2",  acts:["举着奖杯自我陶醉","回味刚才的高光时刻"]},
+  love: {img:"sit-love",    acts:["比了个心，然后假装没做过","偷偷把心意藏进抱枕里"]},
+  diary:{img:"sit-diary-2", acts:["低着头写日记","在页脚画了一只小猫"]}
+};
+var CHAR_SITKEYS=["cross","achv","love","diary"];
+var CHAR={on:true,mode:"idle",gx:3.6,gy:6.4,fx:3.6,fy:6.4,tx:3.6,ty:6.4,t0:0,dur:0,q:[],dir:"r",sit:null,sitU:0,arriveSit:false,sitPose:"",sitA:0,actU:0,bubble:"",bubbleU:0,next:900};
 var CIMG={};
 function charVisible(){return CHAR.on&&!decoMode;}
 function charSofa(){ /* 坐姿只给单人沙发（f301）：房间里第一件就是它 */
@@ -1523,7 +1531,8 @@ function charNextSeg(now){ /* 走向队列里的下一格（起点=当前位置�
   var sx=dx-dy; /* 屏幕横向：+i 往右下走、+j 往左下走 */
   if(Math.abs(sx)>0.01)CHAR.dir=sx>0?"r":"l";
 }
-function charSay(now,ms){ CHAR.bubble=CHAR_SAY[Math.floor(Math.random()*CHAR_SAY.length)];CHAR.bubbleU=now+(ms||2400); }
+function charSay(now,ms,txt){ /* v22sit：第三参给动作台词，省略=随机闲聊 */
+  CHAR.bubble=(txt&&txt.length)?txt:CHAR_SAY[Math.floor(Math.random()*CHAR_SAY.length)];CHAR.bubbleU=now+(ms||2400); }
 function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概率过去坐，否则随机溜达一格 */
   var c0=Math.floor(CHAR.gx),r0=Math.floor(CHAR.gy),sofa=charSofa(),p,t,c,r;
   if(sofa&&Math.random()<0.45){
@@ -1548,18 +1557,22 @@ function charUpdate(now){ /* 推进一帧（时间由外部给，测试可喂假
       var wp=CHAR.q.shift()||[Math.floor(CHAR.gx),Math.floor(CHAR.gy)];
       CHAR.gx=wp[0]+0.5;CHAR.gy=wp[1]+0.5;
       if(CHAR.q.length){charNextSeg(now);busy=true;}
-      else if(CHAR.arriveSit&&CHAR.sit){CHAR.mode="sit";CHAR.sitU=now+5000+Math.random()*7000;CHAR.arriveSit=false;charSay(now,2600);busy=true;}
+      else if(CHAR.arriveSit&&CHAR.sit){CHAR.mode="sit";CHAR.sitPose=CHAR_SITKEYS[Math.floor(Math.random()*CHAR_SITKEYS.length)];CHAR.sitA=0;CHAR.sitU=now+5000+Math.random()*7000;CHAR.actU=now+2600;CHAR.arriveSit=false;charSay(now,2600,CHAR_SIT[CHAR.sitPose].acts[0]);busy=true;}
       else{CHAR.mode="idle";CHAR.arriveSit=false;CHAR.next=now+1600+Math.random()*3600;if(Math.random()<0.35)charSay(now,2200);busy=true;}
     }else{ CHAR.gx=CHAR.fx+(CHAR.tx-CHAR.fx)*t;CHAR.gy=CHAR.fy+(CHAR.ty-CHAR.fy)*t;busy=true; }
   }else if(CHAR.mode==="sit"){
     if(!CHAR.sit||FURNITURE.indexOf(CHAR.sit)<0){CHAR.mode="idle";CHAR.sit=null;CHAR.next=now+600;busy=true;}
     else if(now>=CHAR.sitU){CHAR.mode="idle";CHAR.sit=null;CHAR.next=now+1200+Math.random()*2000;busy=true;}
-    else busy=true;
+    else{ /* v22sit：坐着期间轮换动作台词 */
+      var pp=CHAR_SIT[CHAR.sitPose]||CHAR_SIT.cross;
+      if(now>=CHAR.actU){ CHAR.sitA=CHAR.sitA?0:1; charSay(now,2600,pp.acts[CHAR.sitA]); CHAR.actU=now+4400+Math.random()*3600; }
+      busy=true;
+    }
   }else if(now>=CHAR.next){ charPlan(now);busy=true; }
   return busy;
 }
 function charFrame(now){
-  if(CHAR.mode==="sit")return "sit-cross";
+  if(CHAR.mode==="sit")return (CHAR_SIT[CHAR.sitPose]||CHAR_SIT.cross).img;
   if(CHAR.mode!=="walk")return "stand";
   var a=CHAR_FRAMES[CHAR.dir]||CHAR_FRAMES.r;
   return a[Math.floor(now/CHAR_STEP)%a.length];
@@ -1581,13 +1594,13 @@ function charSeatLift(sofa){ /* 坐姿落点：抬到沙发内容盒高度的 CH
   var dh2=dw2*((fi&&fi.tw)?fi.th/fi.tw:0.75);
   return dh2*CHAR_SEAT;
 }
-function drawBubble(cx,by,text){ /* 台词泡泡：圆角小牌 + 小尾巴 */
-  var fs=Math.max(9,11*LWS*2);
+function drawBubble(cx,by,text){ /* 台词泡泡：圆角小牌 + 小尾巴（2026-09-13 整体缩到约 0.75 倍，数值都在本函数里） */
+  var fs=Math.max(9,8.5*LWS*2);
   ctx.font="700 "+fs+"px system-ui,'PingFang SC','Microsoft YaHei',sans-serif";
   var m=null;try{m=ctx.measureText(text);}catch(err){}
   var tw=(m&&isFinite(m.width)&&m.width>0)?m.width:text.length*fs;
-  var pad=9*LWS*2,h=fs+11*LWS*2,w2=tw+pad*2,r=8*LWS*2;
-  var x=cx-w2/2,y=by-h-12*LWS*2;
+  var pad=7*LWS*2,h=fs+9*LWS*2,w2=tw+pad*2,r=6*LWS*2;
+  var x=cx-w2/2,y=by-h-9.5*LWS*2;
   ctx.beginPath();
   ctx.moveTo(x+r,y);ctx.lineTo(x+w2-r,y);ctx.quadraticCurveTo(x+w2,y,x+w2,y+r);
   ctx.lineTo(x+w2,y+h-r);ctx.quadraticCurveTo(x+w2,y+h,x+w2-r,y+h);
@@ -1595,8 +1608,8 @@ function drawBubble(cx,by,text){ /* 台词泡泡：圆角小牌 + 小尾巴 */
   ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
   ctx.closePath();
   ctx.fillStyle="rgba(255,250,238,.96)";ctx.fill();
-  ctx.strokeStyle="rgba(160,120,64,.85)";ctx.lineWidth=1.4*LWS*2;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(cx-6*LWS*2,y+h-1);ctx.lineTo(cx+6*LWS*2,y+h-1);ctx.lineTo(cx,y+h+8*LWS*2);ctx.closePath();
+  ctx.strokeStyle="rgba(160,120,64,.85)";ctx.lineWidth=1.25*LWS*2;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx-5*LWS*2,y+h-1);ctx.lineTo(cx+5*LWS*2,y+h-1);ctx.lineTo(cx,y+h+6.5*LWS*2);ctx.closePath();
   ctx.fillStyle="rgba(255,250,238,.96)";ctx.fill();
   ctx.fillStyle="#6b4f2a";ctx.textAlign="center";ctx.textBaseline="middle";
   ctx.fillText(text,cx,y+h/2+0.5);
@@ -3183,7 +3196,7 @@ loadCal();calRender();renderMemo();
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
   hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
-  CHAR:CHAR,CHAR_SAY:CHAR_SAY,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,drawChar:drawChar, /* v22char 测试入口 */
+  CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,drawChar:drawChar, /* v22char 测试入口 */
   addFurniture:addFurniture,
   mergePack:mergePack,applyDefSize:applyDefSize,PACKIDS:PACKIDS,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
   selectAt:function(x,y){var it=itemAt(x,y);select(it);return it?it.id:null;},
