@@ -60,6 +60,16 @@ body.barOpen .dock{bottom:-90px}
   letter-spacing:.02em;box-shadow:var(--shadow-2);opacity:0;pointer-events:none;
   transition:opacity .2s ease,transform .2s ease;max-width:82%;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ── v22cfm：通用确认框（重置等危险操作先问一句） ── */
+#cfm{display:none;position:absolute;inset:0;z-index:72;align-items:center;justify-content:center;background:rgba(26,14,8,.46)}
+#cfm.open{display:flex}
+.cfm-box{width:76%;max-width:310px;padding:16px 16px 12px;border:2px solid var(--gold-deep);border-radius:14px;
+  background:linear-gradient(#fdf3df,#f3e3c4);box-shadow:0 10px 30px rgba(40,20,10,.45);text-align:center}
+.cfm-msg{font-size:13.5px;font-weight:700;color:#5a4632;line-height:1.65;margin-bottom:14px}
+.cfm-btns{display:flex;gap:12px;justify-content:center}
+.cfm-btns button{min-width:92px;padding:9px 0;border-radius:10px;font-size:13px;font-weight:800}
+.cfm-yes{background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12;border:1.5px solid var(--gold-deep)}
+.cfm-no{background:#f4ead0;color:#5a4632;border:1.5px solid #d2b98c}
 #stage{position:absolute;inset:0;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
 #scene{position:absolute;left:50%;top:50%;width:100%;height:100%;
   transform:translate(-50%,-50%) translate(var(--panX,0px),var(--panY,0px)) scale(var(--zoom,1));transform-origin:center center;will-change:transform}
@@ -591,7 +601,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <div id="grid"></div>
   <div class="cslid" id="cSlid">
     <label>色相<input type="range" id="cHue" min="0" max="360" value="38"></label>
-    <label>深浅<input type="range" id="cDep" min="18" max="88" value="82"></label>
+    <label>饱和度<input type="range" id="cSat" min="0" max="100" value="45"></label>
+    <label>深浅<input type="range" id="cDep" min="0" max="88" value="82"></label>
   </div>
 </div>
 <header class="hud-top">
@@ -614,6 +625,13 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <button class="dock-btn" id="dShot" aria-label="拍照，二期接入"><img class="icon-img" src="icon/拍照.png" alt="拍照" aria-hidden="true"></button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- v22cfm 通用确认框：重置等操作先问一句 -->
+<div id="cfm" role="dialog" aria-modal="true" aria-label="确认">
+  <div class="cfm-box">
+    <div class="cfm-msg" id="cfmMsg"></div>
+    <div class="cfm-btns"><button id="cfmYes" class="cfm-yes">是</button><button id="cfmNo" class="cfm-no">取消</button></div>
+  </div>
+</div>
 <!-- 日记手帐书（批6：三段版 封面→历史→写日记，点右侧菜单「日记本」从左滑入） -->
 <div id="dimVeil" aria-hidden="true"></div>
 <section id="book" class="st-cover" aria-label="日记手帐">
@@ -1265,7 +1283,8 @@ function glowHalo(cx,cy,R,g,it){ /* 光晕：以灯为圆心的一团柔光，li
 function glowSpotPos(it){ /* 光斑落点：地面件=足迹中心；墙灯=灯下的墙脚地面（贴哪面墙就在哪面墙脚） */
   if(it.wall==="left")return [px(0,it.u+it.w/2),py(0,it.u+it.w/2)];
   if(it.wall)return [px(it.u+it.w/2,0),py(it.u+it.w/2,0)];
-  return [px(it.gx+it.w/2,it.gy+it.d/2),py(it.gx+it.w/2,it.gy+it.d/2)];
+  var h4=hugOff(it);
+  return [px(it.gx+it.w/2,it.gy+it.d/2)+h4[0],py(it.gx+it.w/2,it.gy+it.d/2)+h4[1]];
 }
 function drawGlowSpot(it){ /* 地面光斑（简化版）：足迹中心一个等距椭圆柔光，随灯色/范围/呼吸一起变 */
   var g=glowOf(it);
@@ -1352,7 +1371,8 @@ function drawItem(it){
   if(fi&&fi.img){ /* 真图模式：内容包围盒底边中点＝足迹近角下尖（虚线框），落地不悬空 */
     var mx=px(GX+it.w/2,GY+it.d/2);
     var dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w),dh=dw*fi.th/fi.tw;
-    var ax=mx+(it.ox||0)*dw,ay=y3+(it.oy||0)*dh; /* v22sync：资产库的微调（图整体挪，虚线框/占格不动） */
+    var ho=hugOff(it); /* v22hug：贴墙件图往里推 */
+    var ax=mx+ho[0]+(it.ox||0)*dw,ay=y3+ho[1]+(it.oy||0)*dh; /* v22sync：资产库的微调（图整体挪，虚线框/占格不动） */
     /* v11 直接贴图；翻转时以内容盒水平中线 ax 为轴左右镜像（v22fab：扭曲系统已整体移除） */
     try{
       if(it.flip){
@@ -1496,7 +1516,7 @@ stage.addEventListener("pointerdown",function(e){
   try{stage.setPointerCapture(e.pointerId);}catch(err){}
   pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pts.size===2){vdrag=null;pinch0=pinchSnap();} /* 第二根手指落下：转捏合模式 */
-  else if(pts.size===1){vdrag={id:e.pointerId,x:e.clientX,y:e.clientY,px:VPX,py:VPY,moved:false,onCv:e.target===cv};}
+  else if(pts.size===1){vdrag={id:e.pointerId,x:e.clientX,y:e.clientY,px:VPX,py:VPY,moved:false,onCv:e.target===cv,t:Date.now()};}
 });
 stage.addEventListener("pointermove",function(e){
   if(pts.has(e.pointerId))pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -1506,14 +1526,14 @@ stage.addEventListener("pointermove",function(e){
     pinch0=s;
   }else if(vdrag&&e.pointerId===vdrag.id){
     var dx=e.clientX-vdrag.x,dy=e.clientY-vdrag.y;
-    if(!vdrag.moved&&Math.hypot(dx,dy)<6)return; /* 6px 阈值防误触 */
+    if(!vdrag.moved&&Math.hypot(dx,dy)<(decoMode?18:6))return; /* v22tap：装修模式下放宽到 18px（手指轻点的抖动也算轻点）*/
     vdrag.moved=true;VPX=vdrag.px+dx;VPY=vdrag.py+dy;applyView();
   }
 });
 function endPtr(e){
   pts.delete(e.pointerId);
   if(pts.size<2)pinch0=null;
-  if(vdrag&&!vdrag.moved&&vdrag.onCv&&decoMode){vdrag=null;setDecoMode(false);return;} /* 批15 决策④：装修面板展开时轻点房间空白=收起面板 */
+  if(vdrag&&!vdrag.moved&&vdrag.onCv&&decoMode&&(Date.now()-(vdrag.t||0))<=450){vdrag=null;setDecoMode(false);return;} /* v22tap：装修模式轻点房间空白（≤18px 且 ≤450ms）=退出装修并收起底栏 */
   if(vdrag&&e.pointerId===vdrag.id)vdrag=null;
 }
 stage.addEventListener("pointerup",endPtr);
@@ -1541,7 +1561,7 @@ function resize(){
 /* 自定义调色（用户选定方案B）：内嵌双滑条实时混色（cslTarget=wall 双墙同换 / floor 换地板；替代原隐藏原生取色器——会跳界面外左上角） */
 var cslTarget="wall";
 function cCustomApply(){
-  var c="hsl("+$("cHue").value+",45%,"+$("cDep").value+"%)";
+  var c="hsl("+$("cHue").value+","+$("cSat").value+"%,"+$("cDep").value+"%)"; /* v22hsl：饱和度独立可调（原写死 45%）*/
   var sw=null;
   if(cslTarget==="floor"){
     setDecor("floor",{type:"color",value:c,fb:c});
@@ -1554,6 +1574,7 @@ function cCustomApply(){
   if(sw){sw.style.background=c;sw.textContent="";}
 }
 $("cHue").addEventListener("input",cCustomApply);
+$("cSat").addEventListener("input",cCustomApply);
 $("cDep").addEventListener("input",cCustomApply);
 /* 旧等距缩放按钮已退役：视图缩放统一走 v22view（滚轮/双指捏合） */
 /* 网格渐显渐隐：装修模式开关时网格与底边栏同步出现/消失（约 240ms 过渡，用户反馈③） */
@@ -1568,6 +1589,16 @@ function animGrid(on){
 }
 /* ── 家具交互：命中/选中/拖拽/缩放/删除/导入 ── */
 var SEL=null,drag=null,FID=0;
+/* v22hug：贴到 i=0 / j=0 两面墙的地面件，整图朝墙里推 0.25 格（图上贴紧墙根，占格与虚线框不变） */
+var WALLHUG=0.25;
+function hugOff(it){
+  if(!it||it.wall||it.sm||it.on)return [0,0];
+  var gx=effGX(it),gy=effGY(it),di=0,dj=0;
+  if(gx<=0.001)di=-WALLHUG;
+  if(gy<=0.001)dj=-WALLHUG;
+  if(!di&&!dj)return [0,0];
+  return [ROOM.cw*(di-dj)*S,ROOM.ch*(di+dj)*S];
+}
 function itemAt(sx,sy){
   var fs=sortFurniture(),i,it,mx,by,dw,dh,fi;
   for(i=fs.length-1;i>=0;i--){
@@ -1583,9 +1614,10 @@ function itemAt(sx,sy){
     }
     mx=px(effGX(it)+it.w/2,effGY(it)+it.d/2);
     fi=furnImg(it);
+    var ho3=hugOff(it);mx+=ho3[0]; /* v22hug：命中盒跟图一起走 */
     if(fi&&fi.img){ /* 已加载：按内容包围盒判定（与 drawItem 同锚点） */
       dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w);dh=dw*fi.th/fi.tw;
-      by=py(effGX(it)+it.w,effGY(it)+it.d)-liftOf(it); /* v22shelf：台面上的小物按抬高后的位置判定 */
+      by=py(effGX(it)+it.w,effGY(it)+it.d)-liftOf(it)+ho3[1]; /* v22shelf：台面上的小物按抬高后的位置判定 */
       mx+=(it.ox||0)*dw;by+=(it.oy||0)*dh; /* v22sync：命中盒跟着 ox/oy 微调走 */
       if(sx>=mx-dw/2-4&&sx<=mx+dw/2+4&&sy>=by-dh-4&&sy<=by+4)return it;
     }else{ /* 未加载：按足迹菱形包围盒判定 */
@@ -1658,8 +1690,8 @@ function contentBox(it){ /* v22fab：与 drawItem/img、itemAt 同锚点的内�
     return {mx:wa[0],T:wa[1]-it.v*ROOM.cw*S-wh,dw:ww,dh:wh};
   }
   var rw=(fi&&fi.tw)?fi.tw/fi.w:1;
-  var dw2=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*rw,dh=dw2*((fi&&fi.tw)?fi.th/fi.tw:1);
-  return {mx:px(effGX(it)+it.w/2,effGY(it)+it.d/2),T:py(effGX(it)+it.w,effGY(it)+it.d)-dh-liftOf(it),dw:dw2,dh:dh};
+  var dw2=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*rw,dh=dw2*((fi&&fi.tw)?fi.th/fi.tw:1),ho2=hugOff(it);
+  return {mx:px(effGX(it)+it.w/2,effGY(it)+it.d/2)+ho2[0],T:py(effGX(it)+it.w,effGY(it)+it.d)-dh-liftOf(it)+ho2[1],dw:dw2,dh:dh};
 }
 function positionFab(){ /* 三钮悬浮在家具内容盒上方居中，钳制在画布内 */
   var c=$("fab");
@@ -1880,6 +1912,13 @@ function toast(msg){
   t.textContent=msg;t.classList.add("show");
   clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("show");},1800);
 }
+/* v22cfm：通用确认框（askConfirm(文案, 点是之后的回调)） */
+var cfmCb=null;
+function askConfirm(msg,cb){ $("cfmMsg").textContent=msg; cfmCb=cb||null; $("cfm").classList.add("open"); }
+function cfmClose(){ $("cfm").classList.remove("open"); cfmCb=null; }
+$("cfmYes").addEventListener("click",function(){ var f=cfmCb; cfmClose(); if(f)f(); });
+$("cfmNo").addEventListener("click",cfmClose);
+$("cfm").addEventListener("click",function(e){ if(e.target===$("cfm"))cfmClose(); });
 $("mAlbum").addEventListener("click",function(){openAlbum();}); /* 相册已接入（批6） */
 $("mCalendar").addEventListener("click",function(){openCal();}); /* 日历已接入（批6.7） */
 $("mDiary").addEventListener("click",function(){openDiary();}); /* 日记本已接入（批4） */
@@ -2525,7 +2564,8 @@ function renderGrid(){
   }
   updateOwned(); /* 渲染后刷新「拥有：N」 */
 }
-function defHidden(id){ var d=DEF_MAP[id]; return !!(d&&/^占位家具/.test(d.name||"")); } /* v22hide：栏里不显示的名字——16 件占位家具；定义与图片都保留，旧存档里若摆过还能正常显示 */
+var HIDE_IDS={f274:1,f277:1,f288:1,f285:1}; /* v22hide2：老板件撤栏——宝石宝箱/国际象棋/红黑地球仪/黄铜挂历（定义与图片保留，旧存档照旧显示） */
+function defHidden(id){ var d=DEF_MAP[id]; return !!((d&&/^占位家具/.test(d.name||""))||HIDE_IDS[id]); } /* v22hide：栏里不显示的名字——16 件占位家具 + 上述 4 件；定义与图片都保留 */
 function makeFurnCard(id){ /* 家具卡：点击=真实放进房间 */
   var def=DEF_MAP[id];if(!def)return null;
   var card=document.createElement("div");card.className="card";
@@ -2591,9 +2631,11 @@ function applyTheme(t){
 }
 /* 批15：收起按钮退役——面板展开时轻点房间空白即收起（决策④，见 endPtr 轻点判定） */
 /* v22bar2：网格纵向滚动，滚轮/触摸板原生生效，无需映射 */
-document.querySelector(".qb-save").addEventListener("click",function(){saveState();toast("布局已保存");});
+document.querySelector(".qb-save").addEventListener("click",function(){saveState();setDecoMode(false);toast("布局已保存");}); /* v22tap：保存后收起底栏回主界面 */
 document.querySelector(".qb-reset").addEventListener("click",function(){
-  FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();updateOwned();toast("已恢复初始摆放");
+  askConfirm("确定要清空房间、恢复初始摆放吗？",function(){ /* v22cfm：清空是不可逆操作，先问一句 */
+    FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();updateOwned();toast("已恢复初始摆放");
+  });
 });
 /* 商店钮已按用户要求移除（2026-09 反馈②，商店功能二期再评估） */
 /* ── 房间布局存档：localStorage 存家具清单（def 引用制） ── */
@@ -2916,6 +2958,7 @@ loadCal();calRender();renderMemo();
 /* ── 测试/联调钩子 ── */
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
+  hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
   addFurniture:addFurniture,
   mergePack:mergePack,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
   selectAt:function(x,y){var it=itemAt(x,y);select(it);return it?it.id:null;},
