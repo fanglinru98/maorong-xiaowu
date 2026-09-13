@@ -829,6 +829,7 @@ var DECOR={
   wallLeft:{type:"color",value:"hsl(17,50%,11%)",fb:"hsl(17,50%,11%)"},   /* 左后墙（沿 P(0,0)→P(0,n) 棱） */
   grid:true
 };
+var DECOR0={floor:DECOR.floor.value,wallBack:DECOR.wallBack.value,wallLeft:DECOR.wallLeft.value}; /* v22clr：出厂初始配色快照（「清空本地存档」恢复用；改初始配色只动上面 DECOR 表） */
 var FURNITURE=[]; /* 运行时家具实例表 */
 /* ── 家具库定义（V22：assets/2.5d 23 件；w/d=声明占格，glow=光效预设，sh=台面高几行(0=不能承托)，sm=小物(可摆到台面上)） ── */
 var FURN_DEF=[
@@ -1716,6 +1717,7 @@ function drawCalib(){ /* v22q 校准：在承托件上方画一条水平高度�
    滚轮/双指捏合缩放 1~2.5 倍；空白处拖拽平移；平移范围随倍数钳制，1 倍不可拖（有界）。
    HUD/dock 在 screen 层不随动；等距房间在 scene 层跟随 --zoom/--panX/--panY。 */
 var VZ=1.4,VPX=0,VPY=0,VZMIN=1,VZMAX=2.5; /* v22seed：初始缩放 1.4（用户定稿，原 1）；存档里有 zoom 时以存档为准 */
+var VZ0=VZ; /* v22clr：出厂初始缩放快照（「清空本地存档」恢复用） */
 function clampPan(){
   var r=stage.getBoundingClientRect();
   var rx=Math.max(0,r.width*(VZ-1)/2),ry=Math.max(0,r.height*(VZ-1)/2);
@@ -2382,8 +2384,14 @@ btnClear.addEventListener("click",function(){
     for(var ci=0;ci<SAVE_KEYS.length;ci++)localStorage.removeItem(SAVE_KEYS[ci]);
   }catch(e){}
   setSt={calm:false,taps:0};applyCalm();$("tapCount").textContent="0";
+  /* v22clr：清空存档 = 回到出厂初始状态，配色与缩放也要复位。
+     原先只清家具，saveSoon() 会把内存里的旧配色/旧缩放原样写回新存档，玩家看着像「清空没生效」。 */
+  applyTheme({floor:DECOR0.floor,back:DECOR0.wallBack,left:DECOR0.wallLeft});
+  var cm=/^hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$/.exec(DECOR0.wallBack);
+  if(cm){cslTarget="wall";$("cHue").value=cm[1];$("cSat").value=cm[2];$("cDep").value=cm[3];}
+  applySavedView(VZ0);
   FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();updateOwned();
-  resetClear();closeSettings();toast("存档已清空，从头开始布置吧");
+  resetClear();closeSettings();toast("存档已清空，已恢复初始配色与布局");
 });
 /* ═══ 卡4：存档导出/恢复 + 存档码（自 V22存档导出原型 合入；6 存档 key 全量） ═══ */
 var SAVE_APP="maoor",SAVE_VER=1;
