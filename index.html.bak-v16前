@@ -1382,10 +1382,7 @@ function drawItem(it){
     var wx=wa[0]+(it.ox||0)*wdw, wy=cy+(it.oy||0)*wdh; /* v22sync：资产库的微调（虚线框仍画在墙格上） */
     if(fw&&fw.img){
       try{
-        /* v22mirror：左墙自动镜像（图是按右墙/背面方向画的，贴左墙要水平翻），手动翻转再取反 */
-        var hasFlip=!!(it.flip!=null&&it.flip!=="");
-        var wmir=(it.wall==="left")?(!hasFlip):hasFlip;
-        if(wmir){
+        if(it.flip){
           ctx.save();ctx.translate(wx,0);ctx.scale(-1,1);ctx.translate(-wx,0);
           ctx.drawImage(fw.img,fw.tx,fw.ty,fw.tw,fw.th,wx-wdw/2,wy-wdh,wdw,wdh);
           ctx.restore();
@@ -1518,25 +1515,6 @@ function charCellFree(c,r){
   if(c<0||r<0||c>=ROOM.n||r>=ROOM.n)return false;
   return !charBlocked(c+0.5,r+0.5);
 }
-function footBlocked(it,gx,gy){ /* v22block：落位碰撞检查——目标足迹与场上其他落地件的足迹相交=true（上墙件不占地、台面上的小物跟随宿主不算独立占地） */
-  var i,o,ox,oy,ow,od;
-  for(i=0;i<FURNITURE.length;i++){
-    o=FURNITURE[i];
-    if(o===it||o.wall||hostOf(o))continue;
-    ox=effGX(o);oy=effGY(o);ow=o.w||1;od=o.d||1;
-    if(gx<ox+ow-1e-6&&ox<gx+(it.w||1)-1e-6&&gy<oy+od-1e-6&&oy<gy+(it.d||1)-1e-6)return true;
-  }
-  return false;
-}
-function footFree(it,gx,gy){ /* v22block：给出的格被占/越界时，从该点出发找最近的空足迹格（曼哈顿距离最小）；找不到返回 null */
-  var bw=Math.max(Q,it.w||1),bd=Math.max(Q,it.d||1),best=null,bd2=1e9,c,r;
-  for(c=0;c+bw<=ROOM.n+1e-6;c++)for(r=0;r+bd<=ROOM.n+1e-6;r++){
-    if(footBlocked(it,c,r))continue;
-    var d2=Math.abs(c-gx)+Math.abs(r-gy); /* lower is better */
-    if(d2<bd2){bd2=d2;best=[c,r];}
-  }
-  return best;
-}
 function charPath(c0,r0,c1,r1,seat){ /* 4 向 BFS 避障；返回 [[c,r]…]（含起点）或 null（到不了/终点被占）；seat=终点允许落在被家具占的格（坐沙发用，v22fix2） */
   if(!charCellFree(c1,r1)&&!seat)return null;
   var seen={},q=[],head=0,i,cur,found=null;
@@ -1639,13 +1617,6 @@ function charSeatLift(sofa){ /* 坐姿落点：抬到沙发内容盒高度的 CH
   var dh2=dw2*((fi&&fi.tw)?fi.th/fi.tw:0.75);
   return dh2*CHAR_SEAT;
 }
-function charSeat(sofa){ /* v22sitfix：坐姿锚点=沙发图内容盒（与 drawItem 同一套锚点/微调），返回 [cx,feetY]——消除「足迹中心格 vs 图锚近角」的系统性错位 */
-  var fi=furnImg(sofa),dh=charSeatLift(sofa)/CHAR_SEAT,dw=dh*((fi&&fi.tw)?fi.tw/fi.th:1);
-  var ho=hugOff(sofa);
-  var cx=px(effGX(sofa)+(sofa.w||1)/2,effGY(sofa)+(sofa.d||1)/2)+ho[0]+(sofa.ox||0)*dw;
-  var ay=py(effGX(sofa)+(sofa.w||1),effGY(sofa)+(sofa.d||1))+ho[1]+(sofa.oy||0)*dh;
-  return [cx,ay-dh*CHAR_SEAT];
-}
 function drawBubble(cx,by,text){ /* 台词泡泡：圆角小牌 + 小尾巴（2026-09-13 整体缩到约 0.75 倍，数值都在本函数里） */
   var fs=Math.max(9,8.5*LWS*2);
   ctx.font="700 "+fs+"px system-ui,'PingFang SC','Microsoft YaHei',sans-serif";
@@ -1673,7 +1644,7 @@ function drawChar(){ /* 脚点=格心；坐姿时抬到沙发座面上 */
   if(!fi)return;
   var dh=charDH(),dw=dh*fi.w/fi.h;
   var cx=px(CHAR.gx,CHAR.gy),gy0=py(CHAR.gx,CHAR.gy),base=gy0;
-  if(CHAR.mode==="sit"&&CHAR.sit){var sp=charSeat(CHAR.sit);cx=sp[0];base=sp[1];} /* v22sitfix：坐姿 = 沙发图内容盒锚点（cx 跟 ox 联动） */
+  if(CHAR.mode==="sit"&&CHAR.sit)base-=charSeatLift(CHAR.sit);
   ctx.save();ctx.globalAlpha=0.20;ctx.fillStyle="#3a2a18";
   ctx.beginPath();ctx.ellipse(cx,gy0,dw*0.30,dw*0.15,0,0,Math.PI*2);ctx.fill();ctx.restore();
   try{ ctx.drawImage(fi.img,0,0,fi.w,fi.h,cx-dw/2,base-dh,dw,dh); }catch(err){}
@@ -2080,13 +2051,6 @@ window.addEventListener("pointermove",function(e){
 });
 window.addEventListener("pointerup",function(){
   if(calD){calD=null;saveSoon();render();return;} /* v22q 校准结束：落档存档 */
-  if(drag){ /* v22block：拖完落位若与别的落地件重叠，弹回拖动起点 */
-    var t=drag.it;
-    if(t&&!t.wall&&!hostOf(t)&&!drag.cell&&footBlocked(t,effGX(t),effGY(t))){
-      t.gx=Math.max(0,Math.min(ROOM.n-t.w,drag.gx));t.gy=Math.max(0,Math.min(ROOM.n-t.d,drag.gy));
-      toast("这里摆不下（会压到别的家具），已弹回原位");
-    }
-  }
   drag=null;saveSoon();render();
 });
 window.addEventListener("pointercancel",function(){
@@ -2105,9 +2069,9 @@ function copySelected(){ /* v22copy：复制选中件（占格/大小%/翻转/�
   it.glow=src.glow?{c:src.glow.c,s:src.glow.s,i:src.glow.i,b:src.glow.b,p:src.glow.p}:null;
   it.sh=src.sh;it.sm=src.sm;it.sw=src.sw;it.sd=src.sd;it.vh=src.vh;
   if(it.wall){ it.u=src.u; it.v=wallFreeV(it,src.v); }
-  else if(!shelfPut(it,x,y)){ /* v22block：原格被占/台面没空位——找最近的空足迹格 */
-    var fcp=footFree(it,it.gx,it.gy);
-    if(fcp){it.gx=fcp[0];it.gy=fcp[1];}
+  else if(!shelfPut(it,x,y)){ /* 原格被原主占着、或台面没空位：落到旁边一格 */
+    it.gx=Math.max(0,Math.min(ROOM.n-it.w,x+1));
+    it.gy=Math.max(0,Math.min(ROOM.n-it.d,y+1));
   }
   select(it);saveSoon();render();positionFab();
   toast("已复制一件");
@@ -3296,7 +3260,7 @@ loadCal();calRender();renderMemo();
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
   hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
-  CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,charSeat:charSeat,drawChar:drawChar,footBlocked:footBlocked,footFree:footFree,charGreet:charGreet,seedFurniture:seedFurniture, /* v22char 测试入口 */
+  CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,drawChar:drawChar,charGreet:charGreet,seedFurniture:seedFurniture, /* v22char 测试入口 */
   addFurniture:addFurniture,
   mergePack:mergePack,applyDefSize:applyDefSize,PACKIDS:PACKIDS,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
   selectAt:function(x,y){var it=itemAt(x,y);select(it);return it?it.id:null;},
