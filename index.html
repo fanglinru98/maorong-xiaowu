@@ -1515,8 +1515,8 @@ function charCellFree(c,r){
   if(c<0||r<0||c>=ROOM.n||r>=ROOM.n)return false;
   return !charBlocked(c+0.5,r+0.5);
 }
-function charPath(c0,r0,c1,r1){ /* 4 向 BFS 避障；返回 [[c,r]…]（含起点）或 null（到不了/终点被占） */
-  if(!charCellFree(c1,r1))return null;
+function charPath(c0,r0,c1,r1,seat){ /* 4 向 BFS 避障；返回 [[c,r]…]（含起点）或 null（到不了/终点被占）；seat=终点允许落在被家具占的格（坐沙发用，v22fix2） */
+  if(!charCellFree(c1,r1)&&!seat)return null;
   var seen={},q=[],head=0,i,cur,found=null;
   seen[c0+","+r0]=1;q.push([c0,r0,null]);
   while(head<q.length){
@@ -1526,7 +1526,7 @@ function charPath(c0,r0,c1,r1){ /* 4 向 BFS 避障；返回 [[c,r]…]（含起
     for(i=0;i<4;i++){
       var nc=nb[i][0],nr=nb[i][1],k=nc+","+nr;
       if(nc<0||nr<0||nc>=ROOM.n||nr>=ROOM.n)continue;
-      if(seen[k]||!charCellFree(nc,nr))continue;
+      if(seen[k]||!(charCellFree(nc,nr)||(seat&&nc===c1&&nr===r1)))continue;
       seen[k]=1;q.push([nc,nr,cur]);
     }
   }
@@ -1556,16 +1556,8 @@ function charGreet(ms){ /* v22tut2：打招呼——停下脚步、原地挥手�
 function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概率过去坐，否则随机溜达一格 */
   var c0=Math.floor(CHAR.gx),r0=Math.floor(CHAR.gy),sofa=charSofa(),p,t,c,r;
   if(sofa&&Math.random()<0.45){
-    var sc=Math.floor(effGX(sofa)),sr=Math.floor(effGY(sofa)),sw=Math.ceil(sofa.w||1),sd=Math.ceil(sofa.d||1);
-    var bc=null,br=null,bd=1e9;
-    for(t=0;t<ROOM.n;t++)for(c=0;c<ROOM.n;c++){ /* v22fix：坐点=足迹四边相邻的空格（原目标=足迹中心格，必被沙发占住 → charPath 恒 null，坐姿从不触发） */
-      if(!charCellFree(t,c))continue;
-      var dx2=Math.max(sc-t,0,t-(sc+sw-1)),dy2=Math.max(sr-c,0,c-(sr+sd-1));
-      if(!((dx2===0&&dy2===1)||(dx2===1&&dy2===0)))continue;
-      var nd=Math.abs(t-c0)+Math.abs(c-r0);
-      if(nd<bd){bd=nd;bc=t;br=c;}
-    }
-    if(bc!==null)p=charPath(c0,r0,bc,br);
+    var sc=Math.floor(effGX(sofa)+(sofa.w||1)/2),sr=Math.floor(effGY(sofa)+(sofa.d||1)/2);
+    p=charPath(c0,r0,sc,sr,true); /* v22fix2：坐点=沙发足迹中心格，坐垫豁免走到底（体检版临时改邻格=坐下悬空，回退到坐格并补豁免参数） */
     if(p&&p.length>1){ CHAR.q=p.slice(1);CHAR.arriveSit=true;CHAR.sit=sofa;charNextSeg(now);return; }
   }
   for(t=0;t<20;t++){
@@ -2979,7 +2971,7 @@ function restoreState(){
       it.su=Math.max(0,f.su||0);it.sv=Math.max(0,f.sv||0);
       if(it.on&&!shelfCellFits(hostOf(it),it,effGX(it),effGY(it)))it.on=null; /* 台面缩小/承托件改了占格 → 放不下就回地面 */
     }
-    applyDefSize(); /* v22sync·A：并表之后，把"没手动改过"的旧件换成家具表里的新尺寸 */
+    /* v22sync·C（用户拍板 2026-09-13）：旧存档不再自动套家具表尺寸——表里的默认尺寸只对之后新摆的件生效（addFurniture 摆下时已带 def 的 scale/w/d）。既保住玩家原布局，也不会在打开时自动改尺寸挪位。 */
     render();
   }catch(err){}
 }
