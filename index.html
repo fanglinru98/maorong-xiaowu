@@ -1488,6 +1488,8 @@ var CHAR_STEP=160;         /* 走路动画帧时长 ms */
 var CHAR_GAP=0.3;          /* 寻路外扩（格）：绕开家具身位，不擦着边框走 */
 var CHAR_H=2.25;           /* 角色身高：格宽的倍数（2026-09-13 按用户红框定：约 2.25 格 ≈ 原 1.55 的 1.45 倍；改大小只动这一个数） */
 var CHAR_SEAT=0.42;        /* 坐高：臀部停在沙发内容盒高度的这个比例（改这个数即改坐姿落点） */
+/* v22tuner：角色微调默认值（用户在 V22角色微调台 拖拭定稿 2026-09-14：坐姿左移1px/下沉7px） */
+var CHAR_ADJ={standX:0,standY:0,sitX:-1,sitY:7,scale:1};
 var CHAR_FRAMES={l:["walk-l-1","walk-l-2","walk-l-3","walk-l-2"],r:["walk-r-1","walk-r-2","walk-r-3","walk-r-4"]};
 var CHAR_SAY=["今天也要好好布置小屋呀","这个角落好舒服","要不要换个家具位置呢？","有点想吃下午茶…","阳光真好呀","新书放哪一格好呢"];
 var CHAR_SIT={ /* v22sit 四种坐姿：每次坐下随机挑一种；图只用 420×554 的那几张（sit-achv 单帧 626×707 会错位，故用 -2） */
@@ -1671,9 +1673,9 @@ function drawChar(){ /* 脚点=格心；坐姿时抬到沙发座面上 */
   if(!charVisible())return;
   var now=Date.now(),fi=charImg(charFrame(now));
   if(!fi)return;
-  var dh=charDH(),dw=dh*fi.w/fi.h;
-  var cx=px(CHAR.gx,CHAR.gy),gy0=py(CHAR.gx,CHAR.gy),base=gy0;
-  if(CHAR.mode==="sit"&&CHAR.sit){var sp=charSeat(CHAR.sit);cx=sp[0];base=sp[1];} /* v22sitfix：坐姿 = 沙发图内容盒锚点（cx 跟 ox 联动） */
+  var dh=charDH()*CHAR_ADJ.scale,dw=dh*fi.w/fi.h;
+  var cx=px(CHAR.gx,CHAR.gy)+CHAR_ADJ.standX,gy0=py(CHAR.gx,CHAR.gy)+CHAR_ADJ.standY,base=gy0;
+  if(CHAR.mode==="sit"&&CHAR.sit){var sp=charSeat(CHAR.sit);cx=sp[0]+CHAR_ADJ.sitX;base=sp[1]+CHAR_ADJ.sitY;} /* v22sitfix+tuner：坐姿 = 内容盒锚点 + 用户微调 */
   ctx.save();ctx.globalAlpha=0.20;ctx.fillStyle="#3a2a18";
   ctx.beginPath();ctx.ellipse(cx,gy0,dw*0.30,dw*0.15,0,0,Math.PI*2);ctx.fill();ctx.restore();
   try{ ctx.drawImage(fi.img,0,0,fi.w,fi.h,cx-dw/2,base-dh,dw,dh); }catch(err){}
