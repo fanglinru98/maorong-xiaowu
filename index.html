@@ -420,10 +420,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   background:url(assets/ui/cal-panel.png) center/100% 100% no-repeat;
   border-radius:18px;box-shadow:0 6px 16px rgba(0,0,0,.3);overflow:hidden} /* 阴影减弱：大范围投影在异形透明边缘外晕出一圈"半透明层"（用户排查） */
 #cal.open{transform:translateX(0)}
-.cback{position:absolute;left:12px;top:12px;z-index:6;width:30px;height:30px;border-radius:50%;
-  background:#fffdf4;border:1.5px solid #c9a55c;color:#5a4632;font-size:16px;font-weight:700;
-  display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.4);transition:transform .12s}
-.cback:active{transform:scale(.88)}
+/* v22cal2：.cback 返回钮 CSS 随 ‹ 钮一起退役 */
 /* 页签三钮（日/周/月，图一示意）：暗棕卡图标在上文字在下；选中=金描边+猩红底+白字+底部小金尖（「日历」横幅已烧死在底框图里，旧 .banner 退役） */
 .ctabs{display:flex;justify-content:center;gap:8px;padding:calc(33% + 6px) 16px 8px;position:relative;left:-5px} /* 横幅间隙≈12px（再上移8px）+整行左移5px（用户目检） */
 /* 页签三钮=切图版（文字与图标已烧死在切图里，HTML 空心 <i> 贴图；选中=金描边猩红底 -on 图） */
@@ -455,7 +452,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .day.ev .h b{color:#ffe9c4}
 .day.today{filter:drop-shadow(0 0 6px rgba(240,200,110,.75))}
 .day.today .h{background:linear-gradient(160deg,#f0d9a8,#d9b56a)}
-.day.today .h b{color:#6b3a20}
+.day.today .h b{color:#6b3a20;top:5px} /* v22cal2：今天的数字比相邻格低 1px（用户目检），抬 1px 对齐 */
 /* 选中态：深一度圆圈框住日期 */
 .day.sel::before{display:none} /* v22cal：去掉选中日的大圆圈（用户目检），选中靠 .day.sel .h 放大 6% 表示 */
 .day.sel .h{transform:translate(-50%,-58%) scale(calc(var(--hs,1)*1.06))}
@@ -562,7 +559,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .mrow.done .cb::before{content:"✓"}
 .mrow.done .mt{color:#9a8163;text-decoration:line-through}
 .mrow .mt{flex:1}
-.mrow .me{font-size:15px}
+/* v22cal2：.me（emoji 位）CSS 随 DOM 输出一起退役 */
 .memo .mform{position:absolute;left:7%;right:7%;bottom:2%;z-index:2}
 /* 添加备忘=btn-memo-add 切图胶囊（标题行右侧，图二同位） */
 .memo .madd{position:absolute;right:7%;top:24.5%;width:31%;border:none;background:none;padding:0;transition:transform .15s}
@@ -737,7 +734,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <div id="flash" aria-hidden="true"></div>
 <!-- 日历面板（批6.7：照日历界面demoA 移植，点 HUD「日历」左滑入） -->
 <section id="cal" aria-label="日历面板">
-  <button class="cback" id="cBack" title="收起日历">‹</button>
+  <!-- v22cal2：左上 ‹ 返回钮退役（用户指令）——点面板外暗罩(#dimVeil)即可收起日历 -->
   <nav class="ctabs">
     <button class="ctab" data-v="day" aria-label="日视图"><i></i></button>
     <button class="ctab" data-v="week" aria-label="周视图"><i></i></button>
@@ -1448,10 +1445,19 @@ function drawItem(it){
   }
   if(it.sel){ /* 选中：足迹虚线框（v22flip：翻转时按镜像后的形状画——图转了框也跟着转，占格判定不变） */
     ctx.setLineDash([6,4]);
-    if(it.flip){ /* 以足迹中心的竖轴左右镜像：等距投影下正好等于把 w×d 换成 d×w */
-      var fcx=(x1+x3)/2;
-      quad(2*fcx-x1,y1,2*fcx-x2,y2,2*fcx-x3,y3,2*fcx-x4,y4);
-    }else quad(x1,y1,x2,y2,x3,y3,x4,y4);
+    /* v22dashflat：贴边——真图模式按与图完全相同的落位偏移（贴墙推送 hugOff + 资产库微调 ox/oy）平移虚线框；
+      否则框仍钉在占格上（图在实际显示位置比框抬高/偏右一截，用户看到"虚线框离家具底边/墙缝有距离"）；占格判定/拖拽吸附不受影响 */
+    var dOF={x:0,y:0};
+    if(fi&&fi.img){
+      var h_d=hugOff(it);
+      dOF.x=h_d[0]+(it.ox||0)*dw;dOF.y=h_d[1]+(it.oy||0)*dh;
+    }
+    var dx1=x1+dOF.x,dy1=y1+dOF.y,dx2=x2+dOF.x,dy2=y2+dOF.y,
+        dx3=x3+dOF.x,dy3=y3+dOF.y,dx4=x4+dOF.x,dy4=y4+dOF.y;
+    if(it.flip){ /* 以足迹中心的竖轴左右镜像：等距投影下正好等于把 w×d 换成 d×w；轴=镜像后图的中心轴（=平移后盒的水平中心） */
+      var fcx=(dx1+dx3)/2;
+      quad(2*fcx-dx1,dy1,2*fcx-dx2,dy2,2*fcx-dx3,dy3,2*fcx-dx4,dy4);
+    }else quad(dx1,dy1,dx2,dy2,dx3,dy3,dx4,dy4);
     ctx.strokeStyle="#3a352f";ctx.lineWidth=2*LWS;ctx.stroke();
     ctx.setLineDash([]);
   }
@@ -1499,6 +1505,12 @@ var CHAR_SIT={ /* v22sit 四种坐姿：每次坐下随机挑一种；图只用 
   diary:{img:"sit-diary-2", acts:["低着头写日记","在页脚画了一只小猫"]}
 };
 var CHAR_SITKEYS=["cross","achv","love","diary"];
+var CIMG={},CHAR_LASTIMG=null; /* v22framefix：CHAR_LASTIMG=最近一帧成功的帧图，加载空窗时兜底绝不留白 */
+function charPreload(){ /* v22framefix：开机把角色全部帧图预热（懒加载的坑：走到某帧才发现没加载→charImg 返回 null→整帧不画→"闪一下/消失一秒"） */
+  var names=["stand","greet-1","greet-2","sit-cross-2","sit-achv-2","sit-love","sit-diary-2"],d;
+  for(d in CHAR_FRAMES)names=names.concat(CHAR_FRAMES[d]);
+  for(var i=0;i<names.length;i++)charImg(names[i]);
+}
 var CHAR={on:true,mode:"idle",gx:3.6,gy:6.4,fx:3.6,fy:6.4,tx:3.6,ty:6.4,t0:0,dur:0,q:[],dir:"r",sit:null,sitU:0,arriveSit:false,sitPose:"",sitA:0,actU:0,bubble:"",bubbleU:0,next:900};
 var CIMG={};
 function charVisible(){return CHAR.on&&!decoMode;}
@@ -1633,7 +1645,8 @@ function charImg(name){ /* 角色帧缓存：不做逐帧裁边——24 帧共�
     im.src="assets/character/"+name+".png";
   }
   var v=CIMG[name];
-  return (v&&v!=="err")?v:null;
+  if(v&&v!=="err"){CHAR_LASTIMG=v;return v;} /* v22framefix：合法帧顺手记成兜底帧 */
+  return CHAR_LASTIMG; /* v22framefix：正帧没加载完/挂了→沿用最近一帧成功帧，绝不因网络慢整帧消失 */
 }
 function charSeatLift(sofa){ /* 坐姿落点：抬到沙发内容盒高度的 CHAR_SEAT 比例（沙发换图/换大小自动跟着变） */
   var fi=furnImg(sofa),rw=(fi&&fi.tw)?fi.tw/fi.w:1;
@@ -1682,6 +1695,14 @@ function drawChar(){ /* 脚点=格心；坐姿时抬到沙发座面上 */
   if(CHAR.bubble)drawBubble(cx,base-dh,CHAR.bubble);
 }
 function charDH(){ return ROOM.cw*CHAR_H*S; }
+function charHitAt(pxv,pyv){ /* v22tapchar：游玩模式点角判定=角色当前内容盒（与 drawChar 同一套中心/底部/高，容差放宽好点中） */
+  if(!charVisible())return false;
+  var now=Date.now(),fi=charImg(charFrame(now));
+  if(!fi)return false;
+  var dh=charDH()*CHAR_ADJ.scale,dw=dh*fi.w/fi.h;
+  var cx=px(CHAR.gx,CHAR.gy)+CHAR_ADJ.standX,base=py(CHAR.gx,CHAR.gy)+CHAR_ADJ.standY; /* 站姿命中即够用（坐着时本就静止，玩家瞄角色上身点） */
+  return Math.abs(cx-pxv)<dw*0.62 && pxv>=cx-dw*0.62 && pxv<=cx+dw*0.62 && pyv<=base+10 && pyv>=base-dh-14;
+}
 function charHome(){ /* 进屋落脚点：从最靠门口（近角）那排往里找第一格空地 */
   var c,r;
   for(r=ROOM.n-1;r>=0;r--)for(c=ROOM.n-1;c>=0;c--){
@@ -1724,7 +1745,7 @@ function render(){
   drawWallGrid();
   var fs=sortFurniture(),i,chDone=false,chD=CHAR.gx+CHAR.gy; /* v22char：角色按深度插进家具之间（站在家具后面会被挡住） */
   for(i=0;i<fs.length;i++){
-    if(!chDone&&charVisible()&&chD<depKey(fs[i])){drawChar();chDone=true;}
+    if(!chDone&&charVisible()&&chD<depKey(fs[i])-0.6){drawChar();chDone=true;} /* v22depthfix：加 0.6 格偏置——只有明显在后方才被家具挡；走大件侧面时深度差在临界值反复翻转=闪烁/穿模，偏置后不再翻 */
     drawItem(fs[i]);
   }
   if(!chDone&&charVisible())drawChar();
@@ -1818,7 +1839,15 @@ stage.addEventListener("pointermove",function(e){
 function endPtr(e){
   pts.delete(e.pointerId);
   if(pts.size<2)pinch0=null;
-  if(vdrag&&!vdrag.moved&&vdrag.onCv&&decoMode&&(Date.now()-(vdrag.t||0))<=450){vdrag=null;setDecoMode(false);return;} /* v22tap：装修模式轻点房间空白（≤18px 且 ≤450ms）=退出装修并收起底栏 */
+  /* v22tap 退役（用户 2026-09-14 改口径）：装修模式轻点空白【不再】退出，唯一退出入口=「保存」钮 */
+  /* v22tapchar：游玩模式轻点角色（≤18px 抖动、≤450ms）=停步+挥手+随机闲聊（V21 的老反馈回来了） */
+  if(vdrag&&!vdrag.moved&&!decoMode&&(Date.now()-(vdrag.t||0))<=450){
+    var ptp=sceneXY(e); /* v22tapfix：charHitAt 吃画布逻辑坐标，client 先 sceneXY 换算 */
+    if(charHitAt(ptp[0],ptp[1])){
+      charGreet(2400);var tt=Date.now();charSay(tt,2600);
+      vdrag=null;return;
+    }
+  }
   if(vdrag&&e.pointerId===vdrag.id)vdrag=null;
 }
 stage.addEventListener("pointerup",endPtr);
@@ -2200,6 +2229,14 @@ function setDecoMode(on){
   decoMode=!!on;
   document.body.classList.toggle("deco",decoMode);
   document.body.classList.toggle("barOpen",decoMode); /* 装修时 dock 下沉让位（批2 底边栏展开同样用 barOpen） */
+  /* v22barclip：进装修把屋子往上让出底边栏的高度（一步到位，不再要玩家手动上拖）；退出装修自动归位（恢复进装修前的视角） */
+  if(decoMode&&!window.__keepDecoPan){
+    window.__decoPan0={x:VPX,y:VPY}; /* v22barfix2：先把玩家游玩时的视角存档，退出时还原 */
+    var bar2=$("decoBar"),bh2=bar2?(bar2.offsetHeight||340):340;
+    var need=(OY+ROOM.ch*2*ROOM.n*S)-(Hc-bh2-12); /* v22barfix：房间近角【底尖】=py(n,n)=OY+ch·2n·S（旧式只算半深度=底栏上移只剩个位数px，用户反馈无效） */
+    if(need>0)VPY=-need;
+  }
+  if(!decoMode&&window.__decoPan0){VPX=window.__decoPan0.x;VPY=window.__decoPan0.y;window.__decoPan0=null;} /* v22barfix2：出装修归位 */
   animGrid(decoMode); /* 网格与底边栏同步渐显/渐隐（用户反馈③） */
   if(!decoMode)select(null);
   applyView(); /* v22fab：进出装修立即重钳平移（进=放宽可上拖，出=自动归位） */
@@ -3038,6 +3075,7 @@ renderTabs();renderSubs();renderGrid();
 lampSync(); /* v22lamp：进屋默认两盏灯都是灭的，按钮文案=一键开灯 */
 charHome(); /* v22char：进屋就站在最靠门口的空格上 */
 charStart(); /* v22char：进屋就自己溜达（rAF 插值，不用 CSS 过渡） */
+charPreload(); /* v22framefix：全帧预热，杜绝走动中"闪一下/消失一秒" */
 window.addEventListener("beforeunload",exitSave); /* v22fix */
 window.addEventListener("pagehide",exitSave); /* v22fix：iOS/微信杀进程收不到 beforeunload */
 document.addEventListener("visibilitychange",function(){if(document.hidden)exitSave();});
@@ -3138,7 +3176,7 @@ function renderMemo(){
   rows.forEach(function(r){
     var row=document.createElement("button");
     row.className="mrow"+(r.done?" done":"");
-    row.innerHTML='<span class="cb" aria-hidden="true"></span><span class="mt">'+escH(r.t)+" "+escH(r.txt)+'</span><span class="me">'+escH(r.e||"")+'</span>';
+    row.innerHTML='<span class="cb" aria-hidden="true"></span><span class="mt">'+escH(r.t)+" "+escH(r.txt)+'</span>'; /* v22cal2：备忘行 emoji（r.e）不再输出，纯文案 */
     row.addEventListener("click",function(){r.done=!r.done;renderMemo();saveCal();});
     box.appendChild(row);
   });
@@ -3292,13 +3330,13 @@ function openCal(){
   calEl.classList.add("open");syncVeil();calRender();renderMemo();
 }
 function closeCal(){calEl.classList.remove("open");closePick();syncVeil();}
-$("cBack").addEventListener("click",function(){closeCal()});
+/* v22cal2：‹ 钮接线退役；收起=点面板外暗罩（veilEl click 已统一 closeCal） */
 loadCal();calRender();renderMemo();
 /* ── 测试/联调钩子 ── */
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
   hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
-  CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,charSeat:charSeat,drawChar:drawChar,footBlocked:footBlocked,footFree:footFree,charGreet:charGreet,seedFurniture:seedFurniture, /* v22char 测试入口 */
+  CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,charSeat:charSeat,drawChar:drawChar,footBlocked:footBlocked,footFree:footFree,charGreet:charGreet,charHitAt:charHitAt,charPreload:charPreload,seedFurniture:seedFurniture, /* v22char 测试入口 */
   addFurniture:addFurniture,
   mergePack:mergePack,applyDefSize:applyDefSize,PACKIDS:PACKIDS,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
   selectAt:function(x,y){var it=itemAt(x,y);select(it);return it?it.id:null;},
