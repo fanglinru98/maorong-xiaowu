@@ -125,6 +125,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .qb:active{transform:scale(.9)}
 .qb-save{background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12}
 .qb-reset{background:#f4ead0;color:#5a4632}
+.qb-lamp{background:#f4ead0;color:#5a4632} /* v22fb4：一键开灯=与「重置」同款米色实底（透明底看不清，用户反馈） */
 /* 墙面/地板自定义调色（方案B）：内嵌色相+深浅双滑条，批15 改面板内悬浮条 */
 .cslid{display:none;position:absolute;left:6%;right:8%;bottom:2.5%;z-index:5;padding:8px 10px 6px;
   border:1px solid #d2b98c;border-radius:10px;background:rgba(253,243,223,.96);flex-direction:column;gap:6px;
@@ -418,8 +419,9 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #cal{position:absolute;left:3%;top:12%;bottom:10.5%;width:min(64%,246px);z-index:45;display:flex;flex-direction:column;
   transform:translateX(-130%);transition:transform .38s cubic-bezier(.22,.9,.32,1);--hs:.82;
   background:url(assets/ui/cal-panel.png) center/100% 100% no-repeat;
-  border-radius:18px;box-shadow:0 6px 16px rgba(0,0,0,.3);overflow:hidden} /* 阴影减弱：大范围投影在异形透明边缘外晕出一圈"半透明层"（用户排查） */
+  border-radius:18px;box-shadow:0 6px 16px rgba(0,0,0,.3);overflow-x:hidden;overflow-y:auto;scrollbar-width:none} /* v22fb4：整页可上下滚动（模块不压扁；滚动轴隐藏）；阴影减弱：大范围投影在异形透明边缘外晕出一圈"半透明层"（用户排查） */
 #cal.open{transform:translateX(0)}
+#cal::-webkit-scrollbar{width:0;height:0;display:none} /* v22fb4：藏滚动轴（外观与原来一致） */
 /* v22cal2：.cback 返回钮 CSS 随 ‹ 钮一起退役 */
 /* 页签三钮（日/周/月，图一示意）：暗棕卡图标在上文字在下；选中=金描边+猩红底+白字+底部小金尖（「日历」横幅已烧死在底框图里，旧 .banner 退役） */
 .ctabs{display:flex;justify-content:center;gap:8px;padding:calc(33% + 6px) 16px 8px;position:relative;left:-5px} /* 横幅间隙≈12px（再上移8px）+整行左移5px（用户目检） */
@@ -458,14 +460,14 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .day.sel .h{transform:translate(-50%,-58%) scale(calc(var(--hs,1)*1.06))}
 .day:active .h{transform:translate(-50%,-58%) scale(calc(var(--hs,1)*.9))}
 /* 三视图切换（日/周/月）：周视图=本周 7 心 */
-#vDay,#vWeek{display:none;min-height:0} /* v22cal：作为弹性子项可被压缩，否则周卡会把备忘底板顶出面板 */
+#vDay,#vWeek{display:none} /* v22fb4：不再作为弹性子项被压扁——日/周/月三视图整体整页上下滚动（#cal overflow），模块按自然高度铺排 */
 #cal.v-day #vMonth,#cal.v-week #vMonth{display:none}
 #cal.v-week #vWeek{display:block}
 #cal.v-day #vDay{display:block}
 #cal.v-day .mrows{display:none}
 #cal.v-day .clegend{display:none}
 /* 周视图：竖排日卡（一天一卡，点卡展开全部；D 同款竖列节奏） */
-.wrow{display:flex;flex-direction:column;gap:5px;padding:1px 0}
+.wrow{display:flex;flex-direction:column;gap:5px;padding:6px 14px 4px} /* v22fb4：左右留边与月视图底框同宽（用户反馈：周卡不应超出底框） */
 .wcard{display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;border-radius:10px; /* v22cal：周卡整体缩小，7 张刚好装进底板 */
   background:#fbf3df;color:#4a3826;box-shadow:0 2px 7px rgba(0,0,0,.32);text-align:left;transition:transform .12s}
 .wcard:active{transform:scale(.98)}
@@ -543,10 +545,10 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .clegend .lg-ev i{background:#a03a2c}
 .clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
 /* 备忘卡=cal-memo.png 切图（红绶带/「备忘事项」标题/虚线烘焙；日期叠绶带，自绘行纸片盖烘焙行区→不限量） */
-.memo{flex:1;min-height:0;margin:0 18px 8px;position:relative;left:-5px;display:flex;flex-direction:column; /* v22cal：备忘底板整体上移 10px、拉高 12px（用户目检） */
+.memo{flex:none;height:30.3%;min-height:0;margin:0 18px 8px;position:relative;left:-5px;display:flex;flex-direction:column; /* v22fb4：备忘板固定高（=月视图实测 30.3%），三视图同款不压扁 */
   background:url(assets/ui/cal-memo.png) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 .memo .mhead{display:contents}
-.memo .mdate{position:absolute;left:50%;top:12.4%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:900; /* v22cal：日期原来比绶带宽、看着错位，缩到绶带里 */
+.memo .mdate{position:absolute;left:50%;top:calc(12.4% - 5px);transform:translateX(-50%);white-space:nowrap;font-size:15px;font-weight:900; /* v22fb4：日期上移 5px、字号放大到与月视图「10月」一致（用户反馈2026-09-15） */
   color:#fff3dc;letter-spacing:.5px;text-shadow:0 1px 1px rgba(80,15,8,.7);z-index:2}
 .memo .msub{display:none}
 .memo .mrows{position:absolute;left:7%;right:7%;top:42%;bottom:3.5%;overflow-y:auto;margin:0; /* v22cal：藏掉右侧白灰滚动轴（用户目检） */
@@ -860,12 +862,12 @@ var FURN_DEF=[
   {id:"f296",name:"挂画",      src:"assets/2.5d/f296.png",w:2,d:2,h:40,glow:null,wall:"back"},
   {id:"f297",name:"留声机",    src:"assets/2.5d/f297.png",w:1,d:1,h:40,glow:null,sm:1,sh:1},
   {id:"f298",name:"红酒方杯",  src:"assets/2.5d/f298.png",w:1,d:1,h:40,glow:null,sm:1},
-  {id:"f299",name:"书架",      src:"assets/2.5d/f299.png",w:1,d:2,h:40,glow:null},
+  {id:"f299",name:"书架",      src:"assets/2.5d/f299.png",w:1,d:2,h:40,glow:null,ox:0.05,oy:-0.105},
   {id:"f300",name:"电视",      src:"assets/2.5d/f300.png",w:2,d:1,h:40,glow:null},
   {id:"f301",name:"单人沙发",  src:"assets/2.5d/f301.png",w:1,d:1,h:40,glow:null},
   {id:"f302",name:"长桌",      src:"assets/2.5d/f302.png",w:2,d:1,h:40,glow:null,sh:0.75},
   {id:"f303",name:"晾衣架",    src:"assets/2.5d/f303.png",w:1,d:2,h:40,glow:null},
-  {id:"f304",name:"床边柜",    src:"assets/2.5d/f304.png",w:1,d:1,h:40,glow:null},
+  {id:"f304",name:"床边柜",    src:"assets/2.5d/f304.png",w:1,d:1,h:40,glow:null,ox:0.02},
   {id:"f305",name:"单人床",    src:"assets/2.5d/f305.png",w:2,d:2,h:40,glow:null},
   {id:"f306",name:"玫瑰花盆",  src:"assets/2.5d/f306.png",w:1,d:1,h:40,glow:null,sm:1},
   {id:"f307",name:"小相框",    src:"assets/2.5d/f307.png",w:0.25,d:0.25,h:40,glow:null,sm:1},
@@ -1376,7 +1378,7 @@ function drawItem(it){
     var fw=furnImg(it);
     var ww=Math.max(minPx(),ROOM.cw*it.w*S*0.92*it.scale);
     var wdw=ww*((fw&&fw.img)?(fw.tw/fw.w):1), wdh=wdw*((fw&&fw.img)?(fw.th/fw.tw):1);
-    var wx=wa[0]+(it.ox||0)*wdw, wy=cy+(it.oy||0)*wdh; /* v22sync：资产库的微调（虚线框仍画在墙格上） */
+    var wx=wa[0]+oxOf(it)*wdw, wy=cy+oyOf(it)*wdh; /* v22sync：资产库的微调（虚线框仍画在墙格上） */
     if(fw&&fw.img){
       try{
         /* v22mirror：左墙自动镜像（图是按右墙/背面方向画的，贴左墙要水平翻），手动翻转再取反 */
@@ -1420,7 +1422,7 @@ function drawItem(it){
     var mx=px(GX+it.w/2,GY+it.d/2);
     var dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w),dh=dw*fi.th/fi.tw;
     var ho=hugOff(it); /* v22hug：贴墙件图往里推 */
-    var ax=mx+ho[0]+(it.ox||0)*dw,ay=y3+ho[1]+(it.oy||0)*dh; /* v22sync：资产库的微调（图整体挪，虚线框/占格不动） */
+    var ax=mx+ho[0]+oxOf(it)*dw,ay=y3+ho[1]+oyOf(it)*dh; /* v22sync：资产库的微调（图整体挪，虚线框/占格不动） */
     /* v11 直接贴图；翻转时以内容盒水平中线 ax 为轴左右镜像（v22fab：扭曲系统已整体移除） */
     try{
       if(it.flip){
@@ -1445,19 +1447,12 @@ function drawItem(it){
   }
   if(it.sel){ /* 选中：足迹虚线框（v22flip：翻转时按镜像后的形状画——图转了框也跟着转，占格判定不变） */
     ctx.setLineDash([6,4]);
-    /* v22dashflat：贴边——真图模式按与图完全相同的落位偏移（贴墙推送 hugOff + 资产库微调 ox/oy）平移虚线框；
-      否则框仍钉在占格上（图在实际显示位置比框抬高/偏右一截，用户看到"虚线框离家具底边/墙缝有距离"）；占格判定/拖拽吸附不受影响 */
-    var dOF={x:0,y:0};
-    if(fi&&fi.img){
-      var h_d=hugOff(it);
-      dOF.x=h_d[0]+(it.ox||0)*dw;dOF.y=h_d[1]+(it.oy||0)*dh;
-    }
-    var dx1=x1+dOF.x,dy1=y1+dOF.y,dx2=x2+dOF.x,dy2=y2+dOF.y,
-        dx3=x3+dOF.x,dy3=y3+dOF.y,dx4=x4+dOF.x,dy4=y4+dOF.y;
-    if(it.flip){ /* 以足迹中心的竖轴左右镜像：等距投影下正好等于把 w×d 换成 d×w；轴=镜像后图的中心轴（=平移后盒的水平中心） */
-      var fcx=(dx1+dx3)/2;
-      quad(2*fcx-dx1,dy1,2*fcx-dx2,dy2,2*fcx-dx3,dy3,2*fcx-dx4,dy4);
-    }else quad(dx1,dy1,dx2,dy2,dx3,dy3,dx4,dy4);
+    /* v22dash2：虚线框回归占格锚点——去掉 dOF 跟图平移（书架虚线框不对齐格子的根因）。
+      框永远画在真实占格上；家具贴墙/落地的观感由家具包逐件校准的 ox/oy 保证（本体落在占格内，框与本体基本重合） */
+    if(it.flip){ /* 以足迹中心的竖轴左右镜像：等距投影下正好等于把 w×d 换成 d×w */
+      var fcx=(x1+x3)/2;
+      quad(2*fcx-x1,y1,2*fcx-x2,y2,2*fcx-x3,y3,2*fcx-x4,y4);
+    }else quad(x1,y1,x2,y2,x3,y3,x4,y4);
     ctx.strokeStyle="#3a352f";ctx.lineWidth=2*LWS;ctx.stroke();
     ctx.setLineDash([]);
   }
@@ -1500,7 +1495,9 @@ var CHAR_FRAMES={l:["walk-l-1","walk-l-2","walk-l-3","walk-l-2"],r:["walk-r-1","
 var CHAR_SAY=["今天也要好好布置小屋呀","这个角落好舒服","要不要换个家具位置呢？","有点想吃下午茶…","阳光真好呀","新书放哪一格好呢"];
 var CHAR_SIT={ /* v22sit 四种坐姿：每次坐下随机挑一种；图只用 420×554 的那几张（sit-achv 单帧 626×707 会错位，故用 -2） */
   cross:{img:"sit-cross-2", acts:["翘着腿哼小曲","晃着脚尖打拍子"]},
-  achv: {img:"sit-achv-2",  acts:["举着奖杯自我陶醉","回味刚才的高光时刻"]},
+  achv: {img:"sit-achv-2",  acts:["举着奖杯自我陶醉","回味刚才的高光时刻"],
+         /* v22sittrim：该帧含右上白气泡框，整图当内容盒会带着气框等比缩放使本体只有 ~78%——改成只画身体本体（alpha 扫描实测 279×412 @(3,136)，底至 547），本体屏高按其它帧基准(≈541/554·dh)定标 */
+         trim:{x:3,y:136,w:279,h:412,hs:541/554}},
   love: {img:"sit-love",    acts:["比了个心，然后假装没做过","偷偷把心意藏进抱枕里"]},
   diary:{img:"sit-diary-2", acts:["低着头写日记","在页脚画了一只小猫"]}
 };
@@ -1686,12 +1683,14 @@ function drawChar(){ /* 脚点=格心；坐姿时抬到沙发座面上 */
   if(!charVisible())return;
   var now=Date.now(),fi=charImg(charFrame(now));
   if(!fi)return;
-  var dh=charDH()*CHAR_ADJ.scale,dw=dh*fi.w/fi.h;
+  var dh=charDH()*CHAR_ADJ.scale,dw=dh*fi.w/fi.h,sx=0,sy=0,sw=fi.w,sh=fi.h;
+  var tr=CHAR.mode==="sit"&&CHAR.sitPose&&CHAR_SIT[CHAR.sitPose]&&CHAR_SIT[CHAR.sitPose].trim; /* v22sittrim */
+  if(tr){dh=dh*tr.hs;dw=dh*(tr.w/tr.h);sx=tr.x;sy=tr.y;sw=tr.w;sh=tr.h;} /* 本体中心锚同 cx、本体底锚同 base——与其它帧同基准 */
   var cx=px(CHAR.gx,CHAR.gy)+CHAR_ADJ.standX,gy0=py(CHAR.gx,CHAR.gy)+CHAR_ADJ.standY,base=gy0;
   if(CHAR.mode==="sit"&&CHAR.sit){var sp=charSeat(CHAR.sit);cx=sp[0]+CHAR_ADJ.sitX;base=sp[1]+CHAR_ADJ.sitY;} /* v22sitfix+tuner：坐姿 = 内容盒锚点 + 用户微调 */
   ctx.save();ctx.globalAlpha=0.20;ctx.fillStyle="#3a2a18";
   ctx.beginPath();ctx.ellipse(cx,gy0,dw*0.30,dw*0.15,0,0,Math.PI*2);ctx.fill();ctx.restore();
-  try{ ctx.drawImage(fi.img,0,0,fi.w,fi.h,cx-dw/2,base-dh,dw,dh); }catch(err){}
+  try{ ctx.drawImage(fi.img,sx,sy,sw,sh,cx-dw/2,base-dh,dw,dh); }catch(err){}
   if(CHAR.bubble)drawBubble(cx,base-dh,CHAR.bubble);
 }
 function charDH(){ return ROOM.cw*CHAR_H*S; }
@@ -1903,16 +1902,15 @@ function animGrid(on){
 }
 /* ── 家具交互：命中/选中/拖拽/缩放/删除/导入 ── */
 var SEL=null,drag=null,FID=0;
-/* v22hug：贴到 i=0 / j=0 两面墙的地面件，整图朝墙里推 0.25 格（图上贴紧墙根，占格与虚线框不变） */
-var WALLHUG=0.25;
-function hugOff(it){
-  if(!it||it.wall||it.sm||it.on)return [0,0];
-  var gx=effGX(it),gy=effGY(it),di=0,dj=0;
-  if(gx<=0.001)di=-WALLHUG;
-  if(gy<=0.001)dj=-WALLHUG;
-  if(!di&&!dj)return [0,0];
-  return [ROOM.cw*(di-dj)*S,ROOM.ch*(di+dj)*S];
-}
+/* v22hugoff：贴墙推送整体退役——与上架预演（房间模板与图片上传.html）绘制口径完全一致：
+   仅用 足迹锚+作者校准的 ox/oy 画图，不做任何朝墙方向的位移推送
+   （等距里朝墙推=屏幕抬升，推多了家具悬空；贴墙外观由资产库逐件校准 ox/oy 解决） */
+var WALLHUG=0.25; /* 仅保留变量名兼容旧测试/旧档，不再使用 */
+function hugOff(it){ return it? [0,0] : [0,0]; }
+/* v22defoxy：ox/oy 读值口径升级为 DEF 优先——实例 ox/oy 历来是 DEF 的拷贝（玩家无入口改），
+   DEF 优先才能让老档里已摆出的家具在包校准值更新后直接跟上；DEF 无值时回事实例值 */
+function oxOf(it){ var d=it&&DEF_MAP[it.def||it.id]; return (d&&d.ox!=null)?d.ox:(it.ox||0); }
+function oyOf(it){ var d=it&&DEF_MAP[it.def||it.id]; return (d&&d.oy!=null)?d.oy:(it.oy||0); }
 function itemAt(sx,sy){
   var fs=sortFurniture(),i,it,mx,by,dw,dh,fi;
   for(i=fs.length-1;i>=0;i--){
@@ -1922,7 +1920,7 @@ function itemAt(sx,sy){
       var ww=Math.max(minPx(),ROOM.cw*it.w*S*0.92*it.scale),fi2=furnImg(it);
       var wh=fi2&&fi2.img?ww*(fi2.th/fi2.tw):ww;
       var wid2=(fi2&&fi2.img)?ww*(fi2.tw/fi2.w):ww, hei2=(fi2&&fi2.img)?wid2*fi2.th/fi2.tw:ww;
-      var wx2=wa[0]+(it.ox||0)*wid2, wy2=wy+(it.oy||0)*hei2; /* v22sync：跟 drawItem 墙件分支的 ox/oy 对齐 */
+      var wx2=wa[0]+oxOf(it)*wid2, wy2=wy+oyOf(it)*hei2; /* v22sync：跟 drawItem 墙件分支的 ox/oy 对齐 */
       if(sx>=wx2-wid2/2-4&&sx<=wx2+wid2/2+4&&sy>=wy2-hei2-4&&sy<=wy2+4)return it; /* v22fix：命中盒与 drawItem 实画同款内容盒（原用足迹口径 ww/wh，裁边素材点不中） */
       continue;
     }
@@ -1932,7 +1930,7 @@ function itemAt(sx,sy){
     if(fi&&fi.img){ /* 已加载：按内容包围盒判定（与 drawItem 同锚点） */
       dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w);dh=dw*fi.th/fi.tw;
       by=py(effGX(it)+it.w,effGY(it)+it.d)-liftOf(it)+ho3[1]; /* v22shelf：台面上的小物按抬高后的位置判定 */
-      mx+=(it.ox||0)*dw;by+=(it.oy||0)*dh; /* v22sync：命中盒跟着 ox/oy 微调走 */
+      mx+=oxOf(it)*dw;by+=oyOf(it)*dh; /* v22sync：命中盒跟着 ox/oy 微调走 */
       if(sx>=mx-dw/2-4&&sx<=mx+dw/2+4&&sy>=by-dh-4&&sy<=by+4)return it;
     }else{ /* 未加载：按足迹菱形包围盒判定 */
       by=py(effGX(it),effGY(it))-liftOf(it);
@@ -2069,11 +2067,13 @@ cv.addEventListener("pointerdown",function(e){
     return;
   }
   var p=sceneXY(e),it=itemAt(p[0],p[1]);
-  if(it){
+  if(it&&SEL===it){ /* v22fb4：点已选中的家具才开拖（第一次点=只选中，防挪画面/缩放时误拽家具，用户反馈） */
     e.stopPropagation(); /* 期1.5：拖家具时拦住冒泡，v22view 不启动画面拖拽 */
-    select(it);
     drag={it:it,ox:p[0],oy:p[1],gx:effGX(it),gy:effGY(it)}; /* v22shelf：台面上的小物从它抬高后待的那一格起算 */
     try{cv.setPointerCapture(e.pointerId);}catch(err){}
+  }else if(it){
+    e.stopPropagation(); /* v22fb4：第一次点家具=只选中不拖；再点同一件(SEL===it)才开拖 */
+    select(it);
   }else{select(null);}
 });
 window.addEventListener("pointermove",function(e){
@@ -2113,6 +2113,10 @@ window.addEventListener("pointerup",function(){
   if(calD){calD=null;saveSoon();render();return;} /* v22q 校准结束：落档存档 */
   if(drag){ /* v22block：拖完落位若与别的落地件重叠，弹回拖动起点 */
     var t=drag.it;
+    if(t&&!t.wall&&!hostOf(t)&&!drag.cell&&footStep(t)<=1+1e-9&&footStep(t)>=1-1e-9){ /* v22fb4：整格件贴墙吸附——离墙 ≤¼ 格自动吸到墙边（书架/长桌不用再抠着拖到边角） */
+      if(t.gx>0&&t.gx<=Q)t.gx=0;
+      if(t.gy>0&&t.gy<=Q)t.gy=0;
+    }
     if(t&&!t.wall&&!hostOf(t)&&!drag.cell&&footBlocked(t,effGX(t),effGY(t))){
       t.gx=Math.max(0,Math.min(ROOM.n-t.w,drag.gx));t.gy=Math.max(0,Math.min(ROOM.n-t.d,drag.gy));
       toast("这里摆不下（会压到别的家具），已弹回原位");
@@ -2144,6 +2148,7 @@ function copySelected(){ /* v22copy：复制选中件（占格/大小%/翻转/�
   toast("已复制一件");
 }
 $("fabDel").addEventListener("click",removeSelected);
+/* v22hughugauto：fabHug「🧲 一键贴墙」退役——贴墙吸附已随拖拽自动生效，无需手动归 0 */
 $("fabCopy").addEventListener("click",copySelected);
 $("fabFlip").addEventListener("click",function(){
   if(!SEL)return;
