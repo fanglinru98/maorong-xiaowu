@@ -31,13 +31,13 @@ body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidde
   justify-content:flex-start;padding:calc(12px + env(safe-area-inset-top)) 16px 0;pointer-events:none}
 .avatar-stack{position:relative;width:72px;pointer-events:auto;filter:drop-shadow(0 3px 8px rgba(20,10,5,.4))}
 .avatar-stack .av-frame{width:100%;display:block}
-.avatar-stack .av-face{position:absolute;left:50%;top:46%;width:60%;transform:translate(-50%,-52%)}
-.avatar-stack .av-lv{position:absolute;left:50%;top:76%;transform:translateX(-50%);font-size:11.5px;font-weight:900;
+.avatar-stack .av-face{position:absolute;left:50%;top:47%;width:73.5%;transform:translate(-50%,-52%)} /* v22cal7：脸放大贴参考示意（参考脸占框宽 76.7%、60% 时渲染实测 63.6%，含发丝溢出 1.06 → 73.5% 二调）；top 46→47 脸大后中心微降 */
+.avatar-stack .av-lv{position:absolute;left:50%;top:78%;transform:translateX(-50%);font-size:13.5px;font-weight:900; /* v22cal7：字放大 11.5→13.5、下移 76→78% 配参考示意 */
   font-family:"幼圆","YouYuan","Yuanti SC","Microsoft YaHei",sans-serif;letter-spacing:.5px;white-space:nowrap;color:#bd8d63;
   text-shadow:-2px -2px 0 #fffdf6,2px -2px 0 #fffdf6,-2px 2px 0 #fffdf6,2px 2px 0 #fffdf6,-2px 0 0 #fffdf6,2px 0 0 #fffdf6,0 -2px 0 #fffdf6,0 2px 0 #fffdf6,0 3px 4px rgba(60,25,10,.4)}
-.avatar-stack .av-bar{position:absolute;left:15%;right:15%;bottom:-4px;height:9px;border-radius:5px;background:#38130f;
+.avatar-stack .av-bar{position:absolute;left:8%;right:8%;bottom:-10px;height:11px;border-radius:6px;background:#38130f; /* v22cal7：血条加宽 70→84%框宽、加粗 9→11、下移悬出框底（参考：血条顶在框底缘外），与 Lv 字拉开间隙 */
   border:2px solid #fffdf6;box-shadow:0 2px 4px rgba(20,8,4,.45);overflow:hidden}
-.avatar-stack .av-bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(180deg,#c94b3a,#8e2a20);
+.avatar-stack .av-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(180deg,#c94b3a,#8e2a20);
   box-shadow:inset 0 1px 0 rgba(255,220,190,.35)}
 /* ── 右侧功能列（V21 原位） ── */
 .menu-right{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top) + 10px);z-index:10;
@@ -278,12 +278,12 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   background:url("assets/ui/diary-card.png") center/100% 100% no-repeat;
   display:flex;align-items:stretch;text-align:left;transition:transform .12s}
 .dcard:active{transform:scale(.96)}
-.dnum{flex:0 0 30%;display:flex;align-items:center;justify-content:center;
-  font-family:"Bodoni MT",Didot,"Playfair Display",Georgia,"Times New Roman",serif;
-  font-weight:700;color:#633328}
-.dnum b{font-size:24px;line-height:1;transform:translateY(-6px)}
-.dnum i{width:1.5px;height:34px;background:#633328;transform:rotate(26deg);margin:0 2px;border-radius:1px}
-.dnum b.d2{font-size:14px;transform:translateY(8px)}
+.dnum{flex:0 0 25%;display:flex;align-items:center;justify-content:center;
+  font-family:Georgia,"Times New Roman",serif; /* v22cal11：与日视图时间字体一致（用户指定） */
+  font-weight:700;color:#633328;font-variant-numeric:tabular-nums}
+.dnum b{font-size:23px;line-height:1;transform:translateY(-9px) scaleX(.9);letter-spacing:-1px} /* v22d2b：月再上提3px（用户红框） */
+.dnum i{width:1.5px;height:40px;background:#633328;transform:rotate(19deg);margin:0 1px;border-radius:1px}
+.dnum b.d2{font-size:13px;transform:translateY(12px) scaleX(.9);letter-spacing:-.5px} /* v22d2b：日再下沉4px（用户红框），错落更开 */
 .dright{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding:15% 9% 8% 0}
 .dcard .dd{font-size:9px;color:#8a7052;font-weight:700;white-space:nowrap;overflow:hidden}
 .dcard .ds{font-size:10px;line-height:1.5;color:#4a3826;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -298,25 +298,56 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* 写日记页：同内页底板，保存钮正压在图里自带的翻页胶囊上（写页不用翻页器） */
 .pg-write{position:absolute;inset:0;z-index:1;flex-direction:column;
   background:url("assets/ui/diary-page.png") center/100% 100% no-repeat;
-  padding:29% 8% 12% 16%}
-.b-head{display:flex;align-items:center;gap:7px;padding:0 0 4px}
-.b-head .date{flex:1;font-size:11.5px;font-weight:700;color:#5a4632;border-bottom:2px solid #d9c39a;padding-bottom:2px;outline:none;min-width:0}
-.wxBtn{width:26px;height:26px;flex:none;border-radius:50%;background:#fffdf4;border:1.5px solid #c9a55c;
-  font-size:13px;display:grid;place-items:center;box-shadow:0 2px 5px rgba(60,40,20,.2)}
-.b-body{flex:1;min-height:0;overflow-y:auto;margin:0;padding:2px 4px 6px;
+  padding:31% 13.4% 12.5% 12.6%} /* v22d2b：溢出修复——左右改用 diary-page.png 烘焙纸面真实边界（=目录页同组 12.6/13.4，旧 16/8 让白纸右缘压出纸面外，用户真机实拍） */
+/* v22cal11 写页=图二复刻：三胶囊(日期/天气/心情)带下拉、大白纸写作区+玫瑰角饰+字数、红金保存钮（底板仍=diary-page.png 与目录页同张） */
+.wtop{display:flex;gap:6px;padding:0 0 8px}
+.wpill{min-width:0;display:flex;align-items:center;gap:4px;height:27px;padding:0 8px;flex:1;
+  border:1.5px solid #d9c39a;border-radius:14px;background:#fffdf4;
+  font-size:10px;font-weight:700;color:#5a4632;box-shadow:0 2px 5px rgba(60,40,20,.14);transition:transform .12s;cursor:pointer}
+.wpill:first-child{flex:1.9} /* v22cal11：日期胶囊最宽（图二比例），防「2026年9月14日」截断 */
+.wpill .wt{font-size:9.5px}
+.wpill:active{transform:scale(.96)}
+.wpill .wi{flex:none;font-size:11px}
+.wpill .wt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.wpill .wcar{flex:none;width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent;border-top:4.5px solid #b08d5e}
+.wwrap{position:relative;flex:1;min-height:0;background:#fffdf6;border:1.5px solid #e3d0a6;border-radius:12px;
+  box-shadow:inset 0 1px 4px rgba(120,90,50,.1);display:flex;margin:0 0 6px}
+.b-body{flex:1;min-height:0;overflow-y:auto;margin:0;padding:12px 12px 26px;
   font-size:12.5px;line-height:2;color:#4a3826;outline:none;cursor:text;
-  background:repeating-linear-gradient(transparent,transparent calc(2em - 1px),rgba(160,130,90,.35) calc(2em - 1px),rgba(160,130,90,.35) 2em);
-  background-attachment:local}
+  background:repeating-linear-gradient(transparent,transparent calc(2em - 1px),rgba(160,130,90,.3) calc(2em - 1px),rgba(160,130,90,.3) 2em);
+  background-attachment:local;border-radius:12px}
 .b-body .stk{display:inline-block;font-size:18px;transform:rotate(-6deg);margin:0 2px;vertical-align:middle}
-.sec-t{font-size:11.5px;font-weight:800;color:#5a4632;opacity:.85;margin:2px 0 3px}
-.moods{display:flex;gap:8px;padding:0 0 2px}
-.mood{font-size:20px;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;
-  border:2px solid transparent;transition:all .15s}
-.mood.on{border-color:#c9a55c;background:#fffdf4;transform:scale(1.18);box-shadow:0 3px 8px rgba(90,60,30,.28)}
-.wr-save{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);z-index:5;height:27px;padding:0 18px;border-radius:15px;
-  background:linear-gradient(#a03a2c,#7c2a20);color:#ffe9c4;font-size:11.5px;font-weight:800;
-  box-shadow:0 3px 8px rgba(60,20,10,.4);transition:transform .12s}
-.wr-save:active{transform:translateX(-50%) scale(.92)}
+.wrose{position:absolute;left:9px;top:8px;font-size:12px;opacity:.85;transform:rotate(-14deg);pointer-events:none;filter:drop-shadow(0 1px 1px rgba(90,50,30,.3))}
+.wrose::after{content:"🌹";position:absolute;left:11px;top:10px;font-size:8px;transform:rotate(26deg);opacity:.75} /* v22cal11：双玫瑰错落（图二角饰） */
+.wcnt{position:absolute;right:11px;bottom:7px;font-size:9px;font-weight:700;color:#b09a78;pointer-events:none}
+.wr-save{position:absolute;left:51.3%;bottom:7%;transform:translateX(-50%);z-index:5;height:30px;min-width:44%;padding:0 20px; /* v22d2b：51.3%=新纸面内容区中心（12.6% + (100%-12.6%-13.4%)/2），随 padding 修正同步 */
+  border:2px solid #d9b56a;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:5px;
+  background:linear-gradient(#a03a2c,#7c2a20);color:#ffe9c4;font-size:13px;font-weight:800;letter-spacing:6px;text-indent:6px;
+  box-shadow:0 3px 8px rgba(60,20,10,.4),inset 0 0 0 2px rgba(255,233,196,.22);transition:transform .12s}
+.wr-save:active{transform:translateX(-50%) scale(.93)}
+.wr-save .wsq{font-size:12px;letter-spacing:0;text-indent:0}
+/* 三胶囊下拉面板：JS 打开时按胶囊 offsetLeft 对位 */
+.ddrop{display:none;position:absolute;z-index:9;top:calc(31% + 36px);background:#fffdf6;border:1.5px solid #d9c39a;border-radius:11px;
+  box-shadow:0 8px 20px rgba(40,25,10,.3);padding:5px;max-height:190px;overflow-y:auto;scrollbar-width:none}
+.ddrop::-webkit-scrollbar{display:none}
+.ddrop.open{display:block}
+.ddrop .dopt{display:flex;align-items:center;gap:6px;width:100%;padding:6px 9px;border:none;border-radius:8px;background:none;
+  font-size:11px;font-weight:700;color:#4a3826;text-align:left;cursor:pointer}
+.ddrop .dopt:active{background:rgba(201,165,92,.2)}
+.ddrop .dopt.on{background:rgba(201,165,92,.28);color:#7c2a20}
+/* 日期 mini 月历 */
+.dcal{width:200px}
+.dcal .dhead{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 5px}
+.dcal .dhead b{font-size:11px;font-weight:800;color:#5a4632}
+.dcal .dnav{width:22px;height:22px;border:none;border-radius:6px;background:none;font-size:12px;font-weight:800;color:#8a6b4a;cursor:pointer}
+.dcal .dnav:active{background:rgba(201,165,92,.25)}
+.dcal .dweek,.dcal .ddays{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.dcal .dweek span{font-size:8px;font-weight:800;color:#b09a78;text-align:center;padding:2px 0}
+.dcal .ddays button{aspect-ratio:1;border:none;border-radius:6px;background:none;font-size:10.5px;font-weight:700;color:#4a3826;cursor:pointer}
+.dcal .ddays button:disabled{pointer-events:none}
+.dcal .ddays button.today{color:#7c2a20;font-weight:900;box-shadow:inset 0 0 0 1px #d9b56a}
+.dcal .ddays button.sel{background:#a03a2c;color:#ffe9c4}
+.dcal .ddays button:active{background:rgba(201,165,92,.3)}
 /* ── 相册面板（批11：切图版，底板=album-panel.png，照片卡=photo-frame.png 叠框） ── */
 #album{position:absolute;left:6%;top:13.5%;height:76%;aspect-ratio:1639/3513;z-index:42;
   transform:translateX(-118%);
@@ -417,14 +448,14 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .pl-btn:active{transform:scale(.95)}
 /* ═══ 日历面板（批6.7：照日历界面demoA 移植，左滑入+心形月历+时刻流+备忘卡，z-45） ═══ */
 #cal{position:absolute;left:3%;top:12%;bottom:10.5%;width:min(64%,246px);z-index:45;display:flex;flex-direction:column;
-  transform:translateX(-130%);transition:transform .38s cubic-bezier(.22,.9,.32,1);--hs:.82;
+  transform:translateX(-130%);transition:transform .38s cubic-bezier(.22,.9,.32,1);--hs:1; /* v22cal3：心形改由自身尺寸对齐烘焙槽，缩放变量归1 */
   background:url(assets/ui/cal-panel.png) center/100% 100% no-repeat;
   border-radius:18px;box-shadow:0 6px 16px rgba(0,0,0,.3);overflow-x:hidden;overflow-y:auto;scrollbar-width:none} /* v22fb4：整页可上下滚动（模块不压扁；滚动轴隐藏）；阴影减弱：大范围投影在异形透明边缘外晕出一圈"半透明层"（用户排查） */
 #cal.open{transform:translateX(0)}
 #cal::-webkit-scrollbar{width:0;height:0;display:none} /* v22fb4：藏滚动轴（外观与原来一致） */
 /* v22cal2：.cback 返回钮 CSS 随 ‹ 钮一起退役 */
 /* 页签三钮（日/周/月，图一示意）：暗棕卡图标在上文字在下；选中=金描边+猩红底+白字+底部小金尖（「日历」横幅已烧死在底框图里，旧 .banner 退役） */
-.ctabs{display:flex;justify-content:center;gap:8px;padding:calc(33% + 6px) 16px 8px;position:relative;left:-5px} /* 横幅间隙≈12px（再上移8px）+整行左移5px（用户目检） */
+.ctabs{display:flex;justify-content:center;gap:8px;padding:calc(33% + 6px) 16px 6px;position:relative;left:0} /* v22d2b：整行右移5px（用户）；横幅间隙≈12px */
 /* 页签三钮=切图版（文字与图标已烧死在切图里，HTML 空心 <i> 贴图；选中=金描边猩红底 -on 图） */
 .ctab{flex:1;max-width:84px;border:none;background:none;padding:0;position:relative;transition:transform .15s}
 .ctab i{display:block;width:100%;aspect-ratio:400/393;font-size:0;line-height:0;
@@ -437,50 +468,78 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .ctab:active{transform:scale(.94)}
 /* 心形月历：心形=clip-path，发光用父级 filter（clip 内会被裁） */
 /* 月视图底板=cal-month.png 切图（红金匾+星期行+6×7 空心格烘焙；格上只叠 ev/today/sel 与数字） */
-#vMonth{margin:8px 14px 6px;position:relative;left:-5px;aspect-ratio:700/740;
+#vMonth{margin:8px 14px 6px;position:relative;left:0;aspect-ratio:700/740; /* v22d2b：左移3px（原 3px，用户微调回到0）；底板烘焙凹槽与格层同步动，心不错位 */
   background:url(assets/ui/cal-month.png) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 #calMonth{position:absolute;left:50%;top:8.2%;transform:translate(-50%,-50%);font-style:normal;
   font-size:15px;font-weight:900;color:#f9ecd2;letter-spacing:2px;text-shadow:0 1px 1px rgba(80,15,8,.7)}
 .crow{display:grid;grid-template-columns:repeat(7,1fr)}
-#vMonth .crow{position:absolute;left:6.5%;right:4.5%;top:26.8%;bottom:4.2%;
-  display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr)}
+#vMonth .crow{position:absolute;left:2.3%;right:3.3%;top:25.2%;bottom:4.56%; /* E-20260919-02：回滚 v22cal11 的 2.1% 右移（当年只移数字层，烘焙板未动→数字全列右偏 +14 图px 出心口；像素扫描全列一致证实），恢复 v22cal4 锚定 63.3+94.4j 对齐烘焙凹槽（实测 63.9+94.5j），列宽 94.4 图px 不变；网格锚定同 v22cal4（列 63+94.42j，行 233/326/416/501/582.5/665 图px；行距不均→不等 fr 轨道） */
+  display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:93fr 91.5fr 87.5fr 83.25fr 82fr 82.5fr}
 .day{position:relative;height:100%}
-.day .h{position:absolute;left:50%;top:50%;width:34px;height:31px;transform:translate(-50%,-58%) scale(var(--hs,1));display:block;transition:transform .15s;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45));
-  clip-path:path("M17,31 C17,31 1.5,19.5 1.5,10.5 A8.2,8.2 0 0 1 17,7.6 A8.2,8.2 0 0 1 32.5,10.5 C32.5,19.5 17,31 17,31 Z");
+.day .h{position:absolute;left:50%;top:54.8%;width:82.6%;aspect-ratio:84/77;transform:translate(-50%,-50%) scale(var(--hs,1));display:block;transition:transform .15s;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45)); /* E-20260919-02：top 50→54.8%（=下移 3.7 图px 贴烘焙凹槽心：各行实测数字统一偏上 2.9~4.1 图px，凹槽心比格心低 ~3.7 图px；心形容器整体下移，数字跟走，未来亮心切图同层同锚一并受惠）。宽=凹槽内芯 78图px/轨距94.42=82.6%（v22cal4 的 89% 是含描边外径 84，黄心盖住描边一圈=用户"超出显示范围"）；选中 1.06 后 87.6% 仍在描边外径 89% 内 */
+  clip-path:url(#heartOB); /* v22cal4：objectBoundingBox 归一化路径（defs 在 #cal 内），面板任意宽度都贴合 */
   background:transparent}
-.day .h b{position:absolute;left:0;right:0;top:6px;text-align:center;font-size:10px;font-weight:800;color:#8f6f5a}
-.day.ev{filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
-.day.ev .h{background:#a03a2c}
-.day.ev .h b{color:#ffe9c4}
-.day.today{filter:drop-shadow(0 0 6px rgba(240,200,110,.75))}
-.day.today .h{background:linear-gradient(160deg,#f0d9a8,#d9b56a)}
-.day.today .h b{color:#6b3a20;top:5px} /* v22cal2：今天的数字比相邻格低 1px（用户目检），抬 1px 对齐 */
+.day .h b{position:absolute;left:0;right:0;top:50%;transform:translateY(-52%);text-align:center;font-size:9px;font-weight:800;color:#8f6f5a} /* v22cal5：数字随心缩小 10→9；-52% 字形光学微调保留 */
+/* v22cal6：CSS 亮心（有记录红/今天金）暂时移除（用户 2026-09-17：后期给亮色爱心切图替换）。ev/today 类仍挂在格子上，切图到位后启用：
+.day.ev .h{background:url(assets/ui/heart-rec.png) center/100% 100% no-repeat;clip-path:none}
+.day.today .h{background:url(assets/ui/heart-today.png) center/100% 100% no-repeat;clip-path:none} */
+.day.ev .h,.day.today .h{background:transparent} /* 切图未到：亮心位置只留烘焙暗心与数字 */
 /* 选中态：深一度圆圈框住日期 */
 .day.sel::before{display:none} /* v22cal：去掉选中日的大圆圈（用户目检），选中靠 .day.sel .h 放大 6% 表示 */
-.day.sel .h{transform:translate(-50%,-58%) scale(calc(var(--hs,1)*1.06))}
-.day:active .h{transform:translate(-50%,-58%) scale(calc(var(--hs,1)*.9))}
+.day.sel .h{transform:translate(-50%,-50%) scale(calc(var(--hs,1)*1.06))}
+.day:active .h{transform:translate(-50%,-50%) scale(calc(var(--hs,1)*.9))}
 /* 三视图切换（日/周/月）：周视图=本周 7 心 */
 #vDay,#vWeek{display:none} /* v22fb4：不再作为弹性子项被压扁——日/周/月三视图整体整页上下滚动（#cal overflow），模块按自然高度铺排 */
 #cal.v-day #vMonth,#cal.v-week #vMonth{display:none}
-#cal.v-week #vWeek{display:block}
-#cal.v-day #vDay{display:block}
-#cal.v-day .mrows{display:none}
+#cal.v-week{overflow-y:hidden} /* v22cal7：周视图内容区=面板可视区（三视图统一按月视图框定：超出隐藏+区内滑动，页签不动，用户 2026-09-17） */
+#cal.v-week #vWeek{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:none} /* v22cal7：块级→弹性滚动容器，时间轴列表在框内滑动，备忘板仍钉底 */
+#cal.v-day #vDay{display:none} /* v22cal8：日视图=备忘板一整块（用户 2026-09-17：去掉浅色日期头与空态按钮，备忘板占满页签下红框范围；mdate/mrows/madd 皆随 memo absolute 自动落位） */
+#cal.v-day .memo{position:absolute;left:7.5%;right:9.5%;top:24.87%;bottom:6.39%;margin:0;height:auto; /* v22d2：整体右移2%（宽度不变平移，用户：三视图都往右）；竖位仍按红框比例 */
+  background:#f9e8cd;border-radius:14px;box-shadow:inset 0 0 0 2px rgba(150,100,55,.28); /* v22cal9：圆角矩形占位底板（用户稍后提供底板切图：比例1:1.874，到位后换 url）——cal-memo.png 不再被拉变形 */}
 #cal.v-day .clegend{display:none}
-/* 周视图：竖排日卡（一天一卡，点卡展开全部；D 同款竖列节奏） */
-.wrow{display:flex;flex-direction:column;gap:5px;padding:6px 14px 4px} /* v22fb4：左右留边与月视图底框同宽（用户反馈：周卡不应超出底框） */
-.wcard{display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;border-radius:10px; /* v22cal：周卡整体缩小，7 张刚好装进底板 */
-  background:#fbf3df;color:#4a3826;box-shadow:0 2px 7px rgba(0,0,0,.32);text-align:left;transition:transform .12s}
-.wcard:active{transform:scale(.98)}
-.wcard .whd{flex:0 0 44px;text-align:center;border-right:1px solid rgba(160,58,44,.2);padding-right:6px}
-.wcard .wwd{display:block;font-size:8.5px;font-weight:800;color:#7c2a20;white-space:nowrap} /* v22cal：左侧日期不许换行 */
-.wcard .wdn{display:block;font-size:13px;font-weight:900;color:#4a3826;line-height:1.15}
-.wcard .wbd{flex:1;min-width:0}
-.wcard .wcn{display:inline-block;font-size:8px;font-weight:800;color:#ffe9c4;background:linear-gradient(160deg,#a03a2c,#7c2a20);
-  border-radius:7px;padding:0 5px;margin-bottom:1px}
-.wcard .wpv{display:block;font-size:8.5px;color:#6b5138;line-height:1.35}
-.wcard.today{box-shadow:0 0 0 1.5px #d9b56a,0 2px 7px rgba(0,0,0,.32)}
-.wcard.open{box-shadow:0 0 0 1.5px #c9a55c,0 3px 9px rgba(0,0,0,.35);background:#fffdf6}
-.wcard .wmore{flex:none;font-size:8.5px;color:#8a7052;font-weight:700}
+#cal.v-day .mdate{top:8.5%;background:linear-gradient(160deg,#b14836,#8e2f22 70%);border:2px solid #d9b56a;border-radius:10px;padding:5px 18px 4px;box-shadow:0 2px 5px rgba(60,15,8,.35),inset 0 0 0 2px rgba(255,233,196,.28)} /* v22cal10c：米色板顶部=日期（绶带贴板顶）；红底原是 cal-memo 烘焙红匾，占位素板上用 CSS 补回 */
+#cal.v-day .mhead::before{content:"备忘事项";position:absolute;left:8%;top:19%;font-size:16px;font-weight:900;color:#9c6140;letter-spacing:2px} /* v22cal9：「备忘事项」原是烘焙字，占位素板上 CSS 补回；占位底板切图到位后这两条随 url 替换复核 */
+#cal.v-week .clegend{display:none} /* v22cal4：「有记录/今天」图例只保留在月视图（用户反馈 2026-09-16） */
+#cal.v-week .memo{display:contents} /* v22cal8：周视图去备忘板（用户 2026-09-17）——memo 不生成盒，absolute 子元素上交 #cal 包含块 */
+#cal.v-week .mdate,#cal.v-week .madd,#cal.v-week .mrows{display:none} /* v22cal8：只留表单做浮层（tpick 不藏：选时间时相对 #cal 从面板底弹出） */
+#cal.v-week .mform.show{left:6%;right:6%;bottom:auto;top:36%;z-index:8;padding:8px;border-radius:12px;background:rgba(255,253,246,.97);box-shadow:0 12px 26px rgba(0,0,0,.5)} /* v22cal8：新增表单浮层化（卡片上直接新增），奶油底圆角卡 */
+#cal.v-day{overflow-y:hidden} /* v22cal4：日视图内容区=面板可视区，超出隐藏不滚动（用户反馈 2026-09-16） */
+/* v22cal8：#cal.v-day .dtline 规则随 #vDay 整体隐藏作废 */
+/* v22m3：周视图改「版三·按日分组」（用户选型 2026-09-18）——日眉行（星期+日+横线+件数），
+   展开日下方挂备忘卡（勾选圈+正文+常驻 改✎/删✕ 双钮）；红框日/周/月切换区不动 */
+@keyframes wrise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}} /* v22m3：条目入场淡入上移 200ms（backwards 防止结束帧压死 hover） */
+.wrow{display:flex;flex-direction:column;gap:9px;padding:10px 18px 10px 36px;position:relative;left:-3px} /* v22m3：组间距收紧；爱心轴列早已退役 */
+.wgh{display:flex;align-items:center;gap:7px;width:100%;padding:3px 8px;border-radius:8px;
+  background:none;border:0;color:#f0e6cc;text-align:left;cursor:pointer;transition:transform .12s,background .12s} /* v22m3：日眉=可点开合的组头（版三 gh） */
+.wgh:active{transform:scale(.985)}
+.wgh:hover{background:rgba(217,181,106,.07)}
+.wgh::after{content:"";flex:1;height:1px;background:rgba(217,181,106,.22)} /* v22m3：日眉横线（版三 gh 线） */
+.wgh .wwd{font-size:11px;font-weight:800;color:#f0d9a8;white-space:nowrap}
+.wgh.today .wwd{color:#ffd98a}
+.wgh .wdn{font-size:10.5px;font-weight:400;color:#c9a887;line-height:1}
+.wgh .wcn{flex:none;font-size:9px;font-weight:800;color:#c9a887;letter-spacing:.5px;order:3} /* v22m3：件数钉日眉右端 */
+.wgh.today{background:rgba(217,181,106,.1)} /* 今天组头浅金底 */
+.witems{display:flex;flex-direction:column;gap:5px;padding:1px 2px 3px} /* v22m3：展开组条目列 */
+.witems .wlrow{display:flex;align-items:center;gap:7px;width:100%;min-width:0;padding:5px 8px;border-radius:8px;background:rgba(255,253,246,.93);
+  font-size:10px;font-weight:600;color:#4a3a2a;line-height:1.3;text-align:left;cursor:pointer;
+  transition:transform .12s,background .12s;position:relative} /* v22m3：备忘卡（浅纸行保留主文件质感） */
+.witems .wlrow:hover{transform:translateY(-1px)} /* v22m3：hover 轻抬 1px */
+.witems .wlrow:active{transform:scale(.985)}
+.witems .wlrow.fx{animation:wrise .2s ease-out backwards} /* v22m3：展开时才加入场动画（勾选重渲染不重播） */
+.witems .wlrow .wt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .12s,opacity .12s}
+.witems .wlrow .cb{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid #b98d54;background:#fffdf6;position:relative;transition:background .12s,border-color .12s} /* v22m3：勾选圈改圆（版三 tick） */
+.witems .wlrow.done .cb{background:#a03a2c;border-color:#a03a2c}
+.witems .wlrow.done .cb::after{content:"";position:absolute;left:2.5px;top:.5px;width:4px;height:7px;border:solid #ffe9c4;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.witems .wlrow.done .wt{text-decoration:line-through;opacity:.55}
+.witems .wlrow .acts{display:flex;gap:2px;flex:none} /* v22m3：改/删钮常驻卡右（触屏无 hover 不藏） */
+.witems .wlrow .wa{width:17px;height:17px;border:0;border-radius:4px;background:transparent;color:#8a6f52;font-size:10px;line-height:17px;cursor:pointer;display:block;text-align:center;transition:background .12s,color .12s,transform .12s;padding:0}
+.witems .wlrow .wa:hover{background:rgba(185,141,84,.16);color:#4a3a2a}
+.witems .wlrow .wa:active{transform:scale(.94)}
+.witems .wlrow .wa.del:hover{background:rgba(160,58,44,.14);color:#a03a2c} /* v22m3：删除钮 hover 转陶红危险语义 */
+.wadd{display:inline-block;margin-top:5px;padding:2px 9px;border:1px dashed rgba(217,181,106,.55);border-radius:9px;font-size:9.5px;font-weight:800;color:#f0d9a8;white-space:nowrap;transition:transform .12s,background .12s;cursor:pointer;align-self:flex-start} /* v22m3：组尾新增入口 */
+.wadd:hover{background:rgba(217,181,106,.08)}
+.wadd:active{transform:scale(.94)}
+.wempty{display:block;font-size:9.5px;color:#a8907a;padding:2px 2px}
 /* 日视图：早晚分段（☀️上午/🌤️下午/🌙晚上/随时，D 方案落地） */
 .dday{display:flex;align-items:center;justify-content:center;gap:14px;padding:2px 0 6px} /* v22cal：日期模块缩小、贴近日/周/月页签（用户目检） */
 .dnav{width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(217,181,106,.5);color:#e8cfa8;font-size:14px;
@@ -504,51 +563,70 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .tsub{font-size:9.5px;font-weight:700;color:#c9a887}
 .tcard.done{opacity:.78}
 .tcard.done .ttl{text-decoration:line-through;color:#c9a887}
-.ttog{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #c9a55c;color:transparent;
+.ttog{width:22px;height:22px;flex:none;margin-right:10px;border-radius:50%;border:2px solid #c9a55c;color:transparent; /* v22cal4：打勾圆圈左移 10px（用户反馈） */
   display:grid;place-items:center;font-size:11px;font-weight:900;transition:all .12s}
 .tcard.done .ttog{background:#c9a55c;color:#fffdf4}
 .dempty{margin:10px 18px 10px;padding:18px 10px;border:1.5px dashed rgba(217,181,106,.4);border-radius:12px;
   text-align:center;font-size:10.5px;color:rgba(232,207,168,.55)}
 /* 备忘输入框 + 自绘时间滑动选择器（7 项可视+滑动+中央金带） */
-.mform{display:none;flex-wrap:wrap;gap:5px;padding:8px 10px 12px;align-items:center}
+/* 备忘表单=v2「蜡封信笺」落地（用户选型 2026-09-17；旧 flex-wrap 挤成三行作废）：上行一张长信笺=时间票+要事连写；下行三钮统一 24px（用户要求按取消钮大小），确认=蜡封心印 */
+.mform{display:none;flex-direction:column;gap:6px}
 .mform.show{display:flex}
-.mform input{min-width:0;height:30px;border:1.5px solid #c9a55c;border-radius:9px;background:#fffdf8;padding:0 6px;
-  font-size:12px;color:#4a3826;outline:none}
-.mform input:focus{border-color:#a03a2c}
-.tsel{width:46px;height:28px;flex:none;border:1.5px solid #c9a55c;border-radius:9px;background:#fffdf8;
-  color:#4a3826;font-size:12px;font-weight:800;text-align:center;letter-spacing:1px;transition:transform .12s}
-.tsel:active{transform:scale(.94)}
-.tsep{font-style:normal;font-weight:900;color:#8a7052;flex:none}
-.tpick{display:none;position:absolute;left:10px;right:10px;bottom:8px;z-index:6;background:#fffdf6;
-  border:1.5px solid #c9a55c;border-radius:12px;box-shadow:0 8px 22px rgba(30,20,10,.35);padding:6px 6px 8px}
-.tpick.open{display:block}
-.tpick::before{content:"";position:absolute;left:8px;right:8px;top:84px;height:26px;border-radius:8px;
-  background:rgba(201,165,92,.18);pointer-events:none}
-.tpick::after{content:"";position:absolute;left:6px;right:6px;top:6px;height:44px;pointer-events:none;
-  background:linear-gradient(#fffdf6,rgba(255,253,246,0))}
-.tgrad{position:absolute;left:6px;right:6px;bottom:8px;height:44px;pointer-events:none;
-  background:linear-gradient(rgba(255,253,246,0),#fffdf6)}
-.tlist{height:182px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}
-.tlist::-webkit-scrollbar{display:none}
-.topt{display:block;width:100%;height:26px;line-height:26px;text-align:center;font-size:12.5px;font-weight:800;
-  color:#6b5642;scroll-snap-align:center}
-.topt.on{color:#3a2d20}
-.topt:active{background:rgba(201,165,92,.22)}
-#mTxt{flex:1 1 100%;order:9;min-width:0}
-.mform .mk{width:28px;height:28px;border-radius:50%;flex:none;font-size:13px;font-weight:800;display:grid;place-items:center}
-#mOk{background:linear-gradient(#a03a2c,#7c2a20);color:#ffe9c4}
-#mNo{border:1.5px solid #c9a55c;color:#8a6b3a;background:#fffdf8}
-.day .paw{position:absolute;left:50%;top:0;transform:translateX(-72%);font-size:9px;pointer-events:none}
-.clegend{display:flex;justify-content:center;gap:12px;padding:4px 0 2px;font-size:9px;color:#c9a55c}
+.mform .mrow{display:flex;align-items:center;background:#fffdf6;border-radius:9px;overflow:hidden;
+  box-shadow:0 1px 4px rgba(50,22,8,.26),inset 0 0 0 1px rgba(201,165,92,.32)}
+.mform input{flex:1;min-width:0;height:30px;line-height:30px;border:none;outline:none;background:transparent;padding:0 9px;
+  font-family:inherit;font-weight:700;font-size:12px;color:#4a3826}
+.mform input::placeholder{color:#b9a58c}
+.tdial{height:30px;border:none;border-radius:7px;background:#fbe4cb;flex:none;padding:0 10px;cursor:pointer; /* v22cal10：时刻牌（方案四）——点击正下方展开刻度尺 */
+  color:#7c2a20;font-family:inherit;font-size:12.5px;font-weight:900;text-align:center;letter-spacing:.5px;
+  font-variant-numeric:tabular-nums;transition:transform .12s,box-shadow .15s;
+  box-shadow:inset 0 0 0 1px rgba(160,58,44,.28)}
+.tdial.empty{color:#c4a98a;font-weight:700}
+.tdial:active{transform:scale(.95)}
+.tdial.on{box-shadow:inset 0 0 0 1.5px #c9a55c} /* 展开态金边提示 */
+.mform .mbtns{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.mform .mk{width:24px;height:24px;border-radius:50%;flex:none;font-size:10px;font-weight:900;display:grid;place-items:center;
+  font-family:inherit;cursor:pointer;background:#fffdf6;transition:transform .12s}
+.mform .mk:active{transform:scale(.9)}
+#mNo{color:#8a7052;box-shadow:inset 0 0 0 1.5px #d9c39a}
+#mDel{color:#a03a2c;box-shadow:inset 0 0 0 1.5px rgba(160,58,44,.5);font-size:9px} /* 🗑 字号随 24px 钮缩 */
+#mOk{border:none;padding:0; /* 蜡封确认：同 24px，径向红+奶油心印 */
+  background:radial-gradient(circle at 32% 28%,#b8483a,#a03a2c 52%,#7c2a20);
+  box-shadow:0 2px 5px rgba(90,25,15,.45),inset 0 0 0 2px rgba(255,233,196,.22),inset 0 -2px 4px rgba(60,10,5,.4)}
+#mOk:active{transform:scale(.9) rotate(-6deg)} /* 蜡封按压手势 */
+#mOk i{display:block;width:11px;height:10px;background:#ffe9c4;
+  clip-path:path("M5.5,10 C5.5,10 0,6.4 0,3.5 A2.6,2.6 0 0 1 5.5,2.4 A2.6,2.6 0 0 1 11,3.5 C11,6.4 5.5,10 5.5,10 Z")}
+/* v22cal10：横向刻度尺选时（方案四，用户选定）——absolute 紧贴时刻牌正下方展开，绝不落界面底部 */
+.truler{display:none;position:absolute;left:4px;right:4px;top:38px;z-index:9;background:#fffdf6;
+  border:1.5px solid #c9a55c;border-radius:11px;box-shadow:0 10px 22px rgba(30,20,10,.38);padding:8px 12px 9px}
+.truler.open{display:block;animation:tpop .16s ease-out}
+@keyframes tpop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.truler::before{content:"";position:absolute;top:-5px;left:16px;width:9px;height:9px;background:#fffdf6;
+  border-left:1.5px solid #c9a55c;border-top:1.5px solid #c9a55c;transform:rotate(45deg)} /* 小尾巴指向时刻牌 */
+.trv{display:flex;justify-content:space-between;align-items:baseline}
+.trv b{font-size:17px;font-weight:900;color:#7c2a20;font-variant-numeric:tabular-nums}
+.trv span{font-size:9px;color:#a8846a}
+.trange{position:relative;height:32px;margin-top:4px}
+.trange .ttrack{position:absolute;left:0;right:0;top:14px;height:4px;border-radius:2px;background:#ecd9ba}
+.trange .tfill{position:absolute;left:0;top:14px;height:4px;border-radius:2px;width:16.7%; /* 09:00 初始 */
+  background:linear-gradient(90deg,#d9b56a,#a03a2c)}
+.trange input{position:absolute;left:0;top:0;width:100%;height:32px;margin:0;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+.trange input::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#b8483a,#8e2f22);border:2px solid #ffe9c4;box-shadow:0 2px 5px rgba(90,25,15,.45)}
+.trange input::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#a03a2c;border:2px solid #ffe9c4}
+.trticks{display:flex;justify-content:space-between;font-size:8px;color:#c4a98a;margin-top:2px}
+/* v22cal6：旧 #mTxt 独占行与 28px 圆钮样式已并入上方 v2「蜡封信笺」表单块 */
+/* v22cal6：爪印彩蛋整段移除（用户 2026-09-17：月视图格子上的 🐾 与周视图星期名后的 🐾 同属一个彩蛋，一并撤） */
+.clegend{display:flex;justify-content:center;gap:12px;padding:3px 0 1px;font-size:9px;color:#c9a55c} /* v22cal3：压图例高度 */
 .clegend i{font-style:normal;display:inline-block;width:12px;height:11px;vertical-align:-1px;margin-right:4px;
   clip-path:path("M6,11 C6,11 .5,7 .5,3.8 A2.9,2.9 0 0 1 6,2.7 A2.9,2.9 0 0 1 11.5,3.8 C11.5,7 6,11 6,11 Z")}
 .clegend .lg-ev i{background:#a03a2c}
 .clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
 /* 备忘卡=cal-memo.png 切图（红绶带/「备忘事项」标题/虚线烘焙；日期叠绶带，自绘行纸片盖烘焙行区→不限量） */
-.memo{flex:none;height:30.3%;min-height:0;margin:0 18px 8px;position:relative;left:-5px;display:flex;flex-direction:column; /* v22fb4：备忘板固定高（=月视图实测 30.3%），三视图同款不压扁 */
+.memo{flex:none;height:30.3%;min-height:0;margin:0 18px 8px;position:relative;left:-1px;display:flex;flex-direction:column; /* v22d2b：右移3px（原 -4px，用户微调）；备忘板固定高（=月视图实测 30.3%），三视图同款不压扁 */
   background:url(assets/ui/cal-memo.png) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 .memo .mhead{display:contents}
-.memo .mdate{position:absolute;left:50%;top:calc(12.4% - 5px);transform:translateX(-50%);white-space:nowrap;font-size:15px;font-weight:900; /* v22fb4：日期上移 5px、字号放大到与月视图「10月」一致（用户反馈2026-09-15） */
+.memo .mdate{position:absolute;left:50%;top:12.5%;transform:translate(-50%,-50%);white-space:nowrap;font-size:15px;font-weight:900; /* v22cal3：与红绶带垂直居中（绶带中心=图高12.5%；三视图实测同低6.8px——用户反馈2026-09-16） */
   color:#fff3dc;letter-spacing:.5px;text-shadow:0 1px 1px rgba(80,15,8,.7);z-index:2}
 .memo .msub{display:none}
 .memo .mrows{position:absolute;left:7%;right:7%;top:42%;bottom:3.5%;overflow-y:auto;margin:0; /* v22cal：藏掉右侧白灰滚动轴（用户目检） */
@@ -562,11 +640,45 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .mrow.done .mt{color:#9a8163;text-decoration:line-through}
 .mrow .mt{flex:1}
 /* v22cal2：.me（emoji 位）CSS 随 DOM 输出一起退役 */
-.memo .mform{position:absolute;left:7%;right:7%;bottom:2%;z-index:2}
+.memo .mform{position:absolute;left:6%;right:6%;bottom:6%;z-index:2} /* v22cal6：v2 蜡封落位与 demo 一致 */
 /* 添加备忘=btn-memo-add 切图胶囊（标题行右侧，图二同位） */
 .memo .madd{position:absolute;right:7%;top:24.5%;width:31%;border:none;background:none;padding:0;transition:transform .15s}
 .memo .madd img{display:block;width:100%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 .memo .madd:active{transform:scale(.93)}
+#cal.v-day .madd{top:auto;right:0;left:0;margin:auto;bottom:4%} /* v22cal10c：添加钮=米色板底部中间（margin:auto 水平居中，不占 translate 防 :active 缩放打架） */
+/* v22memo3：日视图备忘板=设计师「版三·按时段分组」（老板选定 2026-09-18）——表底 #3d2b1f 与周视图版三同一深色家族，组头金线+行整面可点+✓/✎/✕常驻钮；红绶带=平涂日期牌 */
+/* v22memo3 v14·高级感版二「刊头时刻流」：内容直铺烘焙面板（无内层圆角底板，唯一的框=面板本身）；整体上移；红金日期牌退役 */
+#cal.v-day .mhead::before{display:none}
+#cal.v-day .memo{left:8%;right:6.5%;top:24.87%;bottom:2.6%;background:none;box-shadow:none;border-radius:0} /* 上移+去底板（老板反馈①②）；主线 ctabs 自带 33% 横幅 padding，页签底=24.87% 红框线即「页签正下」，演示稿 top15% 是按 mock 页签 58px 算的不适用于主线 */
+#cal.v-day .mdate{display:none} /* 红金日期牌退役（老板裁定：日期以 22px 衬线刊头呈现） */
+#cal.v-day .mrows{left:0;right:0;top:0;bottom:9.5%;background:none;box-shadow:none;border-radius:0;padding:0;overflow-y:auto} /* 热修：bottom 不贴板底（恢复交付说明四原参数 9.5%），给 bottom:3.5% 添加钮让出命中区（DOM 上 mrows 在 mAdd 之后后绘制会盖钮） */
+/* 刊头：22px 衬线日期 + meta 行（星期 · 已完成 N/M），无组头纯时刻流 */
+#cal.v-day .mdmast{padding:2px 2px 12px;border-bottom:1px solid rgba(217,181,106,.25);margin-bottom:2px}
+#cal.v-day .mdd{font-family:Georgia,"Times New Roman","Microsoft YaHei",serif;font-size:22px;font-weight:700;color:#f0d9a8;letter-spacing:.5px;line-height:1.05} /* 中文回退挂雅黑：数字与中文同基线（交付说明五-修正项） */
+#cal.v-day .mdd i{font-style:normal;color:#c96e4a}
+#cal.v-day .mmeta{display:flex;gap:10px;margin-top:6px;font-size:8.5px;font-weight:800;letter-spacing:2px;color:#8f7551}
+/* 呼吸行：tm 50px 右对齐列 + 正文 flex + ✓✎✕ 常驻低位；行底 1px 金 hairline */
+#cal.v-day .mdrow{display:flex;align-items:baseline;gap:8px;width:100%;padding:11px 2px;border:none;border-bottom:1px solid rgba(217,181,106,.12);border-radius:0;background:none;color:inherit;text-align:left;cursor:pointer;font-family:inherit;transition:background .12s}
+#cal.v-day .mdrow:hover{background:rgba(217,181,106,.05)}
+#cal.v-day .mdtm{width:50px;flex:0 0 50px;text-align:right;font-family:Georgia,"Times New Roman","Microsoft YaHei",serif;font-size:17px;font-weight:700;color:#dcc39a;line-height:1;letter-spacing:-.3px;font-variant-numeric:tabular-nums} /* 大时刻字阶未变（展示字级） */
+#cal.v-day .mdrow.done .mdtm{color:#8f7551}
+#cal.v-day .mdtx{flex:1;min-width:0;font-size:11.5px;font-weight:700;color:#f0e6cc;line-height:1.55;overflow-wrap:anywhere}
+#cal.v-day .mdrow.done .mdtx{color:#a89573;text-decoration:line-through}
+#cal.v-day .mdact{display:flex;gap:3px;flex:0 0 auto;align-self:center;opacity:.7} /* 钮降噪：常驻不藏、降透明度 hover 才亮 */
+#cal.v-day .mdrow:hover .mdact{opacity:1}
+#cal.v-day .mda{width:15px;height:15px;border:0;border-radius:4px;background:transparent;color:#8f7551;font-size:9px;line-height:15px;cursor:pointer;display:block;text-align:center;padding:0;transition:background .12s,color .12s;font-family:inherit} /* 弱墨金降噪；span 非 button 避嵌套 */
+#cal.v-day .mda:hover{background:rgba(217,181,106,.14);color:#f0d9a8}
+#cal.v-day .mda:active{transform:scale(.94)}
+#cal.v-day .mda.on{color:#c96e4a;font-weight:700}
+#cal.v-day .mda.del:hover{background:rgba(160,58,44,.22);color:#c96e4a} /* 删除 hover 陶红危险语义 */
+#cal.v-day .mdempty{padding:22px 4px;font-size:10px;color:#a8907a;text-align:center}
+#cal.v-day .madd{top:auto;bottom:3.5%;width:auto;padding:4px 14px;border:1px dashed rgba(217,181,106,.55);border-radius:9px;font-size:9.5px;font-weight:800;color:#f0d9a8;background:transparent;transition:transform .12s,background .12s} /* 添加入口=金虚线胶囊（PM 判定先行，可逆换 PNG） */
+#cal.v-day .madd::before{content:"＋ 添加备忘"}
+#cal.v-day .madd img{display:none}
+#cal.v-day .madd:hover{background:rgba(217,181,106,.07)}
+#cal.v-day .madd:active{transform:scale(.94)}
+#cal.v-day .mrows .mdrow.fx{animation:wrise .2s ease-out backwards} /* 微动效同周视图：入场 200ms backwards，stagger 每行 45ms 由 JS 行内 delay */
+@media (prefers-reduced-motion:reduce){#cal .mdrow{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -648,15 +760,21 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     </div>
     <button class="sortB" id="dSort" title="切换排序">⇅ 倒序</button>
   </div>
-  <div class="pg pg-write">
-    <div class="b-head">
-      <div class="date" id="dateLine" contenteditable="true" spellcheck="false">202X年 10月22日 (周五)</div>
-      <button class="wxBtn" id="wxBtn" title="换天气">☀️</button>
+  <div class="pg pg-write"> <!-- v22cal11：图二一比一复刻——顶栏三胶囊(日期/天气/心情)皆可点开下拉，大白纸写作区+左上玫瑰角饰+右下字数，红金「保 存」钮 -->
+    <div class="wtop">
+      <button class="wpill" id="wDate" title="选日期"><span class="wi">📅</span><span class="wt" id="wDateT">2026年9月14日</span><i class="wcar" aria-hidden="true"></i></button>
+      <button class="wpill" id="wWx" title="选天气"><span class="wi" id="wWxI">☀️</span><span class="wt" id="wWxT">晴</span><i class="wcar" aria-hidden="true"></i></button>
+      <button class="wpill" id="wMood" title="选心情"><span class="wi" id="wMoodI">😊</span><span class="wt" id="wMoodT">开心</span><i class="wcar" aria-hidden="true"></i></button>
     </div>
-    <div class="b-body" id="dBody" contenteditable="true" spellcheck="false"></div>
-    <div class="sec-t">心情记录</div>
-    <div class="moods" id="moods"></div>
-    <button class="wr-save" id="dSaveE">写完了 ✓</button>
+    <div class="wwrap">
+      <div class="b-body" id="dBody" contenteditable="true" spellcheck="false"></div>
+      <span class="wrose" aria-hidden="true">🌹</span>
+      <span class="wcnt" id="wCnt">0/1000</span>
+    </div>
+    <button class="wr-save" id="dSaveE"><span class="wsq" aria-hidden="true">🖋</span>保 存</button>
+    <div class="ddrop" id="dropDate" aria-hidden="true"></div>
+    <div class="ddrop" id="dropWx" aria-hidden="true"></div>
+    <div class="ddrop" id="dropMood" aria-hidden="true"></div>
   </div>
 </section>
 <!-- 相册面板（批11：切图版，底板整图，点暗罩/面板外收起） -->
@@ -735,7 +853,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- 拍立得（批6.6：拍照 → 房间快照拍立得 → 存入相册） -->
 <div id="flash" aria-hidden="true"></div>
 <!-- 日历面板（批6.7：照日历界面demoA 移植，点 HUD「日历」左滑入） -->
-<section id="cal" aria-label="日历面板">
+<section id="cal" aria-label="日历面板"><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="heartOB" clipPathUnits="objectBoundingBox"><path d="M0.5,1 C0.5,1 0,0.5085 0,0.1239 A0.2645,0.3504 0 0 1 0.5,0 A0.2645,0.3504 0 0 1 1,0.1239 C1,0.5085 0.5,1 0.5,1 Z"/></clipPath></defs></svg><!-- v22cal4 心形归一化裁剪 -->
   <!-- v22cal2：左上 ‹ 返回钮退役（用户指令）——点面板外暗罩(#dimVeil)即可收起日历 -->
   <nav class="ctabs">
     <button class="ctab" data-v="day" aria-label="日视图"><i></i></button>
@@ -765,16 +883,22 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
       <button class="madd" id="mAdd" title="添加备忘"><img src="assets/ui/btn-memo-add.png" alt="添加备忘"></button>
     </div>
     <div class="mrows" id="mRows"></div>
-    <div class="mform" id="mForm">
-      <button class="tsel" id="mH" title="小时（点开滑动选择）">--</button>
-      <i class="tsep" aria-hidden="true">:</i>
-      <button class="tsel" id="mM" title="分钟（点开滑动选择）">--</button>
-      <input id="mTxt" placeholder="要做的事…" maxlength="30">
-      <button class="mk" id="mOk" title="确认">✓</button>
-      <button class="mk" id="mDel" title="删除这条" style="display:none">🗑</button>
-      <button class="mk" id="mNo" title="取消">✕</button>
+    <div class="mform" id="mForm"> <!-- v22cal6 v2「蜡封信笺」三钮同大；v22cal10 时间控件=方案四「横向刻度尺」（用户 2026-09-17 选定）——时刻牌+正下方展开 06:00–24:00 刻度尺拖红针 -->
+      <div class="mrow">
+        <button class="tdial" id="tDial" title="点开拖动选时间">--:--</button>
+        <input id="mTxt" placeholder="要做的事…" maxlength="30">
+      </div>
+      <div class="mbtns">
+        <button class="mk" id="mDel" title="删除这条" style="display:none">🗑</button>
+        <button class="mk" id="mNo" title="取消">✕</button>
+        <button class="mk" id="mOk" title="确认"><i></i></button>
+      </div>
+      <div class="truler" id="tPick" aria-hidden="true">
+        <div class="trv"><b id="tRv">09:00</b><span>拖动选时刻 · 06:00 – 24:00</span></div>
+        <div class="trange"><i class="ttrack"></i><i class="tfill" id="tFill"></i><input type="range" id="tR" min="360" max="1440" step="15" value="540" aria-label="选择时间"></div>
+        <div class="trticks"><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span><span>24</span></div>
+      </div>
     </div>
-    <div class="tpick" id="tPick" aria-hidden="true"><div class="tgrad"></div><div class="tlist" id="tList"></div></div>
   </div>
 </section>
 <div id="plWrap" aria-hidden="true">
@@ -939,8 +1063,8 @@ function applyDefSize(){ /* v22sync·A（用户拍板）：并表后自动把"�
       if(Math.abs((it.w||1)-nw)>0.0005){it.w=nw;it.u=Math.max(0,Math.min(ROOM.n-it.w,it.u||0));it.v=wallFreeV(it,it.v||0);hit=1;} /* v22fix：变宽后复核占行，不与旁边挂件叠 */
     }else{
       if(Math.abs((it.w||1)-nw)>0.0005||Math.abs((it.d||1)-nd)>0.0005){it.w=nw;it.d=nd;hit=1;}
-      it.gx=Math.max(0,Math.min(ROOM.n-it.w,it.gx));
-      it.gy=Math.max(0,Math.min(ROOM.n-it.d,it.gy));
+      it.gx=Math.max(0,Math.min(ROOM.n-effW(it),it.gx)); /* v22rot：同步后钳制按转向后占格 */
+      it.gy=Math.max(0,Math.min(ROOM.n-effD(it),it.gy));
       autoSmall(it); /* v22q：缩到 ≤0.5 格照旧自动当小物 */
     }
     if(hit)ch++;
@@ -1148,10 +1272,11 @@ function autoSmall(it){ /* 占格 ≤0.5 格＝小件：自动标成小物（可
 function foldFoot(it){ /* v22q2：滚轮「大小」跨过 ¼ 档 → 把缩放折进占格（虚线框跟着变小），大小回 100%。
   两个方向都单调：缩小时 q(w*scale) ≤ w*scale ⇒ 图片只会更小，放大同理，单次跳变最多一档（0.25 格）。 */
   if(!it)return false;
-  var sc=it.scale||1,w0=it.w||1,d0=it.d||1;
+  var sc=it.scale||1,w0=effW(it),d0=effD(it); /* v22rot：按转向后的占格折算 */
   var nw=Math.max(Q,Math.min(8,q(w0*sc))),nd=Math.max(Q,Math.min(8,q(d0*sc)));
   if(nw===w0&&nd===d0)return false; /* 还没跨档：只当图内微调，不动占格 */
-  it.w=nw;it.d=nd;it.scale=1;
+  if(it.rot){it.w=nd;it.d=nw;}else{it.w=nw;it.d=nd;} /* v22rot：视觉宽深写回原始字段（转向态互换） */
+  it.scale=1;
   autoSmall(it); /* 折到 ≤0.5 格就自动变小物，直接和台面口径接上 */
   if(it.on&&typeof hostOf==="function"&&typeof shelfCellFits==="function"&&typeof shelfDrop==="function"){
     var h=hostOf(it); /* 放大到台面接不住 → 落回地面，不留悬空的件 */
@@ -1205,11 +1330,13 @@ function hostOf(it){ /* 承托它的那件家具（on 存 id，查表拿引用�
 }
 function effGX(it){var h=hostOf(it);return h?h.gx+Math.max(0,it.su||0):it.gx;}
 function effGY(it){var h=hostOf(it);return h?h.gy+Math.max(0,it.sv||0):it.gy;}
+function effW(it){return (it&&it.rot)?(it.d||1):(it.w||1);} /* v22rot：真90°转向——占格宽深互换（rot=玩家转向；flip=资产镜像，纯画面不换占格） */
+function effD(it){return (it&&it.rot)?(it.w||1):(it.d||1);}
 function liftOf(it){var h=hostOf(it);return h?Math.max(0,h.sh||0)*ROOM.cw*S:0;}
 function shelfOn(it){return !!(it&&!it.wall&&it.sh>0);} /* 这件能不能承托（墙件不承托） */
 /* v22sync：台面范围 sw/sd（格）——桌面比占格小时用自己填的范围（工作台「范围」栏同口径）；不填＝跟占格一样，老数据零迁移 */
-function shelfSW(h){return (!h||!(h.sw>0))?((h&&h.w)||1):h.sw;}
-function shelfSD(h){return (!h||!(h.sd>0))?((h&&h.d)||1):h.sd;}
+function shelfSW(h){if(!h)return 1;var v=(h.rot?h.sd:h.sw);return (v>0)?v:((h.rot?h.d:h.w)||1);} /* v22rot：转向后台面范围跟着互换（显式 sw/sd 与缺省占格都互换） */
+function shelfSD(h){if(!h)return 1;var v=(h.rot?h.sw:h.sd);return (v>0)?v:((h.rot?h.w:h.d)||1);}
 function shelfCellFits(host,it,gx,gy){ /* 小物的占格要整个落在「台面范围」内 */
   var sw=shelfSW(host),sd=shelfSD(host);
   return gx>=host.gx&&gy>=host.gy&&gx+Math.max(Q,it.w||1)<=host.gx+sw&&gy+Math.max(Q,it.d||1)<=host.gy+sd;
@@ -1331,7 +1458,7 @@ function glowSpotPos(it){ /* 光斑落点：地面件=足迹中心；墙灯=灯�
   if(it.wall)return [px(it.u+it.w/2,0),py(it.u+it.w/2,0)];
   var h4=hugOff(it);
   var egx=effGX(it),egy=effGY(it); /* v22fix：台上小物光斑跟本体走（it.gx 在上台面后是旧值） */
-  return [px(egx+it.w/2,egy+it.d/2)+h4[0],py(egx+it.w/2,egy+it.d/2)+h4[1]];
+  return [px(egx+effW(it)/2,egy+effD(it)/2)+h4[0],py(egx+effW(it)/2,egy+effD(it)/2)+h4[1]]; /* v22rot：锚点跟转向后视觉位置 */
 }
 function drawGlowSpot(it){ /* 地面光斑（简化版）：足迹中心一个等距椭圆柔光，随灯色/范围/呼吸一起变 */
   var g=glowOf(it);
@@ -1411,21 +1538,22 @@ function drawItem(it){
     return;
   }
   var GX=effGX(it),GY=effGY(it),LIFT=liftOf(it); /* v22shelf：台面上的小物=在承托件那一格的基础上整体抬高 sh 行 */
-  var x1=px(GX,GY),               y1=py(GX,GY),
-      x2=px(GX+it.w,GY),           y2=py(GX+it.w,GY),
-      x3=px(GX+it.w,GY+it.d),      y3=py(GX+it.w,GY+it.d)-LIFT,
-      x4=px(GX,GY+it.d),           y4=py(GX,GY+it.d)-LIFT;
+  var gw=effW(it),gd=effD(it); /* v22rot：绘制足迹=转向后的占格（图镜像+锚点互换后正好盖住新菱形；w+d 不变⇒近角 y3 不动，oy 锚稳定） */
+  var x1=px(GX,GY),        y1=py(GX,GY),
+      x2=px(GX+gw,GY),     y2=py(GX+gw,GY),
+      x3=px(GX+gw,GY+gd),  y3=py(GX+gw,GY+gd)-LIFT,
+      x4=px(GX,GY+gd),     y4=py(GX,GY+gd)-LIFT;
   y1-=LIFT;y2-=LIFT;
   var h=it.h*S;
   var fi=furnImg(it);
   if(fi&&fi.img){ /* 真图模式：内容包围盒底边中点＝足迹近角下尖（虚线框），落地不悬空 */
-    var mx=px(GX+it.w/2,GY+it.d/2);
+    var mx=px(GX+gw/2,GY+gd/2); /* v22rot：锚点跟随转向后的足迹中心 */
     var dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w),dh=dw*fi.th/fi.tw;
     var ho=hugOff(it); /* v22hug：贴墙件图往里推 */
     var ax=mx+ho[0]+oxOf(it)*dw,ay=y3+ho[1]+oyOf(it)*dh; /* v22sync：资产库的微调（图整体挪，虚线框/占格不动） */
     /* v11 直接贴图；翻转时以内容盒水平中线 ax 为轴左右镜像（v22fab：扭曲系统已整体移除） */
     try{
-      if(it.flip){
+      if((it.flip?1:0)!==(it.rot?1:0)){ /* v22rot：镜像=XOR（转向本身含一次镜像，资产flip再镜像则抵消） */
         ctx.save();
         ctx.translate(ax,0);ctx.scale(-1,1);ctx.translate(-ax,0);
         ctx.drawImage(fi.img,fi.tx,fi.ty,fi.tw,fi.th,ax-dw/2,ay-dh,dw,dh);
@@ -1449,7 +1577,7 @@ function drawItem(it){
     ctx.setLineDash([6,4]);
     /* v22dash2：虚线框回归占格锚点——去掉 dOF 跟图平移（书架虚线框不对齐格子的根因）。
       框永远画在真实占格上；家具贴墙/落地的观感由家具包逐件校准的 ox/oy 保证（本体落在占格内，框与本体基本重合） */
-    if(it.flip){ /* 以足迹中心的竖轴左右镜像：等距投影下正好等于把 w×d 换成 d×w */
+    if(it.flip&&!it.rot){ /* 画面镜像（资产flip）时框跟图镜像；v22rot 转向件的框=转向后占格菱形（x1..x4 已按新占格画） */
       var fcx=(x1+x3)/2;
       quad(2*fcx-x1,y1,2*fcx-x2,y2,2*fcx-x3,y3,2*fcx-x4,y4);
     }else quad(x1,y1,x2,y2,x3,y3,x4,y4);
@@ -1521,7 +1649,7 @@ function charBlocked(gx,gy){ /* 家具占地（含外扩）；墙件不挡路；
     if(it.wall)continue;
     if(hostOf(it))continue; /* v22fix：原 it.on>=0 对字符串恒 false，小物押着宿主足迹重复挡路没问题、但头发丝级足迹外扩会误挡 */
     var x=effGX(it),y=effGY(it);
-    if(gx>x-CHAR_GAP&&gx<x+(it.w||1)+CHAR_GAP&&gy>y-CHAR_GAP&&gy<y+(it.d||1)+CHAR_GAP)return true;
+    if(gx>x-CHAR_GAP&&gx<x+effW(it)+CHAR_GAP&&gy>y-CHAR_GAP&&gy<y+effD(it)+CHAR_GAP)return true; /* v22rot：人物绕行按转向后占格 */
   }
   return false;
 }
@@ -1534,13 +1662,13 @@ function footBlocked(it,gx,gy){ /* v22block：落位碰撞检查——目标足�
   for(i=0;i<FURNITURE.length;i++){
     o=FURNITURE[i];
     if(o===it||o.wall||hostOf(o))continue;
-    ox=effGX(o);oy=effGY(o);ow=o.w||1;od=o.d||1;
-    if(gx<ox+ow-1e-6&&ox<gx+(it.w||1)-1e-6&&gy<oy+od-1e-6&&oy<gy+(it.d||1)-1e-6)return true;
+    ox=effGX(o);oy=effGY(o);ow=effW(o);od=effD(o); /* v22rot：碰撞按转向后占格 */
+    if(gx<ox+ow-1e-6&&ox<gx+effW(it)-1e-6&&gy<oy+od-1e-6&&oy<gy+effD(it)-1e-6)return true;
   }
   return false;
 }
 function footFree(it,gx,gy){ /* v22block：给出的格被占/越界时，从该点出发找最近的空足迹格（曼哈顿距离最小）；找不到返回 null */
-  var bw=Math.max(Q,it.w||1),bd=Math.max(Q,it.d||1),best=null,bd2=1e9,c,r;
+  var bw=Math.max(Q,effW(it)),bd=Math.max(Q,effD(it)),best=null,bd2=1e9,c,r; /* v22rot：按转向后占格找空位 */
   for(c=0;c+bw<=ROOM.n+1e-6;c++)for(r=0;r+bd<=ROOM.n+1e-6;r++){
     if(footBlocked(it,c,r))continue;
     var d2=Math.abs(c-gx)+Math.abs(r-gy); /* lower is better */
@@ -1924,17 +2052,17 @@ function itemAt(sx,sy){
       if(sx>=wx2-wid2/2-4&&sx<=wx2+wid2/2+4&&sy>=wy2-hei2-4&&sy<=wy2+4)return it; /* v22fix：命中盒与 drawItem 实画同款内容盒（原用足迹口径 ww/wh，裁边素材点不中） */
       continue;
     }
-    mx=px(effGX(it)+it.w/2,effGY(it)+it.d/2);
+    mx=px(effGX(it)+effW(it)/2,effGY(it)+effD(it)/2); /* v22rot：命中盒跟转向后的占格/图走 */
     fi=furnImg(it);
     var ho3=hugOff(it);mx+=ho3[0]; /* v22hug：命中盒跟图一起走 */
     if(fi&&fi.img){ /* 已加载：按内容包围盒判定（与 drawItem 同锚点） */
       dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w);dh=dw*fi.th/fi.tw;
-      by=py(effGX(it)+it.w,effGY(it)+it.d)-liftOf(it)+ho3[1]; /* v22shelf：台面上的小物按抬高后的位置判定 */
+      by=py(effGX(it)+effW(it),effGY(it)+effD(it))-liftOf(it)+ho3[1]; /* v22shelf：台面上的小物按抬高后的位置判定；v22rot：按转向后占格 */
       mx+=oxOf(it)*dw;by+=oyOf(it)*dh; /* v22sync：命中盒跟着 ox/oy 微调走 */
       if(sx>=mx-dw/2-4&&sx<=mx+dw/2+4&&sy>=by-dh-4&&sy<=by+4)return it;
     }else{ /* 未加载：按足迹菱形包围盒判定 */
       by=py(effGX(it),effGY(it))-liftOf(it);
-      if(sx>=px(effGX(it),effGY(it)+it.d)-4&&sx<=px(effGX(it)+it.w,effGY(it))+4&&sy>=by-4&&sy<=py(effGX(it)+it.w,effGY(it)+it.d)-liftOf(it)+4)return it;
+      if(sx>=px(effGX(it),effGY(it)+effD(it))-4&&sx<=px(effGX(it)+effW(it),effGY(it))+4&&sy>=by-4&&sy<=py(effGX(it)+effW(it),effGY(it)+effD(it))-liftOf(it)+4)return it;
     }
   }
   return null;
@@ -1979,18 +2107,20 @@ function dimStep(v){return (v>=1)?1:Q;} /* 单维步进：这一维 ≥1 格＝�
 function adjFoot(dim,delta){ /* 声明占格：改 w/d 后图片自动缩放占满，位置钳制在房间内（v22q：≤1 格自动切 ¼ 格步进，下限 0.25） */
   if(!SEL)return;
   if(dim==="d"&&SEL.wall)return; /* 墙件无深度概念 */
-  var st=dimStep((dim==="w"?SEL.w:SEL.d)||1);
+  var st=dimStep((dim==="w"?effW(SEL):effD(SEL))||1); /* v22rot：步进按转向后的视觉维度 */
   if(dim==="w"){
-    var nw=SEL.w+delta*st;
-    if(delta<0&&nw<1)nw=SEL.w-Q; /* 从 ≥1 格往下跨过 1 格时，改按 ¼ 格梯子走（2 → 1 → 0.75 → 0.5 → 0.25） */
-    SEL.w=q(Math.max(Q,Math.min(ROOM.n,nw)));
-    if(SEL.wall)SEL.u=Math.max(0,Math.min(ROOM.n-SEL.w,SEL.u));
-    else SEL.gx=Math.max(0,Math.min(ROOM.n-SEL.w,SEL.gx));
+    var nw=effW(SEL)+delta*st;
+    if(delta<0&&nw<1)nw=effW(SEL)-Q; /* 从 ≥1 格往下跨过 1 格时，改按 ¼ 格梯子走（2 → 1 → 0.75 → 0.5 → 0.25） */
+    nw=q(Math.max(Q,Math.min(ROOM.n,nw)));
+    if(SEL.wall){SEL.w=nw;SEL.u=Math.max(0,Math.min(ROOM.n-SEL.w,SEL.u));}
+    else if(SEL.rot){SEL.d=nw;SEL.gx=Math.max(0,Math.min(ROOM.n-effW(SEL),SEL.gx));} /* v22rot：视觉宽写回原始深 */
+    else{SEL.w=nw;SEL.gx=Math.max(0,Math.min(ROOM.n-effW(SEL),SEL.gx));}
   }else{
-    var nd=SEL.d+delta*st;
-    if(delta<0&&nd<1)nd=SEL.d-Q;
-    SEL.d=q(Math.max(Q,Math.min(ROOM.n,nd)));
-    SEL.gy=Math.max(0,Math.min(ROOM.n-SEL.d,SEL.gy));
+    var nd=effD(SEL)+delta*st;
+    if(delta<0&&nd<1)nd=effD(SEL)-Q;
+    nd=q(Math.max(Q,Math.min(ROOM.n,nd)));
+    if(SEL.rot){SEL.w=nd;SEL.gy=Math.max(0,Math.min(ROOM.n-effD(SEL),SEL.gy));} /* v22rot：视觉深写回原始宽 */
+    else{SEL.d=nd;SEL.gy=Math.max(0,Math.min(ROOM.n-effD(SEL),SEL.gy));}
   }
   autoSmall(SEL); /* v22q：缩到 ≤0.5 格自动当小物，可直接摆到台面上 */
   SEL.foot=1; /* v22sync·A：玩家手动改过占格 → 打标记，之后的家具表同步不再覆盖这件 */
@@ -2004,7 +2134,7 @@ function contentBox(it){ /* v22fab：与 drawItem/img、itemAt 同锚点的内�
   }
   var rw=(fi&&fi.tw)?fi.tw/fi.w:1;
   var dw2=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*rw,dh=dw2*((fi&&fi.tw)?fi.th/fi.tw:1),ho2=hugOff(it);
-  return {mx:px(effGX(it)+it.w/2,effGY(it)+it.d/2)+ho2[0],T:py(effGX(it)+it.w,effGY(it)+it.d)-dh-liftOf(it)+ho2[1],dw:dw2,dh:dh};
+  return {mx:px(effGX(it)+effW(it)/2,effGY(it)+effD(it)/2)+ho2[0],T:py(effGX(it)+effW(it),effGY(it)+effD(it))-dh-liftOf(it)+ho2[1],dw:dw2,dh:dh}; /* v22rot：三钮跟转向后视觉位置 */
 }
 function positionFab(){ /* 三钮悬浮在家具内容盒上方居中，钳制在画布内 */
   var c=$("fab");
@@ -2037,7 +2167,7 @@ function addFurniture(defId,gx,gy){ /* V22：按家具库定义生成实例（�
   var def=DEF_MAP[defId];
   if(!def)return null;
   FID++;
-  var it={id:"f"+FID,def:def.id,name:def.name,img:def.src,gx:0,gy:0,w:def.w,d:def.d,h:def.h,scale:def.scale||1,color:"#c9b8a3",flip:def.flip||"",ox:def.ox||0,oy:def.oy||0,wall:def.wall||null, /* v22sync：占格/大小%/翻转/微调 都从家具定义带进来（工作台同步过来） */u:Math.round((ROOM.n-def.w)/2),v:1,vh:def.vh||1,glow:def.glow?{c:def.glow.c,s:def.glow.s,i:def.glow.i,b:def.glow.b,p:def.glow.p}:null,
+  var it={id:"f"+FID,def:def.id,name:def.name,img:def.src,gx:0,gy:0,w:def.w,d:def.d,h:def.h,scale:def.scale||1,color:"#c9b8a3",flip:def.flip||"",rot:"",ox:def.ox||0,oy:def.oy||0,wall:def.wall||null, /* v22sync：占格/大小%/翻转/微调 都从家具定义带进来（工作台同步过来） */u:Math.round((ROOM.n-def.w)/2),v:1,vh:def.vh||1,glow:def.glow?{c:def.glow.c,s:def.glow.s,i:def.glow.i,b:def.glow.b,p:def.glow.p}:null,
     sh:(def.wall?0:(def.sh||0)),sm:(def.wall?0:(def.sm||0)),sw:(def.wall?null:(def.sw||null)),sd:(def.wall?null:(def.sd||null)),on:null,su:0,sv:0}; /* v22shelf：台面高(行)/小物标记/台面范围 sw×sd/承托件 id/台面第几格 */
   autoSmall(it); /* v22q：占格 ≤0.5 格的家具（书/杯/花瓶）自动就是小物，可直接上桌 */
   if(it.wall){
@@ -2070,13 +2200,17 @@ cv.addEventListener("pointerdown",function(e){
   if(it&&SEL===it){ /* v22fb4：点已选中的家具才开拖（第一次点=只选中，防挪画面/缩放时误拽家具，用户反馈） */
     e.stopPropagation(); /* 期1.5：拖家具时拦住冒泡，v22view 不启动画面拖拽 */
     drag={it:it,ox:p[0],oy:p[1],gx:effGX(it),gy:effGY(it)}; /* v22shelf：台面上的小物从它抬高后待的那一格起算 */
+    if(it.wall){ /* v22lag：墙件记「拖起格位+手指连续位」，拖拽改增量制——与地面件同口径，抓取偏移全程保持，一拖就窜消失 */
+      var _c=ROOM.cw*S;drag.u0=it.u||0;drag.v0=it.v||0;
+      drag.uc0=Math.abs(p[0]-OX)/_c;drag.vc0=(OY+ROOM.ch*drag.uc0*S-p[1])/_c;
+    }
     try{cv.setPointerCapture(e.pointerId);}catch(err){}
   }else if(it){
     e.stopPropagation(); /* v22fb4：第一次点家具=只选中不拖；再点同一件(SEL===it)才开拖 */
     select(it);
   }else{select(null);}
 });
-window.addEventListener("pointermove",function(e){
+function doPtrMove(e){
   if(calD){ /* v22q 台面校准：指针高度 → 台面高（行），0.05 档 */
     var cp=sceneXY(e);
     calD.it.sh=calibSh(calD.base,cp[1]);
@@ -2088,18 +2222,21 @@ window.addEventListener("pointermove",function(e){
     var cell=ROOM.cw*S,rows=Math.round(ROOM.wallH/ROOM.cw);
     var uc=Math.abs(p[0]-OX)/cell;
     var v=(OY+ROOM.ch*uc*S-p[1])/cell;
-    it.wall=p[0]<=OX?"left":"back";
+    var side=p[0]<=OX?"left":"back";
+    if(side!==it.wall&&Math.abs(p[0]-OX)<cell*0.5)side=it.wall; /* v22lag：切墙迟滞带（中线±半格）——墙角附近晃动不再左右翻墙 */
+    it.wall=side;
     var wst=footStep(it);
-    it.u=Math.max(0,Math.min(ROOM.n-it.w,q(qs(uc,wst)))); /* v22q：小挂件同样按 ¼ 格吸附 */
-    it.v=wallFreeV(it,Math.max(0,Math.min(rows-wallRowsOf(it),q(qs(v,wst))))); /* v21：占了别人已占的行就自动跳到最近空行 */
+    var du=(drag.uc0!=null)?uc-drag.uc0:0,dv=(drag.vc0!=null)?v-drag.vc0:0; /* v22lag：增量=手指位移；两墙公式对称，切墙后增量依然自洽 */
+    it.u=Math.max(0,Math.min(ROOM.n-it.w,q(qs((drag.u0||0)+du,wst)))); /* v22q：小挂件同样按 ¼ 格吸附；v22lag：拖起点+增量 */
+    it.v=wallFreeV(it,Math.max(0,Math.min(rows-wallRowsOf(it),q(qs((drag.v0||0)+dv,wst))))); /* v21：占了别人已占的行就自动跳到最近空行 */
     render();positionFab();positionGlowRow();return;
   }
   /* 屏幕位移→世界位移→等距格子位移（逆变换），吸附格子并钳制在房间内（v22q：缩小到 ≤1 格自动按 ¼ 格吸附） */
   var dWX=(p[0]-drag.ox)/S,dWY=(p[1]-drag.oy)/S;
   var di=(dWX/ROOM.cw+dWY/ROOM.ch)/2,dj=(dWY/ROOM.ch-dWX/ROOM.cw)/2;
   var st=footStep(it);
-  var ngx=Math.max(0,Math.min(ROOM.n-it.w,q(qs(drag.gx+di,st))));
-  var ngy=Math.max(0,Math.min(ROOM.n-it.d,q(qs(drag.gy+dj,st))));
+  var ngx=Math.max(0,Math.min(ROOM.n-effW(it),q(qs(drag.gx+di,st)))); /* v22rot：拖拽钳制按转向后占格 */
+  var ngy=Math.max(0,Math.min(ROOM.n-effD(it),q(qs(drag.gy+dj,st))));
   if(it.sm||it.on){ /* v22shelf：小物拖到桌/柜的台面上会自动吸附上去，离开台面就落回地面 */
     drag.cell=shelfPut(it,ngx,ngy)?[effGX(it),effGY(it)]:null;
   }else{
@@ -2108,6 +2245,16 @@ window.addEventListener("pointermove",function(e){
   }
   render();positionFab();
   positionGlowRow();
+}
+/* v22lag：pointermove 合帧——高刷屏（触摸 120Hz/鼠标可达数百 Hz）下逐发全屋重绘会排队掉帧；
+   只记最新事件、每帧最多处理一次。无 rAF 环境（jsdom/老内核）退化为同步执行，行为与旧版一致 */
+var pendPM=null,pmRAF=0;
+function pmTick(){pmRAF=0;var ev=pendPM;pendPM=null;if(ev)doPtrMove(ev);}
+window.addEventListener("pointermove",function(e){
+  pendPM=e;
+  if(pmRAF)return;
+  if(typeof requestAnimationFrame==="function")pmRAF=requestAnimationFrame(pmTick);
+  else pmTick();
 });
 window.addEventListener("pointerup",function(){
   if(calD){calD=null;saveSoon();render();return;} /* v22q 校准结束：落档存档 */
@@ -2118,7 +2265,7 @@ window.addEventListener("pointerup",function(){
       if(t.gy>0&&t.gy<=Q)t.gy=0;
     }
     if(t&&!t.wall&&!hostOf(t)&&!drag.cell&&footBlocked(t,effGX(t),effGY(t))){
-      t.gx=Math.max(0,Math.min(ROOM.n-t.w,drag.gx));t.gy=Math.max(0,Math.min(ROOM.n-t.d,drag.gy));
+      t.gx=Math.max(0,Math.min(ROOM.n-effW(t),drag.gx));t.gy=Math.max(0,Math.min(ROOM.n-effD(t),drag.gy)); /* v22rot */
       toast("这里摆不下（会压到别的家具），已弹回原位");
     }
   }
@@ -2136,7 +2283,7 @@ function copySelected(){ /* v22copy：复制选中件（占格/大小%/翻转/�
   x=src.wall?src.u:effGX(src); y=src.wall?src.v:effGY(src);
   it=addFurniture(src.def,x,y);
   if(!it){toast("复制失败");return;}
-  it.w=src.w;it.d=src.d;it.scale=src.scale;it.flip=src.flip;it.ox=src.ox;it.oy=src.oy;
+  it.w=src.w;it.d=src.d;it.scale=src.scale;it.flip=src.flip;it.ox=src.ox;it.oy=src.oy;it.rot=src.rot||"";
   it.glow=src.glow?{c:src.glow.c,s:src.glow.s,i:src.glow.i,b:src.glow.b,p:src.glow.p}:null;
   it.sh=src.sh;it.sm=src.sm;it.sw=src.sw;it.sd=src.sd;it.vh=src.vh;
   if(it.wall){ it.u=src.u; it.v=wallFreeV(it,src.v); }
@@ -2152,8 +2299,26 @@ $("fabDel").addEventListener("click",removeSelected);
 $("fabCopy").addEventListener("click",copySelected);
 $("fabFlip").addEventListener("click",function(){
   if(!SEL)return;
-  SEL.flip=SEL.flip?"":"1";
-  updateSelChip();saveSoon();render();
+  if(SEL.wall){SEL.flip=SEL.flip?"":"1";updateSelChip();saveSoon();render();return;} /* 墙件照旧＝纯画面镜像 */
+  /* v22rot：地面件＝真90°转向（占格宽深互换）。宿主转向时台面上的小物跟随（su/sv 互换），放不下就近找格/落回地面 */
+  if(hostOf(SEL)){toast("台面上的小物不用转向");return;}
+  var i,o,follow=[];
+  for(i=0;i<FURNITURE.length;i++){o=FURNITURE[i];if(hostOf(o)===SEL)follow.push(o);}
+  SEL.rot=SEL.rot?"":"1";
+  for(i=0;i<follow.length;i++){
+    o=follow[i];
+    var nsu=o.sv||0,nsv=o.su||0;o.su=nsu;o.sv=nsv;
+    if(!shelfCellFits(SEL,o,SEL.gx+o.su,SEL.gy+o.sv)){
+      var c2=shelfFreeCell(SEL,o,o.su,o.sv);o.su=c2[0];o.sv=c2[1];
+      if(!shelfCellFits(SEL,o,SEL.gx+o.su,SEL.gy+o.sv))shelfDrop(o);
+    }
+  }
+  if(SEL.gx+effW(SEL)>ROOM.n+1e-6||SEL.gy+effD(SEL)>ROOM.n+1e-6||footBlocked(SEL,SEL.gx,SEL.gy)){
+    var fp=footFree(SEL,SEL.gx,SEL.gy);
+    if(fp){SEL.gx=fp[0];SEL.gy=fp[1];}
+    else{SEL.rot=SEL.rot?"":"1";toast("转过去放不下，已转回来");}
+  }
+  updateSelChip();saveSoon();render();positionFab();positionGlowRow();
 });
 /* v22sync（C）：小物 / 台面 / 台面高± / 校准 的接线已整体撤掉（用户要求正式版不再露这些开关）。
    数据字段 sm/sh/on/su/sv 与 shelfPut/shelfDrop 的台上放置逻辑全部保留：台面关系照旧生效、照旧存档。 */
@@ -2272,17 +2437,17 @@ $("mSettings").addEventListener("click",function(){openSettings();}); /* 设置�
 /* ═══ 日记本（批6：照日记页demo 三段版移植：封面→历史→写日记，独立存档） ═══ */
 var bookEl=$("book"),veilEl=$("dimVeil");
 var DIAKEY="maoor-v22-diary-v2";
-var MOODS=["😌","😐","😕","😭","😄","😠"];
-var WX=["☀️","🌤️","⛅","☁️","🌧️","⛈️","❄️"];
+var MOODS=[{e:"😊",t:"开心"},{e:"😌",t:"平静"},{e:"😐",t:"一般"},{e:"😢",t:"难过"},{e:"😭",t:"大哭"},{e:"😠",t:"生气"}]; /* v22cal11：对象化（emoji+文字标签），mood 索引存档兼容 */
+var WX=[{e:"☀️",t:"晴"},{e:"🌤️",t:"多云"},{e:"⛅",t:"多云转阴"},{e:"☁️",t:"阴"},{e:"🌧️",t:"雨"},{e:"⛈️",t:"雷雨"},{e:"❄️",t:"雪"}]; /* v22cal11：对象化，旧存档 wx 按 e 匹配 */
 var ENTRIES=[
-  {key:"2026-10-22",wx:"☀️",mood:0,body:"今天在小屋里静静地读了一下午书。壁炉前的火光让人感到非常安心，彻子在旁边打盹，尾巴一摇一摇的。"},
-  {key:"2026-10-21",wx:"🌤️",mood:4,body:"尝试了新的茶点配方，奶油放得刚刚好，明天想再做一次请朋友来尝尝。"},
-  {key:"2026-10-20",wx:"⛅",mood:1,body:"整理了房间，翻出很多旧照片，每一张都想再看看，时间过得真快呀。"},
-  {key:"2026-10-19",wx:"🌧️",mood:5,body:"下了一整天雨，没出门，跟国际象棋较了一下午劲，还是输了三盘。"}
+  {key:"2026-10-22",wx:"☀️",mood:1,body:"今天在小屋里静静地读了一下午书。壁炉前的火光让人感到非常安心，彻子在旁边打盹，尾巴一摇一摇的。"},
+  {key:"2026-10-21",wx:"🌤️",mood:0,body:"尝试了新的茶点配方，奶油放得刚刚好，明天想再做一次请朋友来尝尝。"},
+  {key:"2026-10-20",wx:"⛅",mood:2,body:"整理了房间，翻出很多旧照片，每一张都想再看看，时间过得真快呀。"},
+  {key:"2026-10-19",wx:"🌧️",mood:3,body:"下了一整天雨，没出门，跟国际象棋较了一下午劲，还是输了三盘。"}
 ];
 var PRESETS=[
-  {key:"2026-10-18",wx:"☁️",mood:2,body:"翻出了旧相册，一张一张看过去，好多事都还记得清清楚楚的。"},
-  {key:"2026-10-17",wx:"☀️",mood:3,body:"小屋来了一位客人，聊了好久，临走时还送了我们一小盆雏菊。"}
+  {key:"2026-10-18",wx:"☁️",mood:3,body:"翻出了旧相册，一张一张看过去，好多事都还记得清清楚楚的。"},
+  {key:"2026-10-17",wx:"☀️",mood:0,body:"小屋来了一位客人，聊了好久，临走时还送了我们一小盆雏菊。"}
 ];
 var dSt={mood:-1},draft={mood:-1,body:""},curEdit=null,dpage=0,dWxi=0,descSort=true,PER=6;
 function fullToday(){var d=new Date(),w=["周日","周一","周二","周三","周四","周五","周六"];return d.getFullYear()+"年 "+(d.getMonth()+1)+"月 "+d.getDate()+"日 ("+w[d.getDay()]+")"}
@@ -2300,15 +2465,62 @@ function openDiary(){
   bookEl.classList.add("open");syncVeil();setView("cover");
 }
 function closeDiary(){bookEl.classList.remove("open");syncVeil();}
-function renderMoods(){
-  var box=$("moods");box.innerHTML="";
-  MOODS.forEach(function(m,i){
+function keyCN(k){var p=(k||"").split("-");return p.length===3?(+p[0])+"年"+(+p[1])+"月"+(+p[2])+"日":""} /* v22cal11：key→「2026年9月14日」图二格式 */
+function syncPills(){ /* v22cal11：三胶囊回显（日期格式=图二「2026年9月14日」无空格无星期） */
+  $("wDateT").textContent=keyCN(curEdit)||keyCN(todayKey());
+  $("wWxI").textContent=WX[dWxi].e;$("wWxT").textContent=WX[dWxi].t;
+  var mi=dSt.mood;
+  $("wMoodI").textContent=MOODS[mi<0?0:mi].e; /* v22cal11：未选默认显示「😊 开心」（图二） */
+  $("wMoodT").textContent=MOODS[mi<0?0:mi].t;
+}
+function syncCnt(){var n=$("dBody").textContent.replace(/\s/g,"").length;$("wCnt").textContent=n+"/1000"}
+var wDrop=null;
+function closeDrop(){if(!wDrop)return;["dropDate","dropWx","dropMood"].forEach(function(id){$(id).classList.remove("open")});wDrop=null}
+function renderDOpts(id,arr,sel,cb){ /* v22cal11：天气/心情下拉列表 */
+  var dp=$(id);dp.innerHTML="";
+  arr.forEach(function(o,i){
     var b=document.createElement("button");
-    b.className="mood"+(dSt.mood===i?" on":"");b.textContent=m;b.setAttribute("data-i",i);
-    b.addEventListener("click",function(){dSt.mood=(dSt.mood===i?-1:i);renderMoods();});
-    box.appendChild(b);
+    b.className="dopt"+(i===sel?" on":"");
+    b.innerHTML="<span>"+o.e+"</span><span>"+escH(o.t)+"</span>";
+    b.addEventListener("click",function(ev){ev.stopPropagation();cb(i)});
+    dp.appendChild(b);
   });
 }
+var dcalY=null,dcalM=0; /* 月历浏览位 */
+function renderDCal(){ /* v22cal11：日期下拉=mini 月历（日 start，今天金圈，选中实心） */
+  var t=new Date();
+  if(dcalY==null){dcalY=t.getFullYear();dcalM=t.getMonth()}
+  var html='<div class="dcal"><div class="dhead"><button class="dnav" data-n="-1">‹</button><b>'+dcalY+"年"+(dcalM+1)+"月</b><button class=\"dnav\" data-n=\"1\">›</button></div>"
+    +'<div class="dweek"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="ddays">';
+  var first=new Date(dcalY,dcalM,1).getDay(),dim=new Date(dcalY,dcalM+1,0).getDate(),tk=todayKey();
+  for(var i=0;i<first;i++)html+="<button disabled></button>";
+  for(var d2=1;d2<=dim;d2++){
+    var kk=dcalY+"-"+(dcalM+1)+"-"+d2;
+    html+='<button data-k="'+kk+'" class="'+(kk===tk?"today":"")+(kk===curEdit?" sel":"")+'">'+d2+"</button>";
+  }
+  html+="</div></div>";
+  var dp=$("dropDate");dp.innerHTML=html;
+  dp.querySelectorAll(".dnav").forEach(function(b){
+    b.addEventListener("click",function(ev){ev.stopPropagation();dcalM+=+b.getAttribute("data-n");if(dcalM<0){dcalM=11;dcalY--}if(dcalM>11){dcalM=0;dcalY++}renderDCal()});
+  });
+  dp.querySelectorAll(".ddays button[data-k]").forEach(function(b){
+    b.addEventListener("click",function(ev){ev.stopPropagation();curEdit=b.getAttribute("data-k");syncPills();closeDrop()});
+  });
+}
+function openDrop(id,pill){ /* v22cal11：点胶囊开下拉，left/width 对齐胶囊 */
+  if(wDrop===id){closeDrop();return}
+  closeDrop();wDrop=id;
+  var dp=$(id);dp.classList.add("open");
+  dp.style.left=pill.offsetLeft+"px";dp.style.minWidth=Math.max(pill.offsetWidth,120)+"px";
+  if(id==="dropDate")renderDCal();
+  if(id==="dropWx")renderDOpts(id,WX,dWxi,function(i){dWxi=i;syncPills();closeDrop()});
+  if(id==="dropMood")renderDOpts(id,MOODS,dSt.mood,function(i){dSt.mood=(dSt.mood===i?-1:i);syncPills();closeDrop()});
+}
+$("wDate").addEventListener("click",function(ev){ev.stopPropagation();openDrop("dropDate",this)});
+$("wWx").addEventListener("click",function(ev){ev.stopPropagation();openDrop("dropWx",this)});
+$("wMood").addEventListener("click",function(ev){ev.stopPropagation();openDrop("dropMood",this)});
+$("dBody").addEventListener("input",syncCnt);
+document.addEventListener("click",function(ev){if(wDrop&&!ev.target.closest(".ddrop")&&!ev.target.closest(".wpill"))closeDrop()});
 function renderList(){
   var box=$("dList");box.innerHTML="";
   var list=ENTRIES.slice().sort(function(a,b){return descSort?entrySort(b)-entrySort(a):entrySort(a)-entrySort(b)});
@@ -2320,8 +2532,8 @@ function renderList(){
     var m=(e.dd?shortDate(e.dd):fmtKey(e.key)).match(/(\d+)月\s*(\d+)日/);
     var ym=e.dd&&/(\d{4})年/.exec(e.dd),yr=ym?ym[1]:String(e.key).split("-")[0];
     var dot=yr+"."+(m?("0"+m[1]).slice(-2):"00")+"."+(m?("0"+m[2]).slice(-2):"00");
-    /* 大日期位暂时留空（用户指示），保留占位宽度待后续放图 */
-    c.innerHTML='<div class="dnum" aria-hidden="true"></div>'
+    /* v22cal11：大日期=图一版式（月大字/斜线/日小字，Georgia 衬线=日视图时间字体），右上小字保留 yyyy.mm.dd */
+    c.innerHTML='<div class="dnum" aria-hidden="true"><b>'+(m?+m[1]:"--")+'</b><i></i><b class="d2">'+(m?+m[2]:"--")+'</b></div>'
       +'<div class="dright"><div class="dd">'+dot+'</div>'
       +'<div class="ds">'+(e.body||"").replace(/<[^>]*>/g," ")+'</div></div>';
     c.addEventListener("click",function(){openEntry(e.key)});
@@ -2331,37 +2543,40 @@ function renderList(){
   $("dPrev").disabled=dpage===0;
   $("dNext").disabled=dpage>=pages-1;
 }
-function openEntry(key){ /* 点旧日记卡：载入该篇进写页编辑 */
+function openEntry(key){ /* 点旧日记卡：载入该篇进写页编辑（v22cal11：胶囊回显+wx 对象匹配） */
   var e=null;
   for(var i=0;i<ENTRIES.length;i++)if(ENTRIES[i].key===key)e=ENTRIES[i];
   if(!e)return;
   curEdit=key;$("dBody").innerHTML=e.body||"";
-  $("dateLine").textContent=e.dd||fullToday();
-  var wi=WX.indexOf(e.wx);dWxi=wi<0?0:wi;$("wxBtn").textContent=WX[dWxi];
-  dSt.mood=e.mood;renderMoods();setView("write");
+  var wi=-1;
+  for(var j=0;j<WX.length;j++)if(WX[j].e===e.wx)wi=j;
+  dWxi=wi<0?0:wi;
+  dSt.mood=(typeof e.mood==="number"&&e.mood>=0)?e.mood:-1;
+  syncPills();syncCnt();setView("write");
 }
 function startNew(){ /* 顶部加号：写今天的日记（当天已有则续写） */
   var t=todayKey(),e=null;
   for(var i=0;i<ENTRIES.length;i++)if(ENTRIES[i].key===t)e=ENTRIES[i];
   curEdit=t;
   if(e){openEntry(t);return}
-  $("dBody").innerHTML=draft.body||"";$("dateLine").textContent=fullToday();
-  dWxi=0;$("wxBtn").textContent=WX[0];
-  dSt.mood=draft.mood;renderMoods();setView("write");
+  $("dBody").innerHTML=draft.body||"";
+  dWxi=0;
+  dSt.mood=(typeof draft.mood==="number"&&draft.mood>=0)?draft.mood:-1;
+  syncPills();syncCnt();setView("write");
 }
 $("pgCover").addEventListener("click",function(){dpage=0;renderList();setView("list")});
 $("dPrev").addEventListener("click",function(){if(dpage>0){dpage--;renderList()}});
 $("dNext").addEventListener("click",function(){dpage++;renderList()});
 $("dSort").addEventListener("click",function(){descSort=!descSort;this.textContent=descSort?"⇅ 倒序":"⇅ 正序";renderList()});
 $("dAdd").addEventListener("click",function(){startNew()});
-$("wxBtn").addEventListener("click",function(){dWxi=(dWxi+1)%WX.length;this.textContent=WX[dWxi]});
-$("dSaveE").addEventListener("click",function(){ /* 右下「写完了」：保存+回列表 */
+$("dSaveE").addEventListener("click",function(){ /* v22cal11：「保 存」→收册+关书回主界面（用户指定） */
   var body=$("dBody").innerHTML||"（今天还没有写字…）";
-  var e={key:curEdit||todayKey(),dd:$("dateLine").textContent,wx:WX[dWxi],
+  var e={key:curEdit||todayKey(),dd:$("wDateT").textContent,wx:WX[dWxi].e,
     mood:dSt.mood<0?0:dSt.mood,body:body};
+  draft.body="";draft.mood=-1; /* v22cal11：保存后草稿清空 */
   var i=ENTRIES.findIndex(function(x){return x.key===e.key});
   if(i>=0)ENTRIES[i]=e;else ENTRIES.push(e);
-  saveAll();dpage=0;renderList();setView("list");
+  saveAll();renderList();closeDiary();
   toast(e.key===todayKey()?"日记已收进册子":"日记已更新");
 });
 function saveAll(){
@@ -2378,8 +2593,7 @@ function loadAll(){
 function initDiary(){
   loadAll();
   PRESETS.forEach(function(p){var has=false;for(var i=0;i<ENTRIES.length;i++)if(ENTRIES[i].key===p.key){has=true;break}if(!has)ENTRIES.push(p)});
-  $("dateLine").textContent=fullToday();
-  renderMoods();
+  syncPills(); /* v22cal11：三胶囊初始化回显 */
 }
 veilEl.addEventListener("click",function(){closeDiary();closeAlbum();closeSettings();closeCal();});
 /* ═══ 相册（批6：照相册页demo 移植，左滑入+真翻页+灯箱+点外关闭） ═══ */
@@ -3002,7 +3216,7 @@ function saveState(){
     localStorage.setItem("maoor-v22-state-v2",JSON.stringify({
       v:1,zoom:VZ,
       floor:DECOR.floor.value,wallB:DECOR.wallBack.value,wallL:DECOR.wallLeft.value,grid:DECOR.grid,
-      furn:FURNITURE.map(function(f){return{def:f.def,name:f.name,gx:f.gx,gy:f.gy,w:f.w,d:f.d,h:f.h,scale:f.scale,flip:f.flip||null,ox:f.ox||0,oy:f.oy||0,foot:f.foot||0,wall:f.wall||null,u:f.u||0,v:f.v||0,vh:f.vh||1,glow:f.glow?{c:f.glow.c,s:f.glow.s,i:f.glow.i,b:f.glow.b,p:f.glow.p}:null,
+      furn:FURNITURE.map(function(f){return{def:f.def,name:f.name,gx:f.gx,gy:f.gy,w:f.w,d:f.d,h:f.h,scale:f.scale,flip:f.flip||null,ox:f.ox||0,oy:f.oy||0,foot:f.foot||0,wall:f.wall||null,u:f.u||0,v:f.v||0,vh:f.vh||1,rot:f.rot||null,glow:f.glow?{c:f.glow.c,s:f.glow.s,i:f.glow.i,b:f.glow.b,p:f.glow.p}:null,
         sh:f.sh||0,sm:f.sm||0,sw:f.sw||null,sd:f.sd||null,on:f.on?(function(){var k;for(k=0;k<FURNITURE.length;k++)if(FURNITURE[k].id===f.on)return k;return -1;})():-1,su:f.su||0,sv:f.sv||0};}) /* v22shelf：on 存承托件在存档数组里的下标（读档时重新绑定，id 变了也不会错位） */
     }));
   }catch(err){}
@@ -3030,7 +3244,7 @@ function restoreState(){
       if(f.d)it.d=q(Math.max(Q,Math.min(ROOM.n,f.d)));
       autoSmall(it);
       if(typeof f.h==="number")it.h=f.h;
-      it.scale=f.scale||1;it.flip=f.flip||null;it.vh=f.vh||1; /* vh=墙件竖向占几行（老存档缺省 1，行为不变） */
+      it.scale=f.scale||1;it.flip=f.flip||null;it.vh=f.vh||1;it.rot=f.rot||null; /* vh=墙件竖向占几行（老存档缺省 1）；v22rot：转向状态（老档无=不转向） */
       it.ox=f.ox||0;it.oy=f.oy||0; /* v22sync：资产微调（相对图片宽/高的比例偏移），老存档缺省 0 */
       if(f.foot)it.foot=1; /* v22sync·A：这件在游戏里手动改过占格 → 以后的家具表同步不再覆盖它 */
       if("glow" in f)it.glow=(f.glow===true)?{c:"#ffd27a",s:1.6,i:0.95,b:1,p:1}:((f.glow&&typeof f.glow==="object")?f.glow:null); /* v22fix：老档布尔 true 归一成默认暖黄（原来 glowOf 静默不亮） */
@@ -3039,8 +3253,8 @@ function restoreState(){
       if("sw" in f)it.sw=f.sw||null;if("sd" in f)it.sd=f.sd||null; /* v22sync：台面范围（格，null=跟占格一样） */
       if(f.wall){it.wall=f.wall;it.u=Math.max(0,Math.min(ROOM.n-it.w,f.u||0));it.v=Math.max(0,Math.min(Math.max(0,wallRowsAll()-wallRowsOf(it)),f.v||0));} /* 存档是事实源：按存的 v 还原，只把框收回墙内 */
       else{
-        it.gx=Math.max(0,Math.min(ROOM.n-it.w,it.gx));
-        it.gy=Math.max(0,Math.min(ROOM.n-it.d,it.gy));
+        it.gx=Math.max(0,Math.min(ROOM.n-effW(it),it.gx)); /* v22rot：读档钳制按转向后占格 */
+        it.gy=Math.max(0,Math.min(ROOM.n-effD(it),it.gy));
       }
     }
     for(i=0;i<st.furn.length;i++){ /* 第二轮：台面关系等全部件都建好后再绑（承托件在存档里可能排在后面） */
@@ -3089,25 +3303,36 @@ document.addEventListener("visibilitychange",function(){if(document.hidden)exitS
 var calEl=$("cal"),CALK="maoor-v22-calendar-v1";
 var NOW=new Date(),Y=NOW.getFullYear(),M=NOW.getMonth(),TODAY=NOW.getDate();
 function kOf(y,m,d){return y+"-"+(m+1)+"-"+d}
-var EV={};
+/* v22cal10：三视图备忘数据域独立（用户 2026-09-17：月视图改动的备忘不应出现在日视图）——
+   EV=日域（按天，日视图专属）；EVW=周域（按周，周视图专属）；EVM=月域（按月，月视图专属）。互不串显 */
+var EV={},EVW={},EVM={};
 EV[kOf(Y,M,TODAY)]=[
   {t:"09:00",txt:"小提琴练习",e:"🎻",done:false},
   {t:"14:00",txt:"整理书架藏书",e:"📕",done:false},
   {t:"19:00",txt:"红茶时间",e:"🫖",done:true}
 ];
-var PAW=kOf(Y,M,Math.max(1,TODAY-3)),TK=kOf(Y,M,TODAY),selKey=TK,editingIdx=-1;
+var TK=kOf(Y,M,TODAY),selKey=TK,editingIdx=-1; /* v22cal6：PAW 爪印彩蛋变量随彩蛋一起移除 */
 var calView="month";
+/* v22cal10：周键=本周周一的日期串；月键=「年-月」。周/月域各放一条种子，三域独立一目了然 */
+function wkMonday(){var b=new Date(Y,M,TODAY);return new Date(b.getFullYear(),b.getMonth(),b.getDate()-((b.getDay()+6)%7))}
+function wkKey(){var m=wkMonday();return kOf(m.getFullYear(),m.getMonth(),m.getDate())}
+function mkKey(){return Y+"-"+(M+1)}
+EVW[wkKey()]=[{t:"--:--",txt:"给花房订新花土",e:"",done:false}];
+EVM[mkKey()]=[{t:"--:--",txt:"月底整理相册备份",e:"",done:false}];
 function escH(s){return String(s==null?"":s).replace(/[&<>"']/g,function(ch){return{"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","'":"&#39;"}[ch]||ch;});} /* v22fix：日历文本进 innerHTML 前统一转义（存档码/存档文件导入可直接写入 EV） */
-function saveCal(){try{localStorage.setItem(CALK,JSON.stringify({ev:EV}))}catch(e){}}
+function saveCal(){try{localStorage.setItem(CALK,JSON.stringify({ev:EV,evw:EVW,evm:EVM}))}catch(e){}}
 function loadCal(){
   try{
     var raw=localStorage.getItem(CALK);if(!raw)return;
     var d=JSON.parse(raw);
     if(d&&d.ev&&typeof d.ev==="object"){EV=d.ev}
+    if(d&&d.evw&&typeof d.evw==="object"){EVW=d.evw} /* v22cal10：周域（旧档无此键=空对象，不串入日域） */
+    if(d&&d.evm&&typeof d.evm==="object"){EVM=d.evm} /* v22cal10：月域（同上） */
   }catch(e){}
 }
 function calSetView(v){
   calView=v;
+  closePick();$("mForm").classList.remove("show");editingIdx=-1;$("mDel").style.display="none"; /* v22cal10：切视图重置编辑状态——改动的框不跨视图残留（用户 2026-09-17） */
   calEl.classList.remove("v-day","v-week");
   if(v==="day")calEl.classList.add("v-day");
   if(v==="week")calEl.classList.add("v-week");
@@ -3115,30 +3340,70 @@ function calSetView(v){
     t.classList.toggle("on",t.getAttribute("data-v")===v);
   });
   if(v==="month")calRender();
-  if(v==="week")renderWeek();
+  if(v==="week")renderWeek(true); /* v22m3：进周视图=开今天组，条目加入场 stagger */
   if(v==="day")renderDay();
+  renderMemo(); /* v22cal10：备忘板按当前视图域重渲染（月域/日域），切页签即换数据源 */
 }
-/* 周视图：竖排日卡（D 同款竖列；点卡选中那天并展开/收起全部事项，selKey 联动月历） */
-var wOpen=null;
-function renderWeek(){
+/* 周视图：v22m3 版三「按日分组」（用户选型 2026-09-18）——每天一行日眉（星期·日·横线·本周件数），
+   点日眉开合该组；组内备忘卡带勾选圈 + 常驻 改✎/删✕ 钮；红框日/周/月切换区不动 */
+var wOpen=null,wOpenInit=false;
+function wkOfSelKey(){var p=selKey.split("-"),b=new Date(+p[0],+p[1]-1,+p[2]);var m=new Date(b.getFullYear(),b.getMonth(),b.getDate()-((b.getDay()+6)%7));return kOf(m.getFullYear(),m.getMonth(),m.getDate())} /* v22cal10：selKey 所在周的周一键 */
+function renderWeek(anim){ /* v22m3：anim=true 时条目加入场 stagger（开组时）；勾选/增删重渲染不重播 */
   var g=$("wGrid");g.innerHTML="";
   var p=selKey.split("-"),base=new Date(+p[0],+p[1]-1,+p[2]);
   var monday=new Date(base.getFullYear(),base.getMonth(),base.getDate()-((base.getDay()+6)%7));
   var wname=["周一","周二","周三","周四","周五","周六","周日"];
+  var wk=kOf(monday.getFullYear(),monday.getMonth(),monday.getDate()),wr=EVW[wk]||[]; /* 周域键=该组列表所在周的周一 */
+  if(!wOpenInit){wOpen=kOf(Y,M,TODAY);wOpenInit=true} /* 首次进周视图默认展开今天那组 */
   for(var i=0;i<7;i++){
-    (function(i){
-      var dy=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+i);
-      var key=kOf(dy.getFullYear(),dy.getMonth(),dy.getDate());
-      var rows=EV[key]||[],open=(wOpen===key);
-      var pv=(open?rows:rows.slice(0,2)).map(function(r){return "· "+escH(r.txt)}).join("<br>");
-      var b=document.createElement("button");
-      b.className="wcard"+(key===kOf(Y,M,TODAY)?" today":"")+(key===selKey?" sel":"")+(open?" open":"");
-      b.innerHTML='<span class="whd"><span class="wwd">'+wname[i]+(key===kOf(Y,M,TODAY)?" · 今天":"")+(key===PAW?" 🐾":"")+'</span><span class="wdn">'+dy.getDate()+' 日</span></span>'
-        +'<span class="wbd"><span class="wcn">'+rows.length+' 件</span><span class="wpv">'+(pv||"<span style='opacity:.55'>暂无安排</span>")+"</span></span>"
-        +(!open&&rows.length>2?'<span class="wmore">+'+(rows.length-2)+"</span>":"");
-      b.addEventListener("click",function(){wOpen=(wOpen===key?null:key);selKey=key;renderWeek();renderMemo();});
-      g.appendChild(b);
-    })(i);
+    var dy=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+i);
+    var key=kOf(dy.getFullYear(),dy.getMonth(),dy.getDate());
+    var isToday=key===kOf(Y,M,TODAY),open=(wOpen===key);
+    /* 组头（日眉）：可点开合，件数钉右侧 */
+    var h=document.createElement("button");
+    h.className="wgh"+(isToday?" today":"")+(key===selKey?" sel":"");
+    h.innerHTML='<span class="wwd">'+wname[i]+(isToday?" · 今天":'')+'</span><span class="wdn">'+dy.getDate()+' 日</span>'
+      +'<span class="wcn">本周 '+wr.length+' 件</span>';
+    h.setAttribute("data-key",key); /* v22m3：闭包坑——回调里不能引用循环变量 dy，键放属性上点的时候再取 */
+    h.addEventListener("click",function(){
+      var key2=this.getAttribute("data-key");
+      var justOpen=(wOpen!==key2);
+      wOpen=justOpen?key2:null;selKey=key2;
+      renderWeek(justOpen);
+    });
+    g.appendChild(h);
+    if(open){
+      var wrap=document.createElement("div");wrap.className="witems";
+      if(!wr.length){var em=document.createElement("span");em.className="wempty";em.textContent="本周还没有备忘 · 点下面添加一条";wrap.appendChild(em)}
+      wr.forEach(function(r,ri){
+        var li=document.createElement("span");
+        li.className="wlrow"+(r.done?" done":"")+(anim?" fx":"");
+        li.style.animationDelay=anim?(ri*45)+"ms":"0ms";
+        li.setAttribute("data-i",ri);li.setAttribute("role","button");
+        li.innerHTML='<span class="cb" aria-hidden="true"></span><span class="wt">'+escH(r.t)+" "+escH(r.txt)+'</span>'
+          +'<span class="acts"><button class="wa" data-a="edit" title="修改">✎</button>'
+          +'<button class="wa del" data-a="del" title="删除">✕</button></span>';
+        li.addEventListener("click",function(ev){
+          var wa=ev.target.closest(".wa");
+          if(wa){ /* v22m3：卡右 ✎ 修改 / ✕ 删除（常驻，操作对象=该条） */
+            var idx=+li.getAttribute("data-i"),it=EVW[wk][idx];
+            if(wa.getAttribute("data-a")==="edit"){
+              editingIdx=idx;setTimeSel(it.t==="--:--"?"":it.t);$("mTxt").value=it.txt;
+              $("mDel").style.display="inline-grid";$("mForm").classList.add("show");$("mTxt").focus();
+            }else{
+              EVW[wk].splice(idx,1);saveCal();toast("已删除待办");renderWeek();renderMemo();
+            }
+            return;
+          }
+          var it2=EVW[wk][+li.getAttribute("data-i")];it2.done=!it2.done;renderWeek();saveCal();renderMemo(); /* 勾选周域备忘 */
+        });
+        wrap.appendChild(li);
+      });
+      var ad=document.createElement("span");ad.className="wadd";ad.textContent="＋ 添加备忘";
+      ad.addEventListener("click",function(ev){ev.stopPropagation();selKey=key;openForm();}); /* 组尾新增→写入周域 */
+      wrap.appendChild(ad);
+      g.appendChild(wrap);
+    }
   }
 }
 document.querySelectorAll(".ctab").forEach(function(t){
@@ -3158,31 +3423,71 @@ function calRender(){
     (function(d){
       var key=kOf(Y,M,d);
       var b=document.createElement("button");
-      b.className="day"+(EV[key]?" ev":"")+(key===kOf(Y,M,TODAY)?" today":"")+(key===selKey?" sel":"")+(key===PAW?" pawd":"");
-      b.innerHTML='<span class="h"><b>'+d+'</b></span>'+(key===PAW?'<span class="paw">🐾</span>':"");
+      b.className="day"+(EV[key]?" ev":"")+(key===kOf(Y,M,TODAY)?" today":"")+(key===selKey?" sel":"");
+      b.innerHTML='<span class="h"><b>'+d+'</b></span>';
       b.addEventListener("click",function(){selKey=key;calRender();renderMemo();});
       g.appendChild(b);
     })(d);
   }
 }
-/* 备忘卡：跟随选中日 */
+/* 备忘卡：v22cal10 按视图域取数——月视图=月域 EVM[月键]（标题「X月备忘」）；日视图=日域 EV[selKey]；周视图无备忘板 */
+function memoRows(){return calView==="month"?(EVM[mkKey()]||[]):(EV[selKey]||[])}
 function renderMemo(){
-  var kp=selKey.split("-"),d=new Date(+kp[0],(+kp[1]||1)-1,(+kp[2])||1); /* v22fix：从 selKey 三段构造日期，跨月 stepDay 不再回滚到当前月 */
+  if(calView==="week")return; /* v22cal10：周视图备忘板不生成（display:contents），列表走周卡内嵌 */
+  var d,p,kp=selKey.split("-");
+  if(calView==="month"){d=new Date(Y,M,1)}else{d=new Date(+kp[0],(+kp[1]||1)-1,(+kp[2])||1)} /* v22fix：从 selKey 三段构造日期，跨月 stepDay 不再回滚到当前月 */
   var w=["周日","周一","周二","周三","周四","周五","周六"];
-  $("mDate").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日（"+w[d.getDay()]+"）";
-  var rows=EV[selKey]||[];
+  $("mDate").textContent=calView==="month"?((M+1)+"月备忘"):(d.getMonth()+1)+"月"+d.getDate()+"日（"+w[d.getDay()]+"）";
+  $("mDate").style.display=calView==="day"?"none":""; /* v14：日视图红金日期牌退役，改用板内衬线刊头（月视图照旧） */
+  var rows=calView==="month"?(EVM[mkKey()]||[]):(EV[selKey]||[]);
   var box=$("mRows");box.innerHTML="";
+  if(calView==="day"){ /* v22memo3 v14·高级感版二：刊头时刻流——无组头，22px 衬线刊头+meta 行，呼吸行平铺 */
+    var dnAll=0;rows.forEach(function(r){if(r.done)dnAll++});
+    var mast='<div class="mdmast"><div class="mdd">'+(d.getMonth()+1)+'月'+d.getDate()+'<i>日</i></div>'
+      +'<div class="mmeta"><span>'+w[d.getDay()]+'</span><span>已完成 '+dnAll+'/'+rows.length+'</span></div></div>';
+    if(!rows.length){
+      box.innerHTML=mast+'<div class="mdempty">这一天还没有备忘 · 点下面「＋ 添加备忘」写一条</div>';
+      return;
+    }
+    var list=rows.map(function(r,i){return{r:r,i:i,m:tMin(r.t)}})
+      .sort(function(a,b){return (a.m===null?9999:a.m)-(b.m===null?9999:b.m)});
+    var html=mast,fx=0; /* 无组头：时刻自己成节拍 */
+    list.forEach(function(o){
+      fx++;var dly=fx*45<300?fx*45:300;
+      html+='<div class="mdrow'+(o.r.done?" done":"")+' fx" data-i="'+o.i+'" style="animation-delay:'+dly+'ms" role="button" tabindex="0" title="'+escH(o.r.t+" "+o.r.txt)+'">'
+        +'<span class="mdtm">'+escH(o.r.t)+'</span>'
+        +'<span class="mdtx">'+escH(o.r.txt)+'</span>'
+        +'<span class="mdact"><span class="mda'+(o.r.done?" on":"")+'" data-act="done" title="标完成">✓</span><span class="mda" data-act="edit" title="修改">✎</span><span class="mda del" data-act="del" title="删除">✕</span></span></div>';
+    });
+    box.innerHTML=html;
+    box.querySelectorAll(".mdrow").forEach(function(el){
+      el.addEventListener("click",function(ev){
+        var t=ev.target.closest(".mda"),it=EV[selKey][+el.getAttribute("data-i")];
+        if(t){var act=t.getAttribute("data-act");
+          if(act==="del"){EV[selKey].splice(+el.getAttribute("data-i"),1);renderMemo();calRender();renderDay();saveCal();toast("已删除待办");return}
+          if(act==="edit"){startEdit(+el.getAttribute("data-i"));return}
+          if(act==="done"){it.done=!it.done;renderMemo();calRender();saveCal();toast(it.done?"已完成这条待办":"已取消完成");return}
+        }
+        it.done=!it.done;renderMemo();calRender();saveCal();toast(it.done?"已完成这条待办":"已取消完成"); /* 行整面可点=切换完成 */
+      });
+    });
+    return;
+  }
   if(!rows.length){
     var e=document.createElement("div");
     e.className="mrow";
-    e.innerHTML='<span class="mt" style="color:#9a8163">这一天还没有备忘，点下面添加一条吧</span>';
+    e.innerHTML='<span class="mt" style="color:#9a8163">'+(calView==="month"?"这个月还没有备忘，点下面添加一条吧":"这一天还没有备忘，点下面添加一条吧")+'</span>';
     box.appendChild(e);
   }
   rows.forEach(function(r){
     var row=document.createElement("button");
     row.className="mrow"+(r.done?" done":"");
     row.innerHTML='<span class="cb" aria-hidden="true"></span><span class="mt">'+escH(r.t)+" "+escH(r.txt)+'</span>'; /* v22cal2：备忘行 emoji（r.e）不再输出，纯文案 */
-    row.addEventListener("click",function(){r.done=!r.done;renderMemo();saveCal();});
+    row.addEventListener("click",function(){
+      if(calView==="month"){var arr=EVM[mkKey()];arr[rows.indexOf(r)].done=!arr[rows.indexOf(r)].done}
+      else{var arr2=EV[selKey];arr2[rows.indexOf(r)].done=!arr2[rows.indexOf(r)].done}
+      renderMemo();saveCal();
+    });
     box.appendChild(row);
   });
 }
@@ -3230,67 +3535,47 @@ function stepDay(n){ /* 前后日切换（跨月/跨年安全） */
 }
 $("dPrevD").addEventListener("click",function(){stepDay(-1)});
 $("dNextD").addEventListener("click",function(){stepDay(1)});
-/* 时间滑动选择器（自绘替原生下拉）：点栏弹出 7 项高的滚动列表，上下滑动/点选皆可 */
-var tSel={h:"",m:""},tPickCol=null,T_IH=26,T_VH=182;
-function tLabel(v){return v===""?"--":v}
-function tOpts(col){
-  var arr=[""],i;
-  if(col==="h"){for(i=6;i<=23;i++)arr.push((i<10?"0":"")+i)}
-  else{
-    for(i=0;i<60;i+=5)arr.push((i<10?"0":"")+i);
-    if(tSel.m&&+tSel.m%5!==0&&arr.indexOf(tSel.m)<0)arr.push(tSel.m);
-    arr.sort();
-  }
-  return arr;
+/* v22cal10：横向刻度尺选时（方案四，用户选定 2026-09-17）——点时刻牌正下方展开 06:00–24:00，拖红针实时回显；点外部/再点牌收起 */
+var tSel={h:"",m:""}; /* 未选=空 → 存 --:--（随时） */
+function fmtT(m){m=((m%1440)+1440)%1440;return ("0"+Math.floor(m/60)).slice(-2)+":"+("0"+m%60).slice(-2)}
+function echoDial(){
+  var has=!!tSel.h;
+  $("tDial").textContent=has?(tSel.h+":"+(tSel.m||"00")):"--:--";
+  $("tDial").classList.toggle("empty",!has);
 }
-function markCenter(){
-  var list=$("tList"),c=Math.round((list.scrollTop+(T_VH-T_IH)/2)/T_IH);
-  var items=list.querySelectorAll(".topt");
-  items.forEach(function(b,i){b.classList.toggle("on",i===c)});
+function syncRuler(){
+  var v=+$("tR").value;
+  $("tRv").textContent=fmtT(v);
+  $("tFill").style.width=((v-360)/1080*100)+"%";
 }
-function renderTPick(){
-  var col=tPickCol;if(!col)return;
-  var opts=tOpts(col),list=$("tList"),html="";
-  opts.forEach(function(v){
-    html+='<button class="topt'+(v===tSel[col]?" on":"")+'" data-v="'+v+'">'+tLabel(v)+'</button>';
-  });
-  list.innerHTML=html;
-  var idx=opts.indexOf(tSel[col]);
-  list.scrollTop=Math.max(0,idx*T_IH-(T_VH-T_IH)/2);
-  list.querySelectorAll(".topt").forEach(function(b){
-    b.addEventListener("click",function(ev){ev.stopPropagation();tChoose(col,b.getAttribute("data-v"))});
-  });
-  list.onscroll=function(){markCenter()};
-  markCenter();
+function openPick(){
+  var p=$("tPick");
+  if(p.classList.contains("open")){closePick();return}
+  p.classList.add("open");$("tDial").classList.add("on");syncRuler();
 }
-function tChoose(col,v){
-  tSel[col]=v;
-  $(col==="h"?"mH":"mM").textContent=tLabel(v);
-  if(col==="h"&&v===""){tSel.m="";$("mM").textContent="--"}
-  closePick();
-}
-function openPick(col){
-  if(tPickCol===col){closePick();return}
-  tPickCol=col;renderTPick();
-  $("tPick").classList.add("open");
-}
-function closePick(){tPickCol=null;$("tPick").classList.remove("open")}
-$("mH").addEventListener("click",function(ev){ev.stopPropagation();openPick("h")});
-$("mM").addEventListener("click",function(ev){ev.stopPropagation();openPick("m")});
-document.addEventListener("click",function(ev){if(tPickCol&&!ev.target.closest("#tPick"))closePick()});
+function closePick(){$("tPick").classList.remove("open");$("tDial").classList.remove("on")}
+$("tDial").addEventListener("click",function(ev){ev.stopPropagation();openPick()});
+$("tR").addEventListener("input",function(){
+  var v=+this.value;
+  tSel.h=("0"+Math.floor(v/60)).slice(-2);tSel.m=("0"+v%60).slice(-2);
+  syncRuler();echoDial();
+});
+$("tPick").addEventListener("click",function(ev){ev.stopPropagation()});
+document.addEventListener("click",function(){closePick()});
 function setTimeSel(t){
   var mm=/^(\d{1,2}):(\d{2})$/.exec(t||"");
   tSel.h=mm?(mm[1].length===2?mm[1]:"0"+(+mm[1])):"";
   tSel.m=mm?mm[2]:"";
-  $("mH").textContent=tLabel(tSel.h);
-  $("mM").textContent=tLabel(tSel.m);
+  $("tR").value=tSel.h?(+tSel.h*60+(+tSel.m)):540;
+  echoDial();syncRuler();
 }
 /* 备忘编辑流程：＋ 添加 / 点时刻流条编辑（🗑 删除）/ ✓ 确认 / ✕ 取消 / Enter 确认（不限数量） */
-$("mAdd").addEventListener("click",function(){
+function openForm(){ /* v22cal8：新增入口公共化（月/日视图 mAdd 钮 + 周视图卡上 wadd 同用） */
   editingIdx=-1;$("mDel").style.display="none";
   $("mForm").classList.add("show");
   $("mTxt").focus();
-});
+}
+$("mAdd").addEventListener("click",openForm);
 $("mNo").addEventListener("click",function(){
   editingIdx=-1;$("mDel").style.display="none";
   $("mForm").classList.remove("show");
@@ -3301,32 +3586,39 @@ function startEdit(i){
   $("mDel").style.display="inline-grid";
   $("mForm").classList.add("show");$("mTxt").focus();
 }
+function memoTgt(){ /* v22cal10：当前视图的备忘域与键——周视图=EVW[周键]、月视图=EVM[月键]、日视图=EV[selKey] */
+  if(calView==="week")return{arr:EVW,k:wkOfSelKey()};
+  if(calView==="month")return{arr:EVM,k:mkKey()};
+  return{arr:EV,k:selKey};
+}
 function addMemo(){
   var txt=$("mTxt").value.trim();
   if(!txt){toast("先写要做的事吧");return}
   var t=tSel.h?(tSel.h+":"+(tSel.m||"00")):"--:--";
-  if(!EV[selKey])EV[selKey]=[];
+  var tg=memoTgt();
+  if(!tg.arr[tg.k])tg.arr[tg.k]=[];
   if(editingIdx>=0){
-    var o=EV[selKey][editingIdx];
-    EV[selKey][editingIdx]={t:t,txt:txt,e:o.e||"",done:o.done};
+    var o=tg.arr[tg.k][editingIdx];
+    tg.arr[tg.k][editingIdx]={t:t,txt:txt,e:o.e||"",done:o.done};
     toast("已更新待办");
   }else{
-    EV[selKey].push({t:t,txt:txt,e:"",done:false});
+    tg.arr[tg.k].push({t:t,txt:txt,e:"",done:false});
     toast("已添加备忘");
   }
   editingIdx=-1;$("mDel").style.display="none";
   setTimeSel("");$("mTxt").value="";
   $("mForm").classList.remove("show");
-  calRender();renderMemo();renderDay();saveCal();
+  calRender();renderMemo();renderDay();if(calView==="week")renderWeek();saveCal(); /* v22cal8：周视图卡上新增后刷新卡片 */
 }
 $("mOk").addEventListener("click",addMemo);
 $("mDel").addEventListener("click",function(){
   if(editingIdx<0)return;
-  EV[selKey].splice(editingIdx,1);
+  var tg=memoTgt();
+  if(tg.arr[tg.k])tg.arr[tg.k].splice(editingIdx,1);
   editingIdx=-1;this.style.display="none";
   setTimeSel("");$("mTxt").value="";
   $("mForm").classList.remove("show");
-  calRender();renderMemo();renderDay();saveCal();toast("已删除待办");
+  calRender();renderMemo();renderDay();if(calView==="week")renderWeek();saveCal();toast("已删除待办"); /* v22cal8：同步周视图 */
 });
 $("mTxt").addEventListener("keydown",function(e){if(e.key==="Enter")addMemo();});
 /* 开合（复用 #dimVeil，与日记/相册/设置/换装互斥） */
@@ -3340,7 +3632,7 @@ loadCal();calRender();renderMemo();
 /* ── 测试/联调钩子 ── */
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
-  hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
+  effW:effW,effD:effD,hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
   CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,charSeat:charSeat,drawChar:drawChar,footBlocked:footBlocked,footFree:footFree,charGreet:charGreet,charHitAt:charHitAt,charPreload:charPreload,seedFurniture:seedFurniture, /* v22char 测试入口 */
   addFurniture:addFurniture,
   mergePack:mergePack,applyDefSize:applyDefSize,PACKIDS:PACKIDS,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
@@ -3374,8 +3666,8 @@ window.__roomHooks={
     evDays:$("cGrid").querySelectorAll(".day.ev").length,
     dayItems:$("dTl").querySelectorAll(".tcard").length,
     form:$("mForm").classList.contains("show"),
-    memoRows:$("mRows").querySelectorAll(".mrow").length,
-    doneRows:$("mRows").querySelectorAll(".mrow.done").length};},
+    memoRows:$("mRows").querySelectorAll(".mrow,.mdrow").length, /* v22memo3：兼容月视图 .mrow 与日视图版三 .mdrow */
+    doneRows:$("mRows").querySelectorAll(".mrow.done,.mdrow.done").length};},
 };
 window.__roomHooks.photos=PHOTOS; /* 批6.6：拍立得存入相册的实时数组（unshift 置顶） */
 /* 头像等级（UI 升级批：Lv+进度条占位，后续接等级系统；avatarState(lv,prog) 可改可查） */
