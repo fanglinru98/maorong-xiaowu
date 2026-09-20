@@ -996,12 +996,12 @@ var FURN_DEF=[
   {id:"f296",name:"挂画",      src:"assets/2.5d/f296.png",w:2,d:2,h:40,glow:null,wall:"back"},
   {id:"f297",name:"留声机",    src:"assets/2.5d/f297.png",w:1,d:1,h:40,glow:null,sm:1,sh:1},
   {id:"f298",name:"红酒方杯",  src:"assets/2.5d/f298.png",w:1,d:1,h:40,glow:null,sm:1},
-  {id:"f299",name:"书架",      src:"assets/2.5d/f299.png",w:1,d:2,h:40,glow:null,ox:0.05,oy:-0.105},
+  {id:"f299",name:"长桌",      src:"assets/2.5d/f299.png",w:1,d:2,h:40,glow:null,ox:-0.85,oy:-0.45}, /* E-20260920-05(1) f299 墙线校准, w/d 由包 merge 覆盖 */
   {id:"f300",name:"电视",      src:"assets/2.5d/f300.png",w:2,d:1,h:40,glow:null},
   {id:"f301",name:"单人沙发",  src:"assets/2.5d/f301.png",w:1,d:1,h:40,glow:null},
   {id:"f302",name:"长桌",      src:"assets/2.5d/f302.png",w:2,d:1,h:40,glow:null,sh:0.75},
   {id:"f303",name:"晾衣架",    src:"assets/2.5d/f303.png",w:1,d:2,h:40,glow:null},
-  {id:"f304",name:"床边柜",    src:"assets/2.5d/f304.png",w:1,d:1,h:40,glow:null,ox:0.02},
+  {id:"f304",name:"床边柜",    src:"assets/2.5d/f304.png",w:1,d:1,h:40,glow:null,ox:0.9}, /* E-20260920-05(1) f304 左墙线校准 */
   {id:"f305",name:"单人床",    src:"assets/2.5d/f305.png",w:2,d:2,h:40,glow:null},
   {id:"f306",name:"玫瑰花盆",  src:"assets/2.5d/f306.png",w:1,d:1,h:40,glow:null,sm:1},
   {id:"f307",name:"小相框",    src:"assets/2.5d/f307.png",w:0.25,d:0.25,h:40,glow:null,sm:1},
@@ -1538,12 +1538,8 @@ function drawItem(it){
       var gwsz=(fw&&fw.img)?wdw:ww, gwh2=(fw&&fw.img)?wdh:ww;
       glowHalo(wx,wy-gwh2*0.42,Math.max(26,gwsz*0.95*(gwl.s||1.6)),gwl,it);
     }
-    if(it.sel){ /* 选中虚线框＝真实占格（v22q2：沿墙 w 格 × vh 行，与工作台 wallBox 同口径；不再跟着图片大小走） */
-      var bxw=Math.max(Q,it.w||1)*ROOM.cw*S, bxh=wallRowsOf(it)*ROOM.cw*S;
-      ctx.setLineDash([6,4]);
-      ctx.lineWidth=2*LWS;
-      ctx.strokeRect(wa[0]-bxw/2,cy-bxh,bxw,bxh);
-      ctx.setLineDash([]);
+    if(it.sel){ /* E-20260920-05②：墙饰选中框不再随 item 画（会被后画的地面家具盖住）——统一由 render() 尾部顶层补画 */
+      return;
     }
     return;
   }
@@ -1642,9 +1638,13 @@ var CHAR_SIT={ /* v22sit 四种坐姿：每次坐下随机挑一种；图只用 
 var CHAR_SITKEYS=["cross","achv","love","diary"];
 var CIMG={},CHAR_LASTIMG=null; /* v22framefix：CHAR_LASTIMG=最近一帧成功的帧图，加载空窗时兜底绝不留白 */
 function charPreload(){ /* v22framefix：开机把角色全部帧图预热（懒加载的坑：走到某帧才发现没加载→charImg 返回 null→整帧不画→"闪一下/消失一秒"） */
-  var names=["stand","greet-1","greet-2","sit-cross-2","sit-achv-2","sit-love","sit-diary-2"],d;
+  var names=["stand","greet-1","greet-2","sit-cross-2","sit-achv-2","sit-love","sit-diary-2","jump-l","jump-r"],d; /* E-20260920-05④：跳帧入预热表 */
   for(d in CHAR_FRAMES)names=names.concat(CHAR_FRAMES[d]);
   for(var i=0;i<names.length;i++)charImg(names[i]);
+  /* E-20260920-05③：显式预解码——charImg 只缓存 Image 对象，浏览器解码缓存被清（后台切回/内存紧张）后
+     drawImage 会在主线程同步重解码 420×554 PNG（单帧可达数百毫秒），连续换帧=「行走定住 1~2 秒自己恢复」；
+     decode() 把解码结果提前放进缓存，drawImage 不再触发同步解码。老环境无 decode 时静默跳过。 */
+  for(var k in CIMG){ var v=CIMG[k]; if(v&&v!=="err"&&v.img&&v.img.decode)v.img.decode().catch(function(){}); }
 }
 var CHAR={on:true,mode:"idle",gx:3.6,gy:6.4,fx:3.6,fy:6.4,tx:3.6,ty:6.4,t0:0,dur:0,q:[],dir:"r",sit:null,sitU:0,arriveSit:false,sitPose:"",sitA:0,actU:0,bubble:"",bubbleU:0,next:900};
 var CIMG={};
@@ -1755,17 +1755,29 @@ function charUpdate(now){ /* 推进一帧（时间由外部给，测试可喂假
     }else{ CHAR.gx=CHAR.fx+(CHAR.tx-CHAR.fx)*t;CHAR.gy=CHAR.fy+(CHAR.ty-CHAR.fy)*t;busy=true; }
   }else if(CHAR.mode==="sit"){
     if(!CHAR.sit||FURNITURE.indexOf(CHAR.sit)<0){CHAR.mode="idle";CHAR.sit=null;CHAR.next=now+600;busy=true;}
-    else if(now>=CHAR.sitU){CHAR.mode="idle";CHAR.sit=null;CHAR.next=now+1200+Math.random()*2000;busy=true;}
+    else if(now>=CHAR.sitU){ /* E-20260920-05④：起身跳下过渡（V19 考古复原·最小版：350ms 抛物+方向帧，只做起身方向） */
+      var jp=charJumpLand(CHAR.sit);
+      if(jp){CHAR.mode="jumpoff";CHAR.sit=null;
+        CHAR.jump={fx:CHAR.gx,fy:CHAR.gy,tx:jp[0]+0.5,ty:jp[1]+0.5,t0:now,dur:350};
+        CHAR.dir=(jp[0]+0.5>=CHAR.gx)?"r":"l"; /* 落点在右=朝右跳 */
+        charSay(now,2200);busy=true;}
+      else{CHAR.mode="idle";CHAR.sit=null;CHAR.next=now+1200+Math.random()*2000;busy=true;} /* 沙发全被围：退化为原地起身 */
+    }
     else{ /* v22sit：坐着期间轮换动作台词 */
       var pp=CHAR_SIT[CHAR.sitPose]||CHAR_SIT.cross;
       if(now>=CHAR.actU){ CHAR.sitA=CHAR.sitA?0:1; charSay(now,2600,pp.acts[CHAR.sitA]); CHAR.actU=now+4400+Math.random()*3600; }
       busy=true;
     }
+  }else if(CHAR.mode==="jumpoff"){ /* E-20260920-05④：跳下中——水平插值+落定写回格心 */
+    var jt=(now-CHAR.jump.t0)/CHAR.jump.dur;
+    if(jt>=1){CHAR.gx=CHAR.jump.tx;CHAR.gy=CHAR.jump.ty;CHAR.mode="idle";CHAR.jump=null;CHAR.jumpU=0;CHAR.next=now+1600+Math.random()*3600;busy=true;}
+    else{CHAR.gx=CHAR.jump.fx+(CHAR.jump.tx-CHAR.jump.fx)*jt;CHAR.gy=CHAR.jump.fy+(CHAR.jump.ty-CHAR.jump.fy)*jt;CHAR.jumpU=jt;busy=true;}
   }else if(now>=CHAR.next){ charPlan(now);busy=true; }
   return busy;
 }
 function charFrame(now){
   if(CHAR.greetU&&now<CHAR.greetU)return ((Math.floor((now-CHAR.greetT0)/280)%2)?"greet-2":"greet-1"); /* v22tut2：挥手两帧交替 */
+  if(CHAR.mode==="jumpoff")return (CHAR.dir==="l"?"jump-l":"jump-r"); /* E-20260920-05④：跳下方向帧（资产复用 jump-l/r） */
   if(CHAR.mode==="sit")return (CHAR_SIT[CHAR.sitPose]||CHAR_SIT.cross).img;
   if(CHAR.mode!=="walk")return "stand";
   var a=CHAR_FRAMES[CHAR.dir]||CHAR_FRAMES.r;
@@ -1826,6 +1838,7 @@ function drawChar(){ /* 脚点=格心；坐姿时抬到沙发座面上 */
   if(tr){dh=dh*tr.hs;dw=dh*(tr.w/tr.h);sx=tr.x;sy=tr.y;sw=tr.w;sh=tr.h;} /* 本体中心锚同 cx、本体底锚同 base——与其它帧同基准 */
   var cx=px(CHAR.gx,CHAR.gy)+CHAR_ADJ.standX,gy0=py(CHAR.gx,CHAR.gy)+CHAR_ADJ.standY,base=gy0;
   if(CHAR.mode==="sit"&&CHAR.sit){var sp=charSeat(CHAR.sit);cx=sp[0]+CHAR_ADJ.sitX;base=sp[1]+CHAR_ADJ.sitY;} /* v22sitfix+tuner：坐姿 = 内容盒锚点 + 用户微调 */
+  if(CHAR.mode==="jumpoff"&&CHAR.jump){base-=charDH()*2*CHAR.jumpU*(1-CHAR.jumpU);} /* E-20260920-05④：抛物线腾空（峰值 0.5×身高，350ms 内回落） */
   ctx.save();ctx.globalAlpha=0.20;ctx.fillStyle="#3a2a18";
   ctx.beginPath();ctx.ellipse(cx,gy0,dw*0.30,dw*0.15,0,0,Math.PI*2);ctx.fill();ctx.restore();
   try{ ctx.drawImage(fi.img,sx,sy,sw,sh,cx-dw/2,base-dh,dw,dh); }catch(err){}
@@ -1846,6 +1859,15 @@ function charHome(){ /* 进屋落脚点：从最靠门口（近角）那排往�
     if(charCellFree(c,r)){ CHAR.gx=c+0.5;CHAR.gy=r+0.5;CHAR.fx=CHAR.gx;CHAR.fy=CHAR.gy;CHAR.tx=CHAR.gx;CHAR.ty=CHAR.gy;return [c,r]; }
   }
   return null;
+}
+function charJumpLand(sofa){ /* E-20260920-05④：起身落点=沙发占格外扩一圈的空格中、最靠门口（c+r 最大）者；全占返回 null（退化原地起身）。相邻空格必可达，不跑 BFS */
+  var w=sofa.w||1,dd=sofa.d||1,g0=Math.floor(sofa.gx),r0=Math.floor(sofa.gy),c,r,best=null,bs=-1e9;
+  for(c=g0-1;c<=g0+w;c++)for(r=r0-1;r<=r0+dd;r++){
+    if(c>=g0&&c<g0+w&&r>=r0&&r<r0+dd)continue;
+    if(!charCellFree(c,r))continue;
+    if(c+r>bs){bs=c+r;best=[c,r];}
+  }
+  return best;
 }
 var charRAF=0,charTmr=0,charLast=0;
 function charLoop(){
@@ -1886,6 +1908,7 @@ function render(){
     drawItem(fs[i]);
   }
   if(!chDone&&charVisible())drawChar();
+  if(SEL&&SEL.wall)drawWallSelBox(SEL); /* E-20260920-05②：选中墙饰的虚线框画在全部家具之上（不被地面家具遮；y 排序渲染不动） */
   drawShelfHint(); /* v22shelf：拖到台面上时高亮落点那一格 */
   drawCalib(); /* v22q：校准模式下画出高度线与 ¼ 格预览 */
   glowStart(); /* v22glow：有呼吸灯则维持重绘循环，否则自动停 */
@@ -2051,17 +2074,20 @@ function oxOf(it){ var d=it&&DEF_MAP[it.def||it.id]; return (d&&d.ox!=null)?d.ox
 function oyOf(it){ var d=it&&DEF_MAP[it.def||it.id]; return (d&&d.oy!=null)?d.oy:(it.oy||0); }
 function itemAt(sx,sy){
   var fs=sortFurniture(),i,it,mx,by,dw,dh,fi;
+  /* E-20260920-05②：墙饰优先命中——第一遍只判墙件（玩家反馈：墙饰与地面家具视觉重叠时点不到墙饰）；墙间顺序=倒序（后放先判） */
   for(i=fs.length-1;i>=0;i--){
     it=fs[i];
-    if(it.wall){ /* 墙件：按墙面内容盒判定 */
-      var wa=wallAnchor(it),wy=wa[1]-it.v*ROOM.cw*S;
-      var ww=Math.max(minPx(),ROOM.cw*it.w*S*0.92*it.scale),fi2=furnImg(it);
-      var wh=fi2&&fi2.img?ww*(fi2.th/fi2.tw):ww;
-      var wid2=(fi2&&fi2.img)?ww*(fi2.tw/fi2.w):ww, hei2=(fi2&&fi2.img)?wid2*fi2.th/fi2.tw:ww;
-      var wx2=wa[0]+oxOf(it)*wid2, wy2=wy+oyOf(it)*hei2; /* v22sync：跟 drawItem 墙件分支的 ox/oy 对齐 */
-      if(sx>=wx2-wid2/2-4&&sx<=wx2+wid2/2+4&&sy>=wy2-hei2-4&&sy<=wy2+4)return it; /* v22fix：命中盒与 drawItem 实画同款内容盒（原用足迹口径 ww/wh，裁边素材点不中） */
-      continue;
-    }
+    if(!it.wall)continue;
+    var wa1=wallAnchor(it),wy1=wa1[1]-it.v*ROOM.cw*S;
+    var ww1=Math.max(minPx(),ROOM.cw*it.w*S*0.92*it.scale),fi1=furnImg(it);
+    var wh1=fi1&&fi1.img?ww1*(fi1.th/fi1.tw):ww1;
+    var wid1=(fi1&&fi1.img)?ww1*(fi1.tw/fi1.w):ww1, hei1=(fi1&&fi1.img)?wid1*fi1.th/fi1.tw:ww1;
+    var wx1=wa1[0]+oxOf(it)*wid1, wyv=wy1+oyOf(it)*hei1;
+    if(sx>=wx1-wid1/2-4&&sx<=wx1+wid1/2+4&&sy>=wyv-hei1-4&&sy<=wyv+4)return it;
+  }
+  for(i=fs.length-1;i>=0;i--){
+    it=fs[i];
+    if(it.wall)continue; /* 墙件已在第一遍判过 */
     mx=px(effGX(it)+effW(it)/2,effGY(it)+effD(it)/2); /* v22rot：命中盒跟转向后的占格/图走 */
     fi=furnImg(it);
     var ho3=hugOff(it);mx+=ho3[0]; /* v22hug：命中盒跟图一起走 */
@@ -2076,6 +2102,15 @@ function itemAt(sx,sy){
     }
   }
   return null;
+}
+function drawWallSelBox(it){ /* E-20260920-05②：选中墙饰虚线框＝真实占格（v22q2 口径沿墙 w 格 × vh 行），画在全部家具之上不被地面件遮 */
+  var wa=wallAnchor(it),cy=wa[1]-it.v*ROOM.cw*S;
+  var bxw=Math.max(Q,it.w||1)*ROOM.cw*S, bxh=wallRowsOf(it)*ROOM.cw*S;
+  ctx.setLineDash([6,4]);
+  ctx.lineWidth=2*LWS;
+  ctx.strokeStyle=OUTLINE;
+  ctx.strokeRect(wa[0]-bxw/2,cy-bxh,bxw,bxh);
+  ctx.setLineDash([]);
 }
 function updateGlowUI(){ /* v22glow：把选中件的光效参数回填到 ✨ 面板（开关/色板/范围/亮度/呼吸/光斑） */
   var r=$("glowRow");if(!r)return;
