@@ -678,6 +678,16 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #cal.v-day .madd:hover{background:rgba(217,181,106,.07)}
 #cal.v-day .madd:active{transform:scale(.94)}
 #cal.v-day .mrows .mdrow.fx{animation:wrise .2s ease-out backwards} /* 微动效同周视图：入场 200ms backwards，stagger 每行 45ms 由 JS 行内 delay */
+/* E-20260920-01：日视图行内编辑（v2 稿面参数，点✎就地改正文、点时刻弹主线时间尺） */
+#cal.v-day .mdrow.edit{background:rgba(217,181,106,.08);opacity:1;border-radius:8px;border-bottom-color:transparent;position:relative} /* 行铺金 8% 状态层+relative 锚：tPick 就贴行弹出（默认态不带） */
+#cal.v-day .mdrow.edit .mdact{opacity:1}
+#cal.v-day .tx-in{flex:1;color:#f0e6cc;font-size:11.5px;font-weight:700;line-height:1.55;padding:2px 5px; /* 输入壳=稿面第五节：11.5/700+1px 金 .4+深色内底圆角 6 */
+  border:1px solid rgba(217,181,106,.4);background:rgba(0,0,0,.18);border-radius:6px;outline:none;
+  font-family:inherit;min-width:0;border-bottom-width:1px;transition:border-color .12s,background .12s}
+#cal.v-day .mdtm.tm-tap{cursor:pointer;border-bottom:1px dashed rgba(217,181,106,.6);padding-bottom:1px} /* 时刻列虚线提示可点弹尺 */
+#cal.v-day .mdtm.tm-tap:hover{color:#f0d9a8}
+#cal.v-day .mdtm.tm-anytime{font-family:inherit;font-size:12px!important;font-weight:800;color:#a89573;letter-spacing:1.5px;font-variant-numeric:normal} /* 随时=弱化小字（稿面 .tm-anytime 老板终裁保持） */
+#cal.v-day .mrows .truler{left:-2px;right:-2px;top:calc(100% + 3px);padding:7px 11px 8px} /* 时间尺挂行元素内：正下方就地弹出（稿面行内版 truler 参数） */
 @media (prefers-reduced-motion:reduce){#cal .mdrow{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -3332,7 +3342,7 @@ function loadCal(){
 }
 function calSetView(v){
   calView=v;
-  closePick();$("mForm").classList.remove("show");editingIdx=-1;$("mDel").style.display="none"; /* v22cal10：切视图重置编辑状态——改动的框不跨视图残留（用户 2026-09-17） */
+  closePick();$("mForm").classList.remove("show");editingIdx=-1;$("mDel").style.display="none";if(editRow.el)cancelInline(); /* v22cal10：切视图重置编辑状态——改动的框不跨视图残留；E-20260920-01：行内编辑同样不跨视图（取消还原） */
   calEl.classList.remove("v-day","v-week");
   if(v==="day")calEl.classList.add("v-day");
   if(v==="week")calEl.classList.add("v-week");
@@ -3454,8 +3464,8 @@ function renderMemo(){
     var html=mast,fx=0; /* 无组头：时刻自己成节拍 */
     list.forEach(function(o){
       fx++;var dly=fx*45<300?fx*45:300;
-      html+='<div class="mdrow'+(o.r.done?" done":"")+' fx" data-i="'+o.i+'" style="animation-delay:'+dly+'ms" role="button" tabindex="0" title="'+escH(o.r.t+" "+o.r.txt)+'">'
-        +'<span class="mdtm">'+escH(o.r.t)+'</span>'
+      html+='<div class="mdrow'+(o.r.done?" done":"")+' fx" data-i="'+o.i+'" style="animation-delay:'+dly+'ms" role="button" tabindex="0" title="'+escH((o.r.t==="--:--"?"随时":o.r.t)+" "+o.r.txt)+'">'
+        +'<span class="mdtm'+(o.r.t==="--:--"?" tm-anytime":"")+'">'+(o.r.t==="--:--"?"随时":escH(o.r.t))+'</span>' /* E-20260920-01：随时二字上屏（弱化小字），--:-- 永不出现 */
         +'<span class="mdtx">'+escH(o.r.txt)+'</span>'
         +'<span class="mdact"><span class="mda'+(o.r.done?" on":"")+'" data-act="done" title="标完成">✓</span><span class="mda" data-act="edit" title="修改">✎</span><span class="mda del" data-act="del" title="删除">✕</span></span></div>';
     });
@@ -3463,9 +3473,15 @@ function renderMemo(){
     box.querySelectorAll(".mdrow").forEach(function(el){
       el.addEventListener("click",function(ev){
         var t=ev.target.closest(".mda"),it=EV[selKey][+el.getAttribute("data-i")];
+        if(el.classList.contains("edit")){ /* E-20260920-01：编辑态=✓保存/✕取消，行身点击不切完成不落行外 */
+          if(!t)return;
+          if(t.getAttribute("data-act")==="done"){commitInline();return}
+          if(t.getAttribute("data-act")==="del"){cancelInline();return}
+          return;
+        }
         if(t){var act=t.getAttribute("data-act");
           if(act==="del"){EV[selKey].splice(+el.getAttribute("data-i"),1);renderMemo();calRender();renderDay();saveCal();toast("已删除待办");return}
-          if(act==="edit"){startEdit(+el.getAttribute("data-i"));return}
+          if(act==="edit"){startInlineEdit(+el.getAttribute("data-i"));return} /* E-20260920-01：✎=行内就地编辑（不再弹底部表单） */
           if(act==="done"){it.done=!it.done;renderMemo();calRender();saveCal();toast(it.done?"已完成这条待办":"已取消完成");return}
         }
         it.done=!it.done;renderMemo();calRender();saveCal();toast(it.done?"已完成这条待办":"已取消完成"); /* 行整面可点=切换完成 */
@@ -3553,15 +3569,27 @@ function openPick(){
   if(p.classList.contains("open")){closePick();return}
   p.classList.add("open");$("tDial").classList.add("on");syncRuler();
 }
-function closePick(){$("tPick").classList.remove("open");$("tDial").classList.remove("on")}
+function closePick(){pickEl.classList.remove("open");$("tDial").classList.remove("on")} /* E-20260920-01：改用引用——tPick 曾挂进行内后被 renderMemo 清树时会游离，document.getElementById 将查无此节点 */
 $("tDial").addEventListener("click",function(ev){ev.stopPropagation();openPick()});
 $("tR").addEventListener("input",function(){
   var v=+this.value;
   tSel.h=("0"+Math.floor(v/60)).slice(-2);tSel.m=("0"+v%60).slice(-2);
   syncRuler();echoDial();
+  if(editRow.el){var tm=editRow.el.querySelector(".mdtm"); /* 行内编辑拖尺即时回填：随时→具体时刻 */
+    if(tm){if(tm.classList.contains("tm-anytime")){tm.classList.remove("tm-anytime");tm.classList.add("tm-tap")}
+      tm.textContent=fmtT(v)}} /* 09-20：拖动未选=保持随时，已选按尺值回写 */
 });
 $("tPick").addEventListener("click",function(ev){ev.stopPropagation()});
 document.addEventListener("click",function(){closePick()});
+document.addEventListener("click",function(ev){ /* E-20260920-01：点行外=保存（老板 09-20 终裁），60ms 延迟断定 */
+  if(!editRow.el)return;
+  if(editRow.el.contains(ev.target))return; /* 行内（含时间尺）豁免 */
+  setTimeout(function(){
+    if(!editRow.el)return;
+    if(editRow.el.contains(document.activeElement))return; /* 焦点仍在行内=误报，不存 */
+    commitInline();
+  },60);
+});
 function setTimeSel(t){
   var mm=/^(\d{1,2}):(\d{2})$/.exec(t||"");
   tSel.h=mm?(mm[1].length===2?mm[1]:"0"+(+mm[1])):"";
@@ -3586,6 +3614,50 @@ function startEdit(i){
   $("mDel").style.display="inline-grid";
   $("mForm").classList.add("show");$("mTxt").focus();
 }
+/* E-20260920-01：日视图行内编辑（v2 稿触屏口径）——点✎就地改正文；时刻不手打，点 mdtm 弹主线 tPick 时间尺；
+   ✓或点行外=保存（60ms 断定）、✕=取消、单实例、空正文回退。主管径=日视图 mdrow，底部表单留着供月/周视图与新增。 */
+var editRow={el:null,i:-1,orig:null,pickHome:null};
+function startInlineEdit(i){
+  if(editRow.el)commitInline(true); /* 单实例：开新行前自动保存旧行 */
+  var rows=EV[selKey]||[];if(!rows[i])return;
+  var el=$("mRows").querySelector('.mdrow[data-i="'+i+'"]');if(!el)return;
+  var it=rows[i],tm=el.querySelector(".mdtm"),tx=el.querySelector(".mdtx");if(!tm||!tx)return;
+  editRow={el:el,i:i,orig:{t:it.t,txt:it.txt},pickHome:pickHomeFixed};
+  var isAny=it.t==="--:--";
+  if(isAny){tm.classList.add("tm-anytime");tm.textContent="随时"}
+  else{tm.classList.add("tm-tap")}
+  tm.addEventListener("click",function(ev){ev.stopPropagation();openRowPick()});
+  var inp=document.createElement("input");inp.className="tx-in";inp.type="text";inp.maxLength=30;inp.value=it.txt;
+  tx.replaceWith(inp);
+  el.classList.add("edit");el.setAttribute("role","textbox");
+  el.querySelector('.mda[data-act="edit"]').style.visibility="hidden"; /* 编辑态稿面只有 ✓✕（✎ 隐尾保形） */
+  inp.addEventListener("keydown",function(e){if(e.key==="Enter")commitInline();}); /* 电脑端顺手（口径外，不上 UI 文案） */
+  setTimeSel(isAny?"":it.t);closePick();
+  inp.focus();var L=inp.value.length;inp.setSelectionRange(L,L); /* 光标落句尾 */
+}
+function commitInline(silent){
+  var R=editRow;if(!R.el)return;
+  var inp=R.el.querySelector(".tx-in"),txt=inp?inp.value.trim():"";
+  editRow={el:null,i:-1,orig:null};restorePick();
+  if(!txt){renderMemo();calRender();return} /* 空正文/全空格不落档（回退原文） */
+  var rows=EV[selKey]||[],o=rows[R.i];if(!o){renderMemo();return}
+  o.txt=txt;o.t=tSel.h?(tSel.h+":"+(tSel.m||"00")):"--:--"; /* 时刻只经时间尺变更，未动尺=保持原值 */
+  saveCal();calRender();renderMemo();renderDay();
+  if(!silent)toast("已更新待办");
+}
+function cancelInline(){
+  if(!editRow.el){restorePick();return}
+  editRow={el:null,i:-1,orig:null};restorePick();renderMemo();calRender(); /* 重建即还原，不带 toast */
+}
+function openRowPick(){ /* 行内弹主时间尺：tPick 元素搬进行内正下（contains 判定不误存） */
+  if(pickEl.classList.contains("open")){closePick();return}
+  if(editRow.el)editRow.el.appendChild(pickEl);else doPickOpen(); /* E-20260920-01：引用防游离 */
+  setTimeSel(editRow.orig.t==="--:--"?"":editRow.orig.t);
+  doPickOpen();
+}
+function doPickOpen(){pickEl.classList.add("open");syncRuler()}
+function restorePick(){var p=pickEl;if(pickHomeFixed&&p.parentElement!==pickHomeFixed)pickHomeFixed.appendChild(p);p.classList.remove("open")} /* home 固定=mForm（模块加载时记录一次），不读运行态 editRow；引用防游离节点查无 */
+var pickEl=$("tPick"),pickHomeFixed=pickEl&&pickEl.parentElement; /* E-20260920-01：游离后 getElementById 会查无，全程用引用 */
 function memoTgt(){ /* v22cal10：当前视图的备忘域与键——周视图=EVW[周键]、月视图=EVM[月键]、日视图=EV[selKey] */
   if(calView==="week")return{arr:EVW,k:wkOfSelKey()};
   if(calView==="month")return{arr:EVM,k:mkKey()};
@@ -3626,7 +3698,7 @@ function openCal(){
   closeDiary();closeAlbum();closeSettings();setDress(false);
   calEl.classList.add("open");syncVeil();calRender();renderMemo();
 }
-function closeCal(){calEl.classList.remove("open");closePick();syncVeil();}
+function closeCal(){calEl.classList.remove("open");closePick();if(editRow.el)cancelInline();syncVeil();}
 /* v22cal2：‹ 钮接线退役；收起=点面板外暗罩（veilEl click 已统一 closeCal） */
 loadCal();calRender();renderMemo();
 /* ── 测试/联调钩子 ── */
