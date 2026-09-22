@@ -248,7 +248,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #dimVeil{position:absolute;inset:0;z-index:40;background:rgba(22,13,6,0);pointer-events:none;transition:background .32s ease}
 #dimVeil.show{background:rgba(22,13,6,.5);pointer-events:auto}
 /* 日记本 v3（UI 升级批1：美术底板）——容器只做定位，皮面/书脊/纸面/插画全部在图里 */
-#book{position:absolute;left:50%;top:47%;width:min(92%,368px);height:auto;z-index:41;
+#book{position:absolute;left:50%;top:47%;width:min(92%,368px);height:auto;z-index:41; /* E-20260922-02 返工附加：st-write 态书宽收窄为 min(85%,340px)（见 .pg-write 内覆写），背景房间多露出 */
   aspect-ratio:1200/1531;transform:translate(calc(-50% - 115vw),-50%);
   transition:transform .38s cubic-bezier(.22,.9,.32,1);
   filter:drop-shadow(0 18px 40px rgba(0,0,0,.5))}
@@ -257,6 +257,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #book .pg{display:none}
 #book.st-cover .pg-cover{display:block}
 #book.st-list .pg-list{display:flex}
+#book.st-write{width:min(85%,340px)} /* E-20260922-02 返工附加：写页书宽收窄（背景房间多露出，更松弛）；封面/历史页尺寸不动 */
 #book.st-write .pg-write{display:flex}
 /* 封面：整张美术封面 assets/ui/diary-cover.png（标题/圆窗/锁扣全在图里） */
 .pg-cover{position:absolute;inset:0;z-index:2;cursor:pointer}
@@ -297,8 +298,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .sortB{position:absolute;top:calc(6% + 54px);right:calc(7% + 25px);font-size:10px;font-weight:700;color:#7a6248;padding:2px 8px;border:1px solid #d2b98c;border-radius:11px;background:rgba(255,253,244,.85)}
 /* 写日记页：同内页底板，保存钮正压在图里自带的翻页胶囊上（写页不用翻页器） */
 .pg-write{position:absolute;inset:0;z-index:1;flex-direction:column;
-  background:url("assets/ui/diary-page.png") center/100% 100% no-repeat;
-  padding:31% 13.4% 12.5% 12.6%} /* v22d2b：溢出修复——左右改用 diary-page.png 烘焙纸面真实边界（=目录页同组 12.6/13.4，旧 16/8 让白纸右缘压出纸面外，用户真机实拍） */
+  background:url("assets/ui/diary-write-board.png") center/100% 100% no-repeat;
+  padding:6.5% 13% 7.5% 13%} /* 返工4：老板微调——内容块再下移 1%（约 10px） */
 /* v22cal11 写页=图二复刻：三胶囊(日期/天气/心情)带下拉、大白纸写作区+玫瑰角饰+字数、红金保存钮（底板仍=diary-page.png 与目录页同张） */
 .wtop{display:flex;gap:6px;padding:0 0 8px}
 .wpill{min-width:0;display:flex;align-items:center;gap:4px;height:27px;padding:0 8px;flex:1;
@@ -310,22 +311,20 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .wpill .wi{flex:none;font-size:11px}
 .wpill .wt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
 .wpill .wcar{flex:none;width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent;border-top:4.5px solid #b08d5e}
-.wwrap{position:relative;flex:1;min-height:0;background:#fffdf6;border:1.5px solid #e3d0a6;border-radius:12px;
-  box-shadow:inset 0 1px 4px rgba(120,90,50,.1);display:flex;margin:0 0 6px}
-.b-body{flex:1;min-height:0;overflow-y:auto;margin:0;padding:12px 12px 26px;
+.wwrap{position:relative;flex:none;height:57%;min-height:0;background:url("assets/ui/diary-write-editor.png") center/100% 100% no-repeat;display:flex;margin:0 0 6px} /* 返工2：编辑框高=书页 50.4%（图二实量；57% 为 content box 基准换算） */
+.b-body{flex:1;min-height:0;overflow-y:auto;margin:0;padding:5.5% 7% 12%;
   font-size:12.5px;line-height:2;color:#4a3826;outline:none;cursor:text;
-  background:repeating-linear-gradient(transparent,transparent calc(2em - 1px),rgba(160,130,90,.3) calc(2em - 1px),rgba(160,130,90,.3) 2em);
-  background-attachment:local;border-radius:12px}
+  background:transparent;border-radius:12px} /* E-20260922-02：透明底（框线/底纹来自切图），横线渐变退役 */
 .b-body .stk{display:inline-block;font-size:18px;transform:rotate(-6deg);margin:0 2px;vertical-align:middle}
-.wrose{position:absolute;left:9px;top:8px;font-size:12px;opacity:.85;transform:rotate(-14deg);pointer-events:none;filter:drop-shadow(0 1px 1px rgba(90,50,30,.3))}
-.wrose::after{content:"🌹";position:absolute;left:11px;top:10px;font-size:8px;transform:rotate(26deg);opacity:.75} /* v22cal11：双玫瑰错落（图二角饰） */
-.wcnt{position:absolute;right:11px;bottom:7px;font-size:9px;font-weight:700;color:#b09a78;pointer-events:none}
-.wr-save{position:absolute;left:51.3%;bottom:7%;transform:translateX(-50%);z-index:5;height:30px;min-width:44%;padding:0 20px; /* v22d2b：51.3%=新纸面内容区中心（12.6% + (100%-12.6%-13.4%)/2），随 padding 修正同步 */
-  border:2px solid #d9b56a;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:5px;
-  background:linear-gradient(#a03a2c,#7c2a20);color:#ffe9c4;font-size:13px;font-weight:800;letter-spacing:6px;text-indent:6px;
-  box-shadow:0 3px 8px rgba(60,20,10,.4),inset 0 0 0 2px rgba(255,233,196,.22);transition:transform .12s}
+.wrose{display:none} /* E-20260922-02：🌹 emoji 角饰退役（编辑框切图自带玫瑰角饰） */
+.wcnt{position:absolute;right:4.5%;bottom:3.2%;font-size:11px;font-weight:700;color:#b09a78;pointer-events:none} /* E-20260922-02：对位切图原字数区（PIL 实测右下 87.5%,94.8%），实时 n/1000 */
+.wr-save{position:absolute;left:50%;bottom:7.5%;transform:translateX(-50%);z-index:5;height:auto;min-width:37%;aspect-ratio:750/251;padding:0; /* 返工2：图二实量——保存钮独立一行居中（中心 49.7%）、宽 36.8%、底距书页底 7.5%（角色下方） */
+  border:none;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  background:url("assets/ui/diary-write-save.png") center/100% 100% no-repeat;color:transparent; /* 文字透明（切图自带「保存」） */
+  filter:drop-shadow(0 3px 6px rgba(60,20,10,.35));transition:transform .12s}
 .wr-save:active{transform:translateX(-50%) scale(.93)}
-.wr-save .wsq{font-size:12px;letter-spacing:0;text-indent:0}
+.wr-save .wsq{display:none} /* 切图自带羽毛笔，CSS 版退役 */
+.wdeco{position:absolute;left:31.1%;bottom:15.5%;width:41%;pointer-events:none;z-index:4;filter:drop-shadow(0 2px 4px rgba(90,50,30,.18))} /* 返工6：装饰右移 10px（left 29→31.1%，10px≈书页宽 2.1%） */
 /* 三胶囊下拉面板：JS 打开时按胶囊 offsetLeft 对位 */
 .ddrop{display:none;position:absolute;z-index:9;top:calc(31% + 36px);background:#fffdf6;border:1.5px solid #d9c39a;border-radius:11px;
   box-shadow:0 8px 20px rgba(40,25,10,.3);padding:5px;max-height:190px;overflow-y:auto;scrollbar-width:none}
@@ -781,6 +780,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
       <span class="wrose" aria-hidden="true">🌹</span>
       <span class="wcnt" id="wCnt">0/1000</span>
     </div>
+    <img class="wdeco" src="assets/ui/diary-write-deco.png" alt="" aria-hidden="true"> <!-- E-20260922-02：坐姿角色切图（压编辑框下沿，不挡输入） -->
     <button class="wr-save" id="dSaveE"><span class="wsq" aria-hidden="true">🖋</span>保 存</button>
     <div class="ddrop" id="dropDate" aria-hidden="true"></div>
     <div class="ddrop" id="dropWx" aria-hidden="true"></div>

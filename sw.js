@@ -3,7 +3,7 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v25';
+const CACHE_VER = 'maoor-v26';
 const PRECACHE = [
   './index.html',
   './manifest.json',
@@ -35,6 +35,7 @@ const PRECACHE = [
   /* UI 切图（日记/相册/日历/装修底板） */
   './assets/ui/deco-panel.png','./assets/ui/cal-panel.png',
   './assets/ui/diary-cover.png','./assets/ui/diary-page.png','./assets/ui/diary-card.png','./assets/ui/btn-diary-write.png',
+  './assets/ui/diary-write-board.png','./assets/ui/diary-write-editor.png','./assets/ui/diary-write-deco.png','./assets/ui/diary-write-save.png', /* E-20260922-02 写日记页新美术 4 张 */
   './assets/ui/album-panel.png','./assets/ui/album-add.png','./assets/ui/photo-frame.png',
   './assets/ui/arrow-l.png','./assets/ui/arrow-r.png','./assets/ui/arrow-al.png','./assets/ui/arrow-ar.png',
   './assets/ui/avatar-frame.png','./assets/ui/avatar-face.png',
