@@ -1,7 +1,7 @@
 {
  "app": "maoor-furn-pack",
  "ver": 2,
- "date": "2026-09-23",
+ "date": "2026-09-24",
  "assets": [
   {
    "fid": "f305",
@@ -340,27 +340,6 @@
    "src": "assets/2.5d/f304.png"
   },
   {
-   "fid": "f299",
-   "name": "长桌",
-   "cat": "桌台",
-   "w": 3,
-   "d": 1,
-   "h": 40,
-   "scale": null,
-   "ox": null,
-   "oy": -0.06,
-   "flip": null,
-   "vh": 1,
-   "sm": 0,
-   "sh": 0,
-   "sw": null,
-   "sd": null,
-   "glow": null,
-   "ovr": 0.3174,
-   "wall": false,
-   "src": "assets/2.5d/f299.png"
-  },
-  {
    "fid": "f302",
    "name": "时钟",
    "cat": "氛围",
@@ -470,6 +449,75 @@
    "ovr": 2.418,
    "wall": true,
    "src": "assets/2.5d/f308.png"
+  },
+  {
+   "fid": "f299",
+   "name": "长桌",
+   "cat": "桌台",
+   "w": 3,
+   "d": 1,
+   "h": 40,
+   "scale": null,
+   "ox": null,
+   "oy": -0.06,
+   "flip": null,
+   "vh": 1,
+   "sm": 0,
+   "sh": 0.7,
+   "sw": null,
+   "sd": null,
+   "glow": null,
+   "ovr": 0.3174,
+   "wall": false,
+   "src": "assets/2.5d/f299.png"
+  },
+  {
+   "fid": "f315",
+   "name": "宝石",
+   "cat": "氛围",
+   "w": 1,
+   "d": 1,
+   "h": 40,
+   "scale": 0.926,
+   "ox": null,
+   "oy": null,
+   "flip": null,
+   "vh": 1,
+   "sm": 0,
+   "sh": 0,
+   "sw": null,
+   "sd": null,
+   "glow": {
+    "c": "#ff9ec4",
+    "s": 0.4,
+    "i": 0.9,
+    "b": 1,
+    "p": 1
+   },
+   "ovr": 1.5224,
+   "wall": true,
+   "src": "assets/2.5d/f315.png"
+  },
+  {
+   "fid": "f316",
+   "name": "摆件",
+   "cat": "摆件",
+   "w": 0.75,
+   "d": 0.75,
+   "h": 40,
+   "scale": null,
+   "ox": -0.1,
+   "oy": -0.18,
+   "flip": null,
+   "vh": 1,
+   "sm": 1,
+   "sh": 0,
+   "sw": null,
+   "sd": null,
+   "glow": null,
+   "ovr": 0.6666,
+   "wall": false,
+   "src": "assets/2.5d/f316.png"
   }
  ],
  "layout": [
@@ -498,6 +546,14 @@
    "oy": -0.04
   },
   {
+   "fid": "f300",
+   "gx": 4.25,
+   "gy": 0,
+   "flip": null,
+   "ox": 0.1,
+   "oy": -0.08
+  },
+  {
    "fid": "f296",
    "wall": "left",
    "u": 1,
@@ -508,17 +564,23 @@
   },
   {
    "fid": "f297",
-   "gx": 4.75,
-   "gy": 2.75,
+   "gx": 1.5,
+   "gy": 6.75,
    "flip": null,
    "ox": 0.08,
-   "oy": -0.04
+   "oy": -0.04,
+   "on": "f299",
+   "su": 1,
+   "sv": 0
   },
   {
    "fid": "f311",
-   "gx": 5.25,
-   "gy": 4.25,
-   "flip": null
+   "gx": 0.5,
+   "gy": 7,
+   "flip": null,
+   "on": "f299",
+   "su": 0,
+   "sv": 0.25
   },
   {
    "fid": "f304",
@@ -527,14 +589,6 @@
    "flip": null,
    "ox": 0.02,
    "oy": 0
-  },
-  {
-   "fid": "f299",
-   "gx": 0.25,
-   "gy": 7,
-   "flip": null,
-   "ox": 0,
-   "oy": -0.06
   },
   {
    "fid": "f302",
@@ -566,11 +620,34 @@
   {
    "fid": "f308",
    "wall": "back",
-   "u": 1.25,
-   "v": 1.75,
+   "u": 1,
+   "v": 2,
    "flip": null,
    "ox": 0,
    "oy": 0.04
+  },
+  {
+   "fid": "f299",
+   "gx": 0.5,
+   "gy": 6.75,
+   "flip": null,
+   "ox": 0,
+   "oy": -0.06
+  },
+  {
+   "fid": "f315",
+   "wall": "back",
+   "u": 6,
+   "v": 4,
+   "flip": null
+  },
+  {
+   "fid": "f316",
+   "gx": 4,
+   "gy": 2,
+   "flip": null,
+   "ox": -0.1,
+   "oy": -0.18
   }
  ],
  "panel": {
@@ -589,8 +666,8 @@
    "桌台": [
     "f295",
     "f300",
-    "f299",
-    "f312"
+    "f312",
+    "f299"
    ],
    "柜子": [
     "f304",
@@ -605,7 +682,8 @@
     "f307",
     "f309",
     "f310",
-    "f311"
+    "f311",
+    "f316"
    ],
    "床": [
     "f305"
@@ -615,7 +693,8 @@
     "f296",
     "f302",
     "f313",
-    "f308"
+    "f308",
+    "f315"
    ]
   }
  }
