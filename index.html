@@ -76,7 +76,7 @@ body.barOpen .dock{bottom:-90px}
 #roomIso{display:block;width:100%;height:100%}
 /* ═══ 装修底边栏（批16：底框切图底板 + 造景/装修/主题 三页签分类回退）：几何按 2246×1751 实测 ═══ */
 #decoBar{position:absolute;left:0;right:0;bottom:0;z-index:20;aspect-ratio:2246/1751;
-  background:#f3e7c8 url(assets/ui/deco-panel.png) center/100% 100% no-repeat; /* 米色兜底：切图加载失败不黑屏 */
+  background:url(assets/ui/deco-panel.png) center/100% 100% no-repeat; /* v30fix：去米色兜底层——面板 PNG 四角是圆角透明（实测 A=0、对角 12px 才不透明），兜底色会从四角透明区透出=老板报的米白小角；切图缺失=面板透出场景，不黑屏 */
   transform:translateY(112%);transition:transform .3s cubic-bezier(.32,.72,.28,1)}
 body.barOpen #decoBar{transform:translateY(0)}
 #tabs{position:absolute;left:0;right:0;top:3.4%;height:8.6%;display:flex;justify-content:center;gap:18px;align-items:center}
@@ -196,7 +196,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #dPanel{ /* 底部一整块面板：装修底边栏同款切图底板（UI 升级批），页签复用全局 .tab 组件 */
   position:absolute;left:10px;right:10px;bottom:10px;z-index:10;
   aspect-ratio:2246/1751;
-  background:#f3e7c8 url(assets/ui/deco-panel.png) center/100% 100% no-repeat; /* 米色兜底：切图加载失败不黑屏 */
+  background:url(assets/ui/deco-panel.png) center/100% 100% no-repeat; /* v30fix：去米色兜底层（同 #decoBar，四角透明区不透米白） */
   box-shadow:0 -8px 24px rgba(15,8,4,.35)}
 .d-tabs{position:absolute;left:0;right:0;top:3.4%;height:8.6%;display:flex;gap:6px;padding:0 10px;justify-content:center}
 .d-grid{position:absolute;left:4.6%;right:5.6%;top:20.6%;bottom:8.4%;overflow-y:auto;
@@ -432,6 +432,11 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #flash{position:absolute;inset:0;z-index:47;background:#fff;opacity:0;pointer-events:none}
 #flash.go{animation:flashGo .5s ease-out}
 @keyframes flashGo{0%{opacity:.9}100%{opacity:0}}
+.pcard{cursor:pointer} /* v30album：卡改 div 后补手型（button 自带，div 没有） */
+.pops{position:absolute;top:4px;right:4px;display:flex;gap:3px;z-index:3} /* v30album：照片卡三小钮 */
+.pops button{background:rgba(58,45,26,.72);color:#fff3da;border:none;border-radius:8px;padding:2px 6px;font-size:11px;line-height:1.5;cursor:pointer;font-family:inherit}
+.pops button:hover{background:#a03a2c}
+.pedt{width:88%;font:inherit;font-size:11px;border:1px solid #c9a86a;border-radius:6px;padding:1px 4px;background:#fffdf6;color:#5a4632}
 #plWrap{position:absolute;inset:0;z-index:46;background:rgba(36,26,17,.5);opacity:0;pointer-events:none;transition:opacity .2s ease;display:grid;place-items:center}
 #plWrap.show{opacity:1;pointer-events:auto}
 #plWrap .polaroid{background:#fffdf6;border-radius:6px;padding:10px 10px 12px;box-shadow:0 18px 50px rgba(20,12,4,.5);
@@ -742,7 +747,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <div class="dock" role="toolbar" aria-label="主操作">
   <button class="dock-btn" id="dDecor" aria-label="装修模式开关"><img class="icon-img" src="icon/装修.png" alt="装修" aria-hidden="true"></button>
   <button class="dock-btn" id="dDress" aria-label="换装"><img class="icon-img" src="icon/换装.png" alt="换装" aria-hidden="true"></button>
-  <button class="dock-btn" id="dShot" aria-label="拍照，二期接入"><img class="icon-img" src="icon/拍照.png" alt="拍照" aria-hidden="true"></button>
+  <button class="dock-btn" id="dShot" aria-label="拍照"><img class="icon-img" src="icon/拍照.png" alt="拍照" aria-hidden="true"></button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <!-- v22cfm 通用确认框：重置等操作先问一句 -->
@@ -1834,8 +1839,8 @@ function drawBubble(cx,by,text){ /* 台词泡泡：圆角小牌 + 小尾巴（20
   ctx.fillText(text,cx,y+h/2+0.5);
   ctx.textAlign="left";ctx.textBaseline="alphabetic";
 }
-function drawChar(){ /* 脚点=格心；坐姿时抬到沙发座面上 */
-  if(!charVisible())return;
+function drawChar(c2){ /* 脚点=格心；坐姿时抬到沙发座面上；c2=目标画布 ctx（v30shot2 拍照合成用，缺省=主画布） */
+  if(!c2&&!charVisible())return; /* v30shot2：拍照合成强制画（装修模式下角色也进照片），平时游玩仍受 decoMode 管控 */
   var now=Date.now(),fi=charImg(charFrame(now));
   if(!fi)return;
   var dh=charDH()*CHAR_ADJ.scale,dw=dh*fi.w/fi.h,sx=0,sy=0,sw=fi.w,sh=fi.h;
@@ -1844,10 +1849,11 @@ function drawChar(){ /* 脚点=格心；坐姿时抬到沙发座面上 */
   var cx=px(CHAR.gx,CHAR.gy)+CHAR_ADJ.standX,gy0=py(CHAR.gx,CHAR.gy)+CHAR_ADJ.standY,base=gy0;
   if(CHAR.mode==="sit"&&CHAR.sit){var sp=charSeat(CHAR.sit);cx=sp[0]+CHAR_ADJ.sitX;base=sp[1]+CHAR_ADJ.sitY;} /* v22sitfix+tuner：坐姿 = 内容盒锚点 + 用户微调 */
   if(CHAR.mode==="jumpoff"&&CHAR.jump){base-=charDH()*2*CHAR.jumpU*(1-CHAR.jumpU);} /* E-20260920-05④：抛物线腾空（峰值 0.5×身高，350ms 内回落） */
-  ctx.save();ctx.globalAlpha=0.20;ctx.fillStyle="#3a2a18";
-  ctx.beginPath();ctx.ellipse(cx,gy0,dw*0.30,dw*0.15,0,0,Math.PI*2);ctx.fill();ctx.restore();
-  try{ ctx.drawImage(fi.img,sx,sy,sw,sh,cx-dw/2,base-dh,dw,dh); }catch(err){}
-  if(CHAR.bubble)drawBubble(cx,base-dh,CHAR.bubble);
+  var x=c2||ctx; /* v30shot2：可注入目标画布 */
+  x.save();x.globalAlpha=0.20;x.fillStyle="#3a2a18";
+  x.beginPath();x.ellipse(cx,gy0,dw*0.30,dw*0.15,0,0,Math.PI*2);x.fill();x.restore();
+  try{ x.drawImage(fi.img,sx,sy,sw,sh,cx-dw/2,base-dh,dw,dh); }catch(err){}
+  if(CHAR.bubble&&!c2)drawBubble(cx,base-dh,CHAR.bubble); /* 气泡只上主画布，别画进照片 */
 }
 function charDH(){ return ROOM.cw*CHAR_H*S; }
 function charHitAt(pxv,pyv){ /* v22tapchar：游玩模式点角判定=角色当前内容盒（与 drawChar 同一套中心/底部/高，容差放宽好点中） */
@@ -2489,16 +2495,7 @@ var bookEl=$("book"),veilEl=$("dimVeil");
 var DIAKEY="maoor-v22-diary-v2";
 var MOODS=[{e:"😊",t:"开心"},{e:"😌",t:"平静"},{e:"😐",t:"一般"},{e:"😢",t:"难过"},{e:"😭",t:"大哭"},{e:"😠",t:"生气"}]; /* v22cal11：对象化（emoji+文字标签），mood 索引存档兼容 */
 var WX=[{e:"☀️",t:"晴"},{e:"🌤️",t:"多云"},{e:"⛅",t:"多云转阴"},{e:"☁️",t:"阴"},{e:"🌧️",t:"雨"},{e:"⛈️",t:"雷雨"},{e:"❄️",t:"雪"}]; /* v22cal11：对象化，旧存档 wx 按 e 匹配 */
-var ENTRIES=[
-  {key:"2026-10-22",wx:"☀️",mood:1,body:"今天在小屋里静静地读了一下午书。壁炉前的火光让人感到非常安心，彻子在旁边打盹，尾巴一摇一摇的。"},
-  {key:"2026-10-21",wx:"🌤️",mood:0,body:"尝试了新的茶点配方，奶油放得刚刚好，明天想再做一次请朋友来尝尝。"},
-  {key:"2026-10-20",wx:"⛅",mood:2,body:"整理了房间，翻出很多旧照片，每一张都想再看看，时间过得真快呀。"},
-  {key:"2026-10-19",wx:"🌧️",mood:3,body:"下了一整天雨，没出门，跟国际象棋较了一下午劲，还是输了三盘。"}
-];
-var PRESETS=[
-  {key:"2026-10-18",wx:"☁️",mood:3,body:"翻出了旧相册，一张一张看过去，好多事都还记得清清楚楚的。"},
-  {key:"2026-10-17",wx:"☀️",mood:0,body:"小屋来了一位客人，聊了好久，临走时还送了我们一小盆雏菊。"}
-];
+var ENTRIES=[]; /* v30clr：日记预设记录全下线（老板 09-24 拍板清空，预设不再回填） */
 var dSt={mood:-1},draft={mood:-1,body:""},curEdit=null,dpage=0,dWxi=0,descSort=true,PER=6;
 function fullToday(){var d=new Date(),w=["周日","周一","周二","周三","周四","周五","周六"];return d.getFullYear()+"年 "+(d.getMonth()+1)+"月 "+d.getDate()+"日 ("+w[d.getDay()]+")"}
 function todayKey(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
@@ -2642,29 +2639,15 @@ function loadAll(){
 }
 function initDiary(){
   loadAll();
-  PRESETS.forEach(function(p){var has=false;for(var i=0;i<ENTRIES.length;i++)if(ENTRIES[i].key===p.key){has=true;break}if(!has)ENTRIES.push(p)});
+  var KILL={"2026-10-17":1,"2026-10-18":1,"2026-10-19":1,"2026-10-20":1,"2026-10-21":1,"2026-10-22":1}; /* v30clr：老档里已落存的预设键一并清掉（预设日期全在未来，不会误删真日记） */
+  var n0=ENTRIES.length;ENTRIES=ENTRIES.filter(function(e){return !KILL[e.key]});
+  if(ENTRIES.length!==n0){try{localStorage.setItem(DIAKEY,JSON.stringify({entries:ENTRIES,draft:draft}))}catch(e){}}
   syncPills(); /* v22cal11：三胶囊初始化回显 */
 }
 veilEl.addEventListener("click",function(){closeDiary();closeAlbum();closeSettings();closeCal();});
 /* ═══ 相册（批6：照相册页demo 移植，左滑入+真翻页+灯箱+点外关闭） ═══ */
 var albumEl=$("album");
-var PHOTOS=[
-  {d:"2026.03.15",t:"惬意的下午茶",src:"assets/character/stand.png"},
-  {d:"2026.03.14",t:"珍贵的收藏",src:"assets/2.5d/f274.png"},
-  {d:"2026.03.13",t:"壁炉旁的惬意",src:"assets/bg-new.jpg"},
-  {d:"2026.03.12",t:"日常的记录",src:"assets/2.5d/f270.png"},
-  {d:"2026.03.11",t:"小酌一杯",src:"assets/2.5d/f292.png"},
-  {d:"2026.03.10",t:"温暖的夜晚",src:"assets/2.5d/f281.png"},
-  {d:"2026.03.09",t:"安静的角落",src:"assets/2.5d/f288.png"},
-  {d:"2026.03.08",t:"棋逢对手",src:"assets/2.5d/f277.png"},
-  {d:"2026.03.07",t:"书桌的时光",src:"assets/2.5d/f285.png"},
-  {d:"2026.03.06",t:"玫瑰与茶",src:"assets/2.5d/f292.png"},
-  {d:"2026.03.05",t:"窗边的下午",src:"assets/bg-new.jpg"},
-  {d:"2026.03.04",t:"夜色温柔",src:"assets/2.5d/f281.png"},
-  {d:"2026.03.03",t:"藏书一隅",src:"assets/2.5d/f270.png"},
-  {d:"2026.03.02",t:"主人的新衣",src:"assets/character/stand.png"},
-  {d:"2026.03.01",t:"小屋的早晨",src:"assets/bg-new.jpg"}
-];
+var PHOTOS=[]; /* v30clr：相册预设照片全下线（老板 09-24 拍板清空）；玩家拍的照片仍存 maoor-v22-photos-v1，刷新自动回来 */
 var A_PER=8,A_PAGE=0;
 function aPageCount(){return Math.ceil((PHOTOS.length+1)/A_PER)}
 function aRender(){
@@ -2681,12 +2664,49 @@ function aRender(){
   for(var i=first;i<end;i++){
     (function(i){
       var p=PHOTOS[i];
-      var b=document.createElement("button");
+      var b=document.createElement("div"); /* v30album：卡改 div（内嵌 删/改标题/存图 三个真按钮，button 不能嵌 button） */
       b.className="pcard";b.setAttribute("data-i",i);
+      b.setAttribute("role","button");b.setAttribute("tabindex","0");
       b.innerHTML='<span class="pfr"><img class="pph" src="'+p.src+'" alt="'+p.t+'">'
         +'<img class="pfr-img" src="assets/ui/photo-frame.png" alt=""></span>'
-        +'<span class="pcap">'+p.t+'</span>';
+        +'<span class="pcap">'+p.t+'</span>'
+        +'<span class="pops"><button type="button" class="pop-del" title="删除这张照片">🗑</button><button type="button" class="pop-ren" title="改标题">✏️</button><button type="button" class="pop-dl" title="保存到手机/电脑相册">💾</button></span>';
       b.addEventListener("click",function(){aOpenLb(i)});
+      b.addEventListener("keydown",function(ev){if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();aOpenLb(i)}});
+      b.querySelector(".pop-del").addEventListener("click",function(ev){ /* v30album：删除 */
+        ev.stopPropagation();
+        PHOTOS.splice(i,1);
+        if(A_PAGE>=aPageCount())A_PAGE=Math.max(0,aPageCount()-1);
+        aRender();photosPersist();toast("已删除照片");
+      });
+      b.querySelector(".pop-ren").addEventListener("click",function(ev){ /* v30album：改标题（卡内行内编辑，Enter/失焦保存，Esc 取消） */
+        ev.stopPropagation();
+        var cap=b.querySelector(".pcap");
+        if(cap.querySelector("input"))return;
+        var inp=document.createElement("input");
+        inp.className="pedt";inp.maxLength=16;inp.value=p.t;
+        cap.innerHTML="";cap.appendChild(inp);
+        inp.addEventListener("click",function(e2){e2.stopPropagation()});
+        inp.addEventListener("keydown",function(e2){
+          if(e2.key==="Enter"){e2.preventDefault();inp.blur();}
+          else if(e2.key==="Escape"){aRender();}
+        });
+        inp.addEventListener("blur",function(){
+          var v=(inp.value||"").trim();
+          if(v&&v!==p.t){p.t=v;photosPersist();toast("标题已改成「"+v+"」");}
+          aRender();
+        });
+        try{inp.focus();inp.select();}catch(e3){}
+      });
+      b.querySelector(".pop-dl").addEventListener("click",function(ev){ /* v30album：保存图片（浏览器下载） */
+        ev.stopPropagation();
+        try{
+          var a=document.createElement("a");
+          a.href=p.src;a.download="彻子小屋-"+p.d+"-照片"+(i+1)+".png";
+          document.body.appendChild(a);a.click();a.remove();
+          toast("已保存图片");
+        }catch(e4){toast("这张保存不了（不是本地快照）")}
+      });
       g.appendChild(b);
     })(i);
   }
@@ -3004,7 +3024,30 @@ function photosPersist(){
   }catch(e){}
 })();
 /* 拍照钩子见文末 __roomHooks（photos） */
-$("dShot").addEventListener("click",function(){openPhoto(false);});
+$("dShot").addEventListener("click",function(){ /* v30shot2：一键拍照=闪白→截房间画布+合成角色（装修模式下角色也进照）→存入相册→拍立得弹窗闪 0.5s 自动消失=成功反馈（老板 09-24） */
+  closeSettings();closeCal();
+  var fl=$("flash");fl.classList.remove("go");void fl.offsetWidth;fl.classList.add("go");
+  var shot="";
+  try{
+    var snap=document.createElement("canvas");snap.width=cv.width;snap.height=cv.height;
+    var sx2=snap.getContext("2d");sx2.drawImage(cv,0,0);
+    if(CHAR.on&&!charVisible())drawChar(sx2); /* 装修模式把角色藏了：拍照时补画进快照 */
+    shot=snap.toDataURL("image/png");
+  }catch(e){try{shot=cv.toDataURL("image/png")}catch(e2){shot=""}}
+  var d=new Date();
+  var mood=PLMOODS[Math.floor(Math.random()*PLMOODS.length)];
+  PHOTOS.unshift({d:(d.getMonth()+1)+"月"+d.getDate()+"日",t:mood,src:shot||"assets/bg-new.jpg",shot:!!shot});
+  A_PAGE=0;aRender();photosPersist();
+  toast("已存入相册 · 共 "+PHOTOS.length+" 张");
+  /* 拍立得弹窗闪 0.5s=截图成功反馈（复用退役浮层；不落 pendingPhoto，防「收下回相册」级联） */
+  $("plDate").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日 · 彻子小屋";
+  $("plMood").textContent=mood;
+  var img=$("plShot");
+  if(shot){img.src=shot;img.style.display="block"}else{img.style.display="none"}
+  pendingPhoto=null;
+  plWrapEl.classList.add("show");plWrapEl.setAttribute("aria-hidden","false");
+  setTimeout(function(){plWrapEl.classList.remove("show");plWrapEl.setAttribute("aria-hidden","true")},500);
+});
 /* ═══ 换装界面（期1.5 批3：照换装界面demo 移植为全屏覆盖层，d- 前缀防冲突） ═══ */
 var DCATS=["suit","top","bottom","coat","acc"];
 var DCAT_NAME={suit:"套装",top:"上衣",bottom:"下装",coat:"外套",acc:"配饰"};
@@ -3093,7 +3136,16 @@ function setDress(on){ /* 打开=渲染+启动闲聊计时；关闭=停闲聊；
   if(on){dRenderTabs();dRenderGrid();dScheduleIdle();}
   else clearTimeout(idleTimer);
 }
-$("dDress").addEventListener("click",function(){setDress(true);});
+/* v31gate：功能开关表（双版本机制）——玩家版=默认链接，只开已解锁功能（false=点按钮弹「开发中」）；
+   老板版=链接带 ?boss=1 全开；也可单功能强开（如 ?dress=1）。新功能开发中→表里加一行 false，上线改 true。 */
+var FEATS={dress:false};
+var BOSS=/(^|[?&])boss=1/.test(location.search);
+for(var fk in FEATS){if(new RegExp("(^|[?&])"+fk+"=1").test(location.search))FEATS[fk]=true;}
+if(BOSS)for(var fk2 in FEATS)FEATS[fk2]=true;
+$("dDress").addEventListener("click",function(){ /* v30hide：未解锁=玩家端拦截（解锁走 FEATS 表：?boss=1 全开 / ?dress=1 单开） */
+  if(!FEATS.dress){toast("功能正在开发中~");return;}
+  setDress(true);
+});
 $("dBack").addEventListener("click",function(){setDress(false);});
 $("dSave").addEventListener("click",function(){dSaveOutfit();toast("已保存");});
 $("dReset").addEventListener("click",function(){dResetOutfit();});
@@ -3785,7 +3837,7 @@ window.__roomHooks={
   DECOR:DECOR,FURNITURE:FURNITURE,ROOM:ROOM,
   state:function(){return{vz:VZ,panX:VPX,panY:VPY,W:W,H:Hc,sel:SEL?SEL.id:null,decoMode:decoMode};},
   zoomAt:zoomAt,applyView:applyView,applySavedView:applySavedView,
-  dressState:function(){return{cat:dCat,picked:dPicked,open:dressEl.classList.contains("show")};},setDress:setDress,
+  dressState:function(){return{cat:dCat,picked:dPicked,open:dressEl.classList.contains("show")};},setDress:setDress,FEATS:FEATS,BOSS:BOSS,
   diaryState:function(){var m=/st-(cover|list|write)/.exec(bookEl.className||"");
     return{open:bookEl.classList.contains("open"),view:m?m[1]:"cover",
       pages:Math.max(1,Math.ceil(ENTRIES.length/PER)),page:dpage};},

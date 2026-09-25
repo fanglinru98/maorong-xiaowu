@@ -3,7 +3,7 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v29';
+const CACHE_VER = 'maoor-v30';
 const PRECACHE = [
   './index.html',
   './manifest.json',
@@ -28,6 +28,7 @@ const PRECACHE = [
   './assets/2.5d/f309.png','./assets/2.5d/f310.png','./assets/2.5d/f311.png', /* v22audit：补尾逗号（原缺逗号=整份 sw 语法错误，SW 从未注册） */
   './assets/2.5d/f312.png','./assets/2.5d/f313.png','./assets/2.5d/f314.png', /* v27：工作台 09-23 同步新增两件家具 */
   './assets/2.5d/f315.png','./assets/2.5d/f316.png', /* v28：工作台 09-24 同步新增两件（宝石/摆件） */
+  './boss.html', /* v31gate：老板版跳板（?boss=1 全解锁入口） */
   /* 家具表（工作台「⬆ 同步到正式版」写出的那份，双击 file:// 打开也要能读） */
   './assets/furn-pack.js','./assets/furn-pack.json',
   /* HUD 图标 8 张 */
