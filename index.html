@@ -1734,7 +1734,16 @@ function charGreet(ms){ /* v22tut2：打招呼——停下脚步、原地挥手�
   CHAR.greetT0=t;CHAR.greetU=t+(ms||2400);
   render();
 }
+function walkReady(){ /* v31slide：走路帧图是否全部就绪——手机首开网络慢，帧没到就开步会被 charImg 兜底成「最近成功帧」→ 角色在地上滑行（平移感）。帧 err（真缺文件）视为就绪不阻塞。 */
+  var d,e,v;
+  for(d in CHAR_FRAMES)for(e=0;e<CHAR_FRAMES[d].length;e++){
+    v=CIMG[CHAR_FRAMES[d][e]];
+    if(!v&&v!=="err")return false; /* null/undefined=还在下载 */
+  }
+  return true;
+}
 function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概率过去坐，否则随机溜达一格 */
+  if(!walkReady()){CHAR.next=now+500;return;} /* v31slide：走路帧没到齐先待机，500ms 后再试——宁可晚走一秒，不平移 */
   var c0=Math.floor(CHAR.gx),r0=Math.floor(CHAR.gy),sofa=charSofa(),p,t,c,r;
   if(sofa&&Math.random()<0.45){
     var sc=Math.floor(effGX(sofa)+(sofa.w||1)/2),sr=Math.floor(effGY(sofa)+(sofa.d||1)/2);
@@ -2244,6 +2253,7 @@ function sceneXY(e){ /* 指针→画布坐标（抵消 CSS --zoom 缩放） */
   var r=cv.getBoundingClientRect();
   return [(e.clientX-r.left)*(W/(r.width||W)),(e.clientY-r.top)*(Hc/(r.height||Hc))];
 }
+var tapCand=null; /* v31tap：触屏「滑过家具不选中、轻点才选中」的候选（pid+家具id+起点+时刻） */
 cv.addEventListener("pointerdown",function(e){
   if(!decoMode)return; /* V22 游玩模式：家具锁死不响应，画布拖拽交给 v22view 平移画面 */
   if(CAL&&SEL&&!SEL.wall&&SEL.sh>0){ /* v22q 台面校准：房间里拖动高度线对准桌面（0.05 档） */
@@ -2262,8 +2272,13 @@ cv.addEventListener("pointerdown",function(e){
     }
     try{cv.setPointerCapture(e.pointerId);}catch(err){}
   }else if(it){
-    e.stopPropagation(); /* v22fb4：第一次点家具=只选中不拖；再点同一件(SEL===it)才开拖 */
-    select(it);
+    if(e.pointerType==="touch"){ /* v31tap：触屏防误触——家具多了，手指平移视野常落在家具身上；滑动=继续平移视野不选中，轻点一下（位移<8px 且 <600ms）才算点选。鼠标/笔保持原样（点一下就选中） */
+      if(tapCand&&tapCand.pid!==e.pointerId)tapCand=null; /* 第二根手指（捏合缩放）落下：作废候选 */
+      tapCand={pid:e.pointerId,id:it.id,x:p[0],y:p[1],t:Date.now()}; /* 不拦冒泡：v22view 接管成画面平移 */
+    }else{
+      e.stopPropagation(); /* v22fb4：第一次点家具=只选中不拖；再点同一件(SEL===it)才开拖 */
+      select(it);
+    }
   }else{select(null);}
 });
 function doPtrMove(e){
@@ -2312,8 +2327,13 @@ window.addEventListener("pointermove",function(e){
   if(typeof requestAnimationFrame==="function")pmRAF=requestAnimationFrame(pmTick);
   else pmTick();
 });
-window.addEventListener("pointerup",function(){
+window.addEventListener("pointerup",function(e){
   if(calD){calD=null;saveSoon();render();return;} /* v22q 校准结束：落档存档 */
+  if(tapCand){ /* v31tap：抬手结算——位移<8px 且 <600ms 且还在这件家具上=点选；滑动了=只是平移视野 */
+    var pu=sceneXY(e),mv=Math.abs(pu[0]-tapCand.x)+Math.abs(pu[1]-tapCand.y);
+    if(mv<8&&Date.now()-tapCand.t<600){var hitUp=itemAt(pu[0],pu[1]);if(hitUp&&hitUp.id===tapCand.id)select(hitUp);}
+    tapCand=null;
+  }
   if(drag){ /* v22block：拖完落位若与别的落地件重叠，弹回拖动起点 */
     var t=drag.it;
     if(t&&!t.wall&&!hostOf(t)&&!drag.cell&&footStep(t)<=1+1e-9&&footStep(t)>=1-1e-9){ /* v22fb4：整格件贴墙吸附——离墙 ≤¼ 格自动吸到墙边（书架/长桌不用再抠着拖到边角） */
@@ -2329,7 +2349,7 @@ window.addEventListener("pointerup",function(){
 });
 window.addEventListener("pointercancel",function(){
   if(calD){calD=null;render();return;} /* v22fix：触摸被系统手势接管时同样收尾，否则 calD/drag 悬挂 → 无按键 mousemove 跟着光标漂移 */
-  drag=null;render();
+  drag=null;tapCand=null;render();
 });
 /* v22fab：浮动三钮（尺寸/翻转/删除）接线 */
 function copySelected(){ /* v22copy：复制选中件（占格/大小%/翻转/微调/光效/台面高/小物标记 全带走），优先落在原格或台面空格 */
@@ -3816,7 +3836,7 @@ loadCal();calRender();renderMemo();
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
   effW:effW,effD:effD,hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
-  CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,charSeat:charSeat,drawChar:drawChar,footBlocked:footBlocked,footFree:footFree,charGreet:charGreet,charHitAt:charHitAt,charPreload:charPreload,seedFurniture:seedFurniture, /* v22char 测试入口 */
+  CIMG:CIMG,CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,charSeat:charSeat,drawChar:drawChar,footBlocked:footBlocked,footFree:footFree,charGreet:charGreet,charHitAt:charHitAt,charPreload:charPreload,seedFurniture:seedFurniture, /* v22char 测试入口 */
   PACK_INFO:(function(){var p=window.__MAOOR_PACK;return p?{ver:p.ver||"",date:p.date||"",count:(p.assets?p.assets.length:0),app:p.app||""}:null;})(),PACK_LOAD_OK:!!window.__MAOOR_PACK, /* E-20260921-04 包哨兵只读字段：排查时一眼知道玩家跑的哪版包 */
   addFurniture:addFurniture,
   mergePack:mergePack,applyDefSize:applyDefSize,PACKIDS:PACKIDS,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
@@ -3835,7 +3855,7 @@ window.__roomHooks={
   setDecoMode:setDecoMode,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,
   saveState:saveState,restoreState:restoreState,
   DECOR:DECOR,FURNITURE:FURNITURE,ROOM:ROOM,
-  state:function(){return{vz:VZ,panX:VPX,panY:VPY,W:W,H:Hc,sel:SEL?SEL.id:null,decoMode:decoMode};},
+  state:function(){return{vz:VZ,panX:VPX,panY:VPY,W:W,H:Hc,S:S,OX:OX,OY:OY,sel:SEL?SEL.id:null,decoMode:decoMode};},
   zoomAt:zoomAt,applyView:applyView,applySavedView:applySavedView,
   dressState:function(){return{cat:dCat,picked:dPicked,open:dressEl.classList.contains("show")};},setDress:setDress,FEATS:FEATS,BOSS:BOSS,
   diaryState:function(){var m=/st-(cover|list|write)/.exec(bookEl.className||"");
