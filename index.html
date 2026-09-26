@@ -3995,9 +3995,11 @@ var FITK=1;
 applyView();
 resize();
 })();
-/* PWA：注册根目录 Service Worker（本地 file:// 双击打开时自动跳过，不影响游玩） */
+/* PWA：注册根目录 Service Worker（本地 file:// 双击打开时自动跳过，不影响游玩）。
+   v33swfix：updateViaCache:"none"=SW 脚本本身永不走 HTTP 缓存——否则 sw.js 被浏览器缓存拖住，
+   新版 SW（带「只缓存成功响应」修复）迟迟装不上，旧 SW 里的毒缓存（404 也被缓存过）会一直吐坏资源。 */
 if("serviceWorker" in navigator && location.protocol==="https:"){
-  navigator.serviceWorker.register("sw.js").catch(function(){});
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(function(){});
 }
 </script>
 </body>
