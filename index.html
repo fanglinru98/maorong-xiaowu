@@ -32,10 +32,10 @@ body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidde
 .avatar-stack{position:relative;width:72px;pointer-events:auto;filter:drop-shadow(0 3px 8px rgba(20,10,5,.4))}
 .avatar-stack .av-frame{width:100%;display:block}
 .avatar-stack .av-face{position:absolute;left:50%;top:47%;width:73.5%;transform:translate(-50%,-52%)} /* v22cal7：脸放大贴参考示意（参考脸占框宽 76.7%、60% 时渲染实测 63.6%，含发丝溢出 1.06 → 73.5% 二调）；top 46→47 脸大后中心微降 */
-.avatar-stack .av-lv{position:absolute;left:50%;top:78%;transform:translateX(-50%);font-size:13.5px;font-weight:900; /* v22cal7：字放大 11.5→13.5、下移 76→78% 配参考示意 */
+.avatar-stack .av-lv{position:absolute;left:50%;top:83.5%;transform:translateX(-50%);font-size:15px;font-weight:900; /* v32av：字 13.5→15（图二字宽≈圆径 59%，原 51%）、中心对齐圆底缘下 7%——图二口径；DOM 实测三元素中心线本已全对齐 551.6，视觉左移=glyph 不对称 */
   font-family:"幼圆","YouYuan","Yuanti SC","Microsoft YaHei",sans-serif;letter-spacing:.5px;white-space:nowrap;color:#bd8d63;
   text-shadow:-2px -2px 0 #fffdf6,2px -2px 0 #fffdf6,-2px 2px 0 #fffdf6,2px 2px 0 #fffdf6,-2px 0 0 #fffdf6,2px 0 0 #fffdf6,0 -2px 0 #fffdf6,0 2px 0 #fffdf6,0 3px 4px rgba(60,25,10,.4)}
-.avatar-stack .av-bar{position:absolute;left:8%;right:8%;bottom:-10px;height:11px;border-radius:6px;background:#38130f; /* v22cal7：血条加宽 70→84%框宽、加粗 9→11、下移悬出框底（参考：血条顶在框底缘外），与 Lv 字拉开间隙 */
+.avatar-stack .av-bar{position:absolute;left:8%;right:8%;bottom:-18.5px;height:11px;border-radius:6px;background:#38130f; /* v32av：下移 -10→-18.5，DOM 实测原 bar 顶 86.5 压住 Lv 字底 92.5 重叠 6px，现让出≈图二的字下间隙（间隙≈圆径 1.8%） */
   border:2px solid #fffdf6;box-shadow:0 2px 4px rgba(20,8,4,.45);overflow:hidden}
 .avatar-stack .av-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(180deg,#c94b3a,#8e2a20);
   box-shadow:inset 0 1px 0 rgba(255,220,190,.35)}
@@ -71,6 +71,8 @@ body.barOpen .dock{bottom:-90px}
 .cfm-yes{background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12;border:1.5px solid var(--gold-deep)}
 .cfm-no{background:#f4ead0;color:#5a4632;border:1.5px solid #d2b98c}
 #stage{position:absolute;inset:0;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
+*{-webkit-tap-highlight-color:transparent} /* v31tap2：iOS 触屏点任何元素都不出系统蓝/灰高亮块（老板朋友实测 09-25） */
+button,img{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none} /* 长按不弹菜单/不选中图 */
 #scene{position:absolute;left:50%;top:50%;width:100%;height:100%;
   transform:translate(-50%,-50%) translate(var(--panX,0px),var(--panY,0px)) scale(var(--zoom,1));transform-origin:center center;will-change:transform}
 #roomIso{display:block;width:100%;height:100%}
@@ -700,7 +702,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- ═══ 等距房间引擎（V22 装修 demo 底座） ═══ -->
 <div id="stage">
   <div id="scene"><canvas id="roomIso"></canvas>
-    <div id="fab"><button id="fabFlip" title="水平镜像（左右翻转）">⇋</button><button id="fabCopy" title="复制一件（落在原格旁边的空位/台面空格）">⧉</button><button id="fabGlow" title="光效（只给两盏灯用：哥特提灯 / 壁灯）">✨</button><button id="fabDel" title="删除选中家具">🗑</button></div>
+    <div id="fab"><button id="fabFlip" title="水平镜像（左右翻转）">⇋</button><button id="fabCopy" title="复制一件（落在原格旁边的空位/台面空格）">⧉</button><button id="fabGlow" title="光效（只给灯用：哥特提灯 / 壁灯 / 落地灯 / 宝石）">✨</button><button id="fabDel" title="删除选中家具">🗑</button></div>
     <div id="glowRow">
       <button id="glOn" title="开/关这盏灯的光效">光效开</button>
       <button id="glBr" title="呼吸感（明暗缓慢起伏）">呼吸</button>
@@ -715,7 +717,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 </div><!-- /stage -->
 <!-- 面板外右上三圆钮（装修面板展开时出现） -->
 <div id="quickBtns">
-  <button class="qb qb-lamp" id="lampAll" title="两盏灯一起开/关（哥特提灯 · 壁灯）">一键开灯</button><!-- v22lamp：两盏灯的总开关，放「保存」左边 -->
+  <button class="qb qb-lamp" id="lampAll" title="所有灯一起开/关（哥特提灯 · 壁灯 · 落地灯 · 宝石）">一键开灯</button><!-- v22lamp：灯的总开关，放「保存」左边 -->
   <button class="qb qb-save" title="保存布局">保存</button>
   <button class="qb qb-reset" title="重置布局">重置</button>
 </div>
@@ -921,7 +923,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <img class="pl-shot" id="plShot" alt="房间快照">
     <div class="pl-cap"><span class="date" id="plDate">—</span><span class="mood" id="plMood">—</span></div>
     <div class="polaroid-actions">
-      <button class="pl-btn" id="plClose">收下</button>
+      <button class="pl-btn" id="plClose">取消</button>
       <button class="pl-btn primary" id="plSave">存入相册</button>
     </div>
   </div>
@@ -996,29 +998,29 @@ var FURN_DEF=[
   {id:"f292",name:"玫瑰茶几",  src:"assets/2.5d/f292.png",w:1,d:1,h:40,glow:null,sh:1},
   /* ── 家具包 maoor-shelf-pack.json（2026-09-13 导出，f293-f311，图已缩到长边 1024）── */
   {id:"f293",name:"壁灯",src:"assets/2.5d/f293.png",w:1,d:1,h:40,scale:0.6,glow:null,wall:"back",flip:"1",ox:-0.26,oy:0.06},
-  {id:"f294",name:"图层 286",src:"assets/2.5d/f294.png",w:1,d:1,h:40,scale:0.925,glow:null},
+  {id:"f294",name:"壁炉",src:"assets/2.5d/f294.png",w:1,d:1,h:40,scale:0.923,glow:null},
   {id:"f295",name:"圆桌",src:"assets/2.5d/f295.png",w:1,d:1,h:40,scale:0.997,glow:null,sh:0.75,oy:-0.04},
-  {id:"f296",name:"图层 347",src:"assets/2.5d/f296.png",w:2,d:2,h:40,scale:1.08,glow:null,wall:"back",flip:"1",oy:0.1},
-  {id:"f297",name:"图层 273",src:"assets/2.5d/f297.png",w:0.5,d:0.5,h:40,glow:null,sm:1,sh:1,ox:0.08,oy:-0.04},
-  {id:"f298",name:"图层 355",src:"assets/2.5d/f298.png",w:0.25,d:0.25,h:40,scale:0.3,glow:null,sm:1,oy:-0.1},
-  {id:"f299",name:"长桌",src:"assets/2.5d/f299.png",w:3,d:1,h:40,glow:null,sh:0.7,oy:-0.06},
+  {id:"f296",name:"相框",src:"assets/2.5d/f296.png",w:2,d:2,h:40,scale:1.08,glow:null,wall:"back",flip:"1",oy:0.1},
+  {id:"f297",name:"留声机",src:"assets/2.5d/f297.png",w:0.5,d:0.5,h:40,scale:0.998,glow:null,sm:1,sh:1,ox:0.08,oy:-0.04},
+  {id:"f298",name:"香水瓶",src:"assets/2.5d/f298.png",w:0.25,d:0.25,h:40,scale:0.3,glow:null,sm:1,oy:-0.1},
+  {id:"f299",name:"长桌",src:"assets/2.5d/f299.png",w:3,d:1,h:40,scale:1.017,glow:null,sh:0.7,ox:0.0045,oy:-0.0342},
   {id:"f300",name:"电视",src:"assets/2.5d/f300.png",w:2,d:1,h:40,scale:0.794,glow:null,ox:0.1,oy:-0.08},
   {id:"f301",name:"单人沙发",src:"assets/2.5d/f301.png",w:1,d:1,h:40,scale:1.065,glow:null,sh:0.55,ox:0.0452,oy:-0.0347},
   {id:"f302",name:"时钟",src:"assets/2.5d/f302.png",w:0.75,d:0.75,h:40,scale:0.926,glow:null,wall:"back"},
-  {id:"f303",name:"图层 345",src:"assets/2.5d/f303.png",w:1,d:2,h:40,scale:0.674,glow:null,ox:0.0323,oy:-0.0721},
-  {id:"f304",name:"图层 270",src:"assets/2.5d/f304.png",w:0.75,d:2,h:40,glow:null,ox:0.02},
+  {id:"f303",name:"衣架",src:"assets/2.5d/f303.png",w:1,d:2,h:40,scale:0.674,glow:null,ox:0.0323,oy:-0.0721},
+  {id:"f304",name:"书架",src:"assets/2.5d/f304.png",w:0.75,d:2,h:40,glow:null,ox:0.02},
   {id:"f305",name:"单人床",src:"assets/2.5d/f305.png",w:2,d:2,h:40,scale:0.97,glow:null,sh:0.55,ox:0.03,oy:-0.04},
-  {id:"f306",name:"图层 278",src:"assets/2.5d/f306.png",w:0.25,d:0.25,h:40,scale:1.36,glow:null,sm:1,oy:-0.08},
-  {id:"f307",name:"图层 279",src:"assets/2.5d/f307.png",w:0.25,d:0.25,h:40,scale:0.926,glow:null,sm:1},
+  {id:"f306",name:"玫瑰盆栽",src:"assets/2.5d/f306.png",w:0.25,d:0.25,h:40,scale:1.36,glow:null,sm:1,oy:-0.08},
+  {id:"f307",name:"小相框",src:"assets/2.5d/f307.png",w:0.25,d:0.25,h:40,scale:0.926,glow:null,sm:1},
   {id:"f308",name:"窗户",src:"assets/2.5d/f308.png",w:2,d:3,h:40,glow:null,wall:"back",oy:0.04},
-  {id:"f309",name:"图层 287",src:"assets/2.5d/f309.png",w:0.5,d:0.5,h:40,scale:0.794,glow:null,sm:1},
-  {id:"f310",name:"图层 276",src:"assets/2.5d/f310.png",w:0.25,d:0.25,h:40,scale:0.926,glow:null,sm:1},
-  {id:"f311",name:"图层 284",src:"assets/2.5d/f311.png",w:0.25,d:0.25,h:40,scale:1.166,glow:null,sm:1},
+  {id:"f309",name:"小提琴",src:"assets/2.5d/f309.png",w:0.5,d:0.5,h:40,scale:0.792,glow:null,sm:1},
+  {id:"f310",name:"红酒瓶",src:"assets/2.5d/f310.png",w:0.25,d:0.25,h:40,scale:0.926,glow:null,sm:1},
+  {id:"f311",name:"书籍",src:"assets/2.5d/f311.png",w:0.25,d:0.25,h:40,scale:1.164,glow:null,sm:1},
   {id:"f312",name:"棋盘桌",src:"assets/2.5d/f312.png",w:1,d:1,h:40,glow:null},
-  {id:"f313",name:"落地灯",src:"assets/2.5d/f313.png",w:0.5,d:0.5,h:40,scale:0.857,sm:1,glow:{c:"#ffd27a",s:2.6,i:0.5,b:0,p:0}},
-  {id:"f314",name:"床边柜",src:"assets/2.5d/f314.png",w:1,d:1,h:40,scale:0.794,oy:-0.04,flip:"1"},
-  {id:"f315",name:"宝石",src:"assets/2.5d/f315.png",w:1,d:1,h:40,scale:0.926,wall:"back",glow:{c:"#ff9ec4",s:0.4,i:0.9,b:1,p:1}},
-  {id:"f316",name:"摆件",src:"assets/2.5d/f316.png",w:0.75,d:0.75,h:40,ox:-0.1,oy:-0.18,sm:1},
+  {id:"f313",name:"落地灯",src:"assets/2.5d/f313.png",w:0.5,d:0.5,h:40,scale:0.857,glow:null,sm:1},
+  {id:"f314",name:"床边柜",src:"assets/2.5d/f314.png",w:1,d:1,h:40,scale:0.794,glow:null,oy:-0.04},
+  {id:"f315",name:"宝石",src:"assets/2.5d/f315.png",w:1,d:1,h:40,scale:0.926,glow:null,wall:"back"},
+  {id:"f316",name:"摆件",src:"assets/2.5d/f316.png",w:0.75,d:0.75,h:40,scale:0.691,glow:null,sm:1,ox:-0.1,oy:-0.18},
 ];
 var DEF_MAP={};(function(){var i;for(i=0;i<FURN_DEF.length;i++)DEF_MAP[FURN_DEF[i].id]=FURN_DEF[i];})();
 function mergePack(pk){ /* v22sync：把工作台「⬆ 同步到正式版」写出的 assets/furn-pack.js 并进家具表。
@@ -1444,7 +1446,7 @@ function wallFreeV(it,v){ /* 从落点行向外找第一个不撞的行（先往
    用户需求④：发光家具要柔和光效（光色/范围可配 + 呼吸感 + 多光源叠亮，角色脚下光斑做简化版）。
    实现要点：光晕用 globalCompositeOperation="lighter" 叠加提亮（不是盖一层半透明色块，故不会把家具糊成一块色）；
    多盏灯天然叠亮；呼吸走 rAF 重绘循环（只在有「呼吸」灯存在时启动，页面隐藏即停）。 */
-var LAMP_IDS={f281:1,f293:1}; /* v22lamp：两盏灯=哥特提灯 f281 / 壁灯 f293（只有它们有「加灯」✨）；以后再加灯就把编号写进来 */
+var LAMP_IDS={f281:1,f293:1,f313:1,f315:1}; /* v22lamp：灯=哥特提灯 f281 / 壁灯 f293 / 落地灯 f313 / 宝石 f315——v32lamp：后两盏是家具包同步来的新灯，老板报「常亮不受一键开灯管」，加进白名单即默认灭、受总开关管；以后再加灯就把编号写进来 */
 function glowOf(it){ var g=it&&it.glow; if(!g||!g.c)return null;
   if(LAMP_IDS[it.def]&&!it.lamp)return null; /* v22lamp：灯默认灭（运行时状态、不进存档），点「一键开灯」两盏一起亮 */
   return g; }
@@ -1744,6 +1746,7 @@ function walkReady(){ /* v31slide：走路帧图是否全部就绪——手机�
 }
 function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概率过去坐，否则随机溜达一格 */
   if(!walkReady()){CHAR.next=now+500;return;} /* v31slide：走路帧没到齐先待机，500ms 后再试——宁可晚走一秒，不平移 */
+  if(tutOn){CHAR.next=now+800;return;} /* v31tut：新手引导进行中角色原地站好——走了会留下空聚光框（老板朋友实测 09-25） */
   var c0=Math.floor(CHAR.gx),r0=Math.floor(CHAR.gy),sofa=charSofa(),p,t,c,r;
   if(sofa&&Math.random()<0.45){
     var sc=Math.floor(effGX(sofa)+(sofa.w||1)/2),sr=Math.floor(effGY(sofa)+(sofa.d||1)/2);
@@ -2160,7 +2163,7 @@ function updateSelChip(){ /* v22fab：驱动浮动三钮（显示/隐藏 + 跟�
   if(SEL){
     c.style.display="flex";
     positionFab();
-    var gb=$("fabGlow");if(gb)gb.style.display=LAMP_IDS[SEL.def]?"":"none"; /* v22lamp：只有两盏灯有「加灯」✨，其它家具不出这个钮 */
+    var gb=$("fabGlow");if(gb)gb.style.display=LAMP_IDS[SEL.def]?"":"none"; /* v22lamp：只有白名单里的灯有「加灯」✨，其它家具不出这个钮 */
     if(g&&g.style.display==="flex")positionGlowRow();
     updateGlowUI();
   }else{
@@ -2997,7 +3000,7 @@ window.__saveHooks={
 /* ═══ 拍照 → 拍立得 → 存入相册（批6.6；照片档 PKEY 独立，快照只留最近 5 张） ═══ */
 var PKEY="maoor-v22-photos-v1";
 var PLMOODS=["美好的小屋时光","今天也布置得真用心","暖暖的一个下午","该给自己泡杯茶了","彻子的小窝，越看越喜欢"];
-var plWrapEl=$("plWrap"),pendingPhoto=null;
+var plWrapEl=$("plWrap"),pendingPhoto=null,plAutoT=null; /* plAutoT=v31shot3 拍立得 2s 自动入册计时 */
 function openPhoto(fromAlbum){ /* fromAlbum=true：收下后回到相册 */
   closeSettings();closeCal();
   var fl=$("flash");fl.classList.remove("go");void fl.offsetWidth;fl.classList.add("go");
@@ -3014,20 +3017,22 @@ function openPhoto(fromAlbum){ /* fromAlbum=true：收下后回到相册 */
   setTimeout(function(){plWrapEl.classList.add("show");plWrapEl.setAttribute("aria-hidden","false")},200);
 }
 function closePolaroid(){
+  if(plAutoT){clearTimeout(plAutoT);plAutoT=null;} /* v31shot3：关浮层必清自动入册计时（取消/外部点击/Esc 都不走这里之外的路径） */
   plWrapEl.classList.remove("show");plWrapEl.setAttribute("aria-hidden","true");
   if(pendingPhoto&&pendingPhoto.back)openAlbum(); /* 从相册进来，收下回相册 */
   pendingPhoto=null;
 }
-$("plClose").addEventListener("click",closePolaroid);
+$("plClose").addEventListener("click",closePolaroid); /* 取消：不入册（v31shot3，按钮文案见 HTML） */
 plWrapEl.addEventListener("click",function(e){if(e.target===plWrapEl)closePolaroid();});
-$("plSave").addEventListener("click",function(){
-  var p=pendingPhoto||{mood:$("plMood").textContent,src:"",back:false};
-  PHOTOS.unshift({d:($("plDate").textContent||"").replace(" · 彻子小屋",""),t:p.mood,src:p.src||"assets/bg-new.jpg",shot:!!p.src});
+function plSaveNow(){ /* v31shot3：拍立得确定入册的唯一入口（存入相册钮 / 2s 无操作自动入册共用） */
+  var p=pendingPhoto;if(!p)return;
+  PHOTOS.unshift({d:p.date,t:p.mood,src:p.src||"assets/bg-new.jpg",shot:!!p.src});
   A_PAGE=0;aRender();
   photosPersist();
   closePolaroid();
   toast("已存入相册 · 共 "+PHOTOS.length+" 张");
-});
+}
+$("plSave").addEventListener("click",plSaveNow);
 function photosPersist(){
   try{localStorage.setItem(PKEY,JSON.stringify(PHOTOS.filter(function(p){return p.shot}).slice(0,5)))}
   catch(e){ /* 超容量降级：只存文字元数据 */
@@ -3044,7 +3049,7 @@ function photosPersist(){
   }catch(e){}
 })();
 /* 拍照钩子见文末 __roomHooks（photos） */
-$("dShot").addEventListener("click",function(){ /* v30shot2：一键拍照=闪白→截房间画布+合成角色（装修模式下角色也进照）→存入相册→拍立得弹窗闪 0.5s 自动消失=成功反馈（老板 09-24） */
+$("dShot").addEventListener("click",function(){ /* v31shot3：一键拍照=闪白→截房间画布+合成角色（装修模式下角色也进照）→拍立得预览停 2s：不点钮=自动入册；「取消」=不入册；「存入相册」=立即入册（老板 09-25：至少停 2s、收下改取消、取消不存） */
   closeSettings();closeCal();
   var fl=$("flash");fl.classList.remove("go");void fl.offsetWidth;fl.classList.add("go");
   var shot="";
@@ -3056,17 +3061,14 @@ $("dShot").addEventListener("click",function(){ /* v30shot2：一键拍照=闪�
   }catch(e){try{shot=cv.toDataURL("image/png")}catch(e2){shot=""}}
   var d=new Date();
   var mood=PLMOODS[Math.floor(Math.random()*PLMOODS.length)];
-  PHOTOS.unshift({d:(d.getMonth()+1)+"月"+d.getDate()+"日",t:mood,src:shot||"assets/bg-new.jpg",shot:!!shot});
-  A_PAGE=0;aRender();photosPersist();
-  toast("已存入相册 · 共 "+PHOTOS.length+" 张");
-  /* 拍立得弹窗闪 0.5s=截图成功反馈（复用退役浮层；不落 pendingPhoto，防「收下回相册」级联） */
   $("plDate").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日 · 彻子小屋";
   $("plMood").textContent=mood;
   var img=$("plShot");
   if(shot){img.src=shot;img.style.display="block"}else{img.style.display="none"}
-  pendingPhoto=null;
+  pendingPhoto={mood:mood,src:shot||"",back:false,date:(d.getMonth()+1)+"月"+d.getDate()+"日"}; /* 先预览后定夺：此刻不入册 */
   plWrapEl.classList.add("show");plWrapEl.setAttribute("aria-hidden","false");
-  setTimeout(function(){plWrapEl.classList.remove("show");plWrapEl.setAttribute("aria-hidden","true")},500);
+  if(plAutoT)clearTimeout(plAutoT);
+  plAutoT=setTimeout(function(){plAutoT=null;plSaveNow();},2000); /* 2s 内没点任何钮=自动入册（拍到了就算数）；点取消/存入会先 clearTimeout */
 });
 /* ═══ 换装界面（期1.5 批3：照换装界面demo 移植为全屏覆盖层，d- 前缀防冲突） ═══ */
 var DCATS=["suit","top","bottom","coat","acc"];

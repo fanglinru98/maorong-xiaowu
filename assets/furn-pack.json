@@ -1,7 +1,7 @@
 {
  "app": "maoor-furn-pack",
  "ver": 2,
- "date": "2026-09-24",
+ "date": "2026-09-26",
  "assets": [
   {
    "fid": "f305",
@@ -26,7 +26,7 @@
   },
   {
    "fid": "f303",
-   "name": "图层 345",
+   "name": "衣架",
    "cat": "摆件",
    "w": 1,
    "d": 2,
@@ -41,7 +41,7 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 1.6983,
    "wall": false,
    "src": "assets/2.5d/f303.png"
   },
@@ -104,18 +104,18 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 1.4563,
    "wall": false,
    "src": "assets/2.5d/f300.png"
   },
   {
    "fid": "f294",
-   "name": "图层 286",
+   "name": "壁炉",
    "cat": "摆件",
    "w": 1,
    "d": 1,
    "h": 40,
-   "scale": 0.925,
+   "scale": 0.923,
    "ox": null,
    "oy": null,
    "flip": null,
@@ -125,7 +125,7 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 1.8585,
    "wall": false,
    "src": "assets/2.5d/f294.png"
   },
@@ -152,7 +152,7 @@
   },
   {
    "fid": "f296",
-   "name": "图层 347",
+   "name": "相框",
    "cat": "氛围",
    "w": 2,
    "d": 2,
@@ -173,7 +173,7 @@
   },
   {
    "fid": "f298",
-   "name": "图层 355",
+   "name": "香水瓶",
    "cat": "摆件",
    "w": 0.25,
    "d": 0.25,
@@ -188,18 +188,18 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 1.9104,
    "wall": false,
    "src": "assets/2.5d/f298.png"
   },
   {
    "fid": "f297",
-   "name": "图层 273",
+   "name": "留声机",
    "cat": "摆件",
    "w": 0.5,
    "d": 0.5,
    "h": 40,
-   "scale": null,
+   "scale": 0.998,
    "ox": 0.08,
    "oy": -0.04,
    "flip": null,
@@ -209,13 +209,13 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 1.5859,
    "wall": false,
    "src": "assets/2.5d/f297.png"
   },
   {
    "fid": "f306",
-   "name": "图层 278",
+   "name": "玫瑰盆栽",
    "cat": "摆件",
    "w": 0.25,
    "d": 0.25,
@@ -230,13 +230,13 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 1.2712,
    "wall": false,
    "src": "assets/2.5d/f306.png"
   },
   {
    "fid": "f307",
-   "name": "图层 279",
+   "name": "小相框",
    "cat": "摆件",
    "w": 0.25,
    "d": 0.25,
@@ -251,18 +251,18 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 1.48,
    "wall": false,
    "src": "assets/2.5d/f307.png"
   },
   {
    "fid": "f309",
-   "name": "图层 287",
+   "name": "小提琴",
    "cat": "摆件",
    "w": 0.5,
    "d": 0.5,
    "h": 40,
-   "scale": 0.794,
+   "scale": 0.792,
    "ox": null,
    "oy": null,
    "flip": null,
@@ -272,13 +272,13 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 2.5553,
    "wall": false,
    "src": "assets/2.5d/f309.png"
   },
   {
    "fid": "f310",
-   "name": "图层 276",
+   "name": "红酒瓶",
    "cat": "摆件",
    "w": 0.25,
    "d": 0.25,
@@ -293,18 +293,18 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 2.2845,
    "wall": false,
    "src": "assets/2.5d/f310.png"
   },
   {
    "fid": "f311",
-   "name": "图层 284",
+   "name": "书籍",
    "cat": "摆件",
    "w": 0.25,
    "d": 0.25,
    "h": 40,
-   "scale": 1.166,
+   "scale": 1.164,
    "ox": null,
    "oy": null,
    "flip": null,
@@ -314,13 +314,13 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 0.9988,
    "wall": false,
    "src": "assets/2.5d/f311.png"
   },
   {
    "fid": "f304",
-   "name": "图层 270",
+   "name": "书架",
    "cat": "柜子",
    "w": 0.75,
    "d": 2,
@@ -335,7 +335,7 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": null,
+   "ovr": 2.7763,
    "wall": false,
    "src": "assets/2.5d/f304.png"
   },
@@ -361,33 +361,6 @@
    "src": "assets/2.5d/f302.png"
   },
   {
-   "fid": "f313",
-   "name": "落地灯",
-   "cat": "氛围",
-   "w": 0.5,
-   "d": 0.5,
-   "h": 40,
-   "scale": 0.857,
-   "ox": null,
-   "oy": null,
-   "flip": null,
-   "vh": 1,
-   "sm": 1,
-   "sh": 0,
-   "sw": null,
-   "sd": null,
-   "glow": {
-    "c": "#ffd27a",
-    "s": 2.6,
-    "i": 0.5,
-    "b": 0,
-    "p": 0
-   },
-   "ovr": 5.9434,
-   "wall": false,
-   "src": "assets/2.5d/f313.png"
-  },
-  {
    "fid": "f314",
    "name": "床边柜",
    "cat": "柜子",
@@ -397,7 +370,7 @@
    "scale": 0.794,
    "ox": null,
    "oy": -0.04,
-   "flip": "1",
+   "flip": null,
    "vh": 1,
    "sm": 0,
    "sh": 0,
@@ -457,9 +430,9 @@
    "w": 3,
    "d": 1,
    "h": 40,
-   "scale": null,
-   "ox": null,
-   "oy": -0.06,
+   "scale": 1.017,
+   "ox": 0.0045,
+   "oy": -0.0342,
    "flip": null,
    "vh": 1,
    "sm": 0,
@@ -467,7 +440,7 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": 0.3174,
+   "ovr": 0.3202,
    "wall": false,
    "src": "assets/2.5d/f299.png"
   },
@@ -487,13 +460,7 @@
    "sh": 0,
    "sw": null,
    "sd": null,
-   "glow": {
-    "c": "#ff9ec4",
-    "s": 0.4,
-    "i": 0.9,
-    "b": 1,
-    "p": 1
-   },
+   "glow": null,
    "ovr": 1.5224,
    "wall": true,
    "src": "assets/2.5d/f315.png"
@@ -505,7 +472,7 @@
    "w": 0.75,
    "d": 0.75,
    "h": 40,
-   "scale": null,
+   "scale": 0.691,
    "ox": -0.1,
    "oy": -0.18,
    "flip": null,
@@ -515,9 +482,30 @@
    "sw": null,
    "sd": null,
    "glow": null,
-   "ovr": 0.6666,
+   "ovr": 1.4121,
    "wall": false,
    "src": "assets/2.5d/f316.png"
+  },
+  {
+   "fid": "f313",
+   "name": "落地灯",
+   "cat": "氛围",
+   "w": 0.5,
+   "d": 0.5,
+   "h": 40,
+   "scale": 0.857,
+   "ox": null,
+   "oy": null,
+   "flip": null,
+   "vh": 1,
+   "sm": 1,
+   "sh": 0,
+   "sw": null,
+   "sd": null,
+   "glow": null,
+   "ovr": 5.9434,
+   "wall": false,
+   "src": "assets/2.5d/f313.png"
   }
  ],
  "layout": [
@@ -563,6 +551,17 @@
    "oy": 0.1
   },
   {
+   "fid": "f298",
+   "gx": 0,
+   "gy": 0,
+   "flip": null,
+   "ox": 0,
+   "oy": -0.1,
+   "on": "f305",
+   "su": 0,
+   "sv": 0
+  },
+  {
    "fid": "f297",
    "gx": 1.5,
    "gy": 6.75,
@@ -572,6 +571,15 @@
    "on": "f299",
    "su": 1,
    "sv": 0
+  },
+  {
+   "fid": "f309",
+   "gx": 0,
+   "gy": 1,
+   "flip": null,
+   "on": "f305",
+   "su": 0,
+   "sv": 1
   },
   {
    "fid": "f311",
@@ -598,16 +606,10 @@
    "flip": null
   },
   {
-   "fid": "f313",
-   "gx": 2,
-   "gy": 3,
-   "flip": null
-  },
-  {
    "fid": "f314",
    "gx": 2,
    "gy": 0,
-   "flip": "1",
+   "flip": null,
    "ox": 0,
    "oy": -0.04
   },
@@ -631,8 +633,8 @@
    "gx": 0.5,
    "gy": 6.75,
    "flip": null,
-   "ox": 0,
-   "oy": -0.06
+   "ox": 0.0045,
+   "oy": -0.0342
   },
   {
    "fid": "f315",
@@ -648,6 +650,12 @@
    "flip": null,
    "ox": -0.1,
    "oy": -0.18
+  },
+  {
+   "fid": "f313",
+   "gx": 6.25,
+   "gy": 6,
+   "flip": null
   }
  ],
  "panel": {
@@ -692,9 +700,9 @@
     "f293",
     "f296",
     "f302",
-    "f313",
     "f308",
-    "f315"
+    "f315",
+    "f313"
    ]
   }
  }
