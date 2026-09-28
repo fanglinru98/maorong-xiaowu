@@ -1023,9 +1023,18 @@ var FURN_DEF=[
   {id:"f316",name:"摆件",src:"assets/2.5d/f316.png",w:0.75,d:0.75,h:40,scale:0.691,glow:null,sm:1,ox:-0.1,oy:-0.18},
 ];
 var DEF_MAP={};(function(){var i;for(i=0;i<FURN_DEF.length;i++)DEF_MAP[FURN_DEF[i].id]=FURN_DEF[i];})();
+var PACKTEX={}; /* v35roof：包带贴图四槽 {floor,wall,roof,border}——工作台资产库同步出来的贴图（装修页出贴图卡） */
 function mergePack(pk){ /* v22sync：把工作台「⬆ 同步到正式版」写出的 assets/furn-pack.js 并进家具表。
    规则：按编号更新/新增，**一件都不删**（占位家具怎么处理听用户的）；类别按包里的 panel.order 归位。 */
-  if(!pk||!pk.assets||!pk.assets.length)return 0;
+  var texN=0; /* v33tex·B2：贴图段计数（无家具纯贴图的包也能进） */
+  if(pk&&pk.tex&&typeof pk.tex==="object"){
+    ["floor","wall","roof","border"].forEach(function(sl){ /* v35roof：四槽 */
+      var t=pk.tex[sl];
+      if(t&&t.src){PACKTEX[sl]={name:t.name||"贴图",src:t.src};texN++;}
+      else delete PACKTEX[sl]; /* 包里这格没了=老板收了贴图 → 本地卡也收掉（下次 renderGrid 不再出） */
+    });
+  }
+  if(!pk||!pk.assets||!pk.assets.length)return texN;
   var n=0,i,j,k,a,def,fid,subs=null,order=pk.panel&&pk.panel.order;
   for(i=0;i<pk.assets.length;i++){
     a=pk.assets[i];
@@ -1040,6 +1049,7 @@ function mergePack(pk){ /* v22sync：把工作台「⬆ 同步到正式版」写
     if(a.wall)def.wall="back";else delete def.wall;
     if(a.wall&&a.vh>1)def.vh=Math.round(a.vh);else delete def.vh;
     if(!a.wall&&a.sm)def.sm=1;else delete def.sm;
+    if(a.flat)def.flat=1;else delete def.flat; /* v34rug：地毯（贴地垫底） */
     if(!a.wall&&a.sh>0)def.sh=a.sh;else delete def.sh;
     if(!a.wall&&a.sw>0)def.sw=a.sw;else delete def.sw;   /* 台面范围：先存着（V22 的台面判定还没读它） */
     if(!a.wall&&a.sd>0)def.sd=a.sd;else delete def.sd;
@@ -1174,7 +1184,7 @@ function loadPattern(key){
   LOADING[ck]=1;
   var im=new Image();
   im.onload=function(){
-    PTN[ck]={p:ctx.createPattern(im,"repeat"),w:im.naturalWidth||im.width||64,h:im.naturalHeight||im.height||32};
+    PTN[ck]={p:ctx.createPattern(im,"repeat"),w:im.naturalWidth||im.width||64,h:im.naturalHeight||im.height||32,im:im}; /* im=原图引用：地板「整张覆盖」画法用（v33tex·B2，与工作台 v34floor 同口径） */
     delete LOADING[ck];render();
   };
   im.onerror=function(){delete LOADING[ck];render();};
@@ -1221,9 +1231,14 @@ function drawFloor(){
   })();
   if(pt){
     ctx.save();ctx.clip();
-    /* 贴图 x 轴=u(+i)，y 轴=v(+j)，锚在 P(0,0) */
-    ctx.transform(ROOM.cw*S/pt.w,ROOM.ch*S/pt.w,-ROOM.cw*S/pt.h,ROOM.ch*S/pt.h,OX,OY);
-    ctx.fillStyle=pt.p;ctx.fillRect(0,0,N*pt.w,N*pt.h+2);
+    if(pt.im){ /* v33tex·B2：整张覆盖（v34floor 同口径）：图像四角映射地板菱形四角，AI 图自带明暗不会被切碎 */
+      ctx.transform((px(N,0)-OX)/pt.w,(py(N,0)-OY)/pt.w,(px(0,N)-OX)/pt.h,(py(0,N)-OY)/pt.h,OX,OY);
+      ctx.drawImage(pt.im,0,0);
+    }else{
+      /* 贴图 x 轴=u(+i)，y 轴=v(+j)，锚在 P(0,0)（一格一 repeat 兜底：老缓存没有 im 引用时） */
+      ctx.transform(ROOM.cw*S/pt.w,ROOM.ch*S/pt.w,-ROOM.cw*S/pt.h,ROOM.ch*S/pt.h,OX,OY);
+      ctx.fillStyle=pt.p;ctx.fillRect(0,0,N*pt.w,N*pt.h+2);
+    }
     ctx.restore();
   }else{
     ctx.fillStyle=(e&&e.fb)||"#d2b48c";ctx.fill();
@@ -1244,6 +1259,14 @@ function drawFloor(){
     ctx.strokeStyle="rgba(90,80,68,"+(0.14*gridFade).toFixed(3)+")";ctx.lineWidth=1;ctx.stroke();
   }
 }
+function drawIsoTex(key,anchorY){ /* v35roof：屋顶/屋外装饰=整图等比铺贴（不 clip，塔尖/花沿出界自然露出）；图像宽=地板菱形宽，与工作台同口径 */
+  var pt=patternOf(key),N=ROOM.n;
+  if(!pt||!pt.im)return;
+  var dw2=px(N,0)-px(0,N),sc=dw2/pt.w;
+  ctx.drawImage(pt.im,OX-dw2/2,anchorY-pt.h*sc,dw2,pt.h*sc);
+}
+function drawRoof(){drawIsoTex("roof",py(ROOM.n,ROOM.n)-ROOM.wallH*S);} /* 图底边=墙顶菱形前角 */
+function drawBorder(){drawIsoTex("border",py(ROOM.n,ROOM.n)+ROOM.floorT*S);} /* 图底边=地板底座前角 */
 /* ── 家具（占位体块 / 真图精灵） ── */
 var FIMG={};
 function furnImg(it){
@@ -1277,6 +1300,7 @@ function itemDepth(a,b){ /* 墙件深度=-1000（贴墙最远，永远先画、�
 }
 function depKey(o){ /* v22shelf：台面上的小物紧跟承托件之后（承托件先画、小物永远压在它上面） */
   if(o.wall)return -1000;
+  if(o.flat)return -500; /* v34rug：地毯垫底（墙件之下、家具之上） */
   var h=o.on?hostOf(o):null;
   if(h)return h.gx+h.w/2+h.gy+h.d/2+0.0001*((o.su||0)+(o.sv||0)+1);
   return o.gx+o.w/2+o.gy+o.d/2;
@@ -1289,7 +1313,7 @@ function q(v){return Math.round((v||0)*4)/4;} /* 对齐到 ¼ 格（×4 取整�
 function qs(v,st){var s=st||Q;return Math.round((v||0)/s)*s;}
 function footStep(it){return (Math.max((it&&it.w)||1,(it&&it.d)||1)>=1)?1:Q;} /* ≥1 格：1 格步进（大件照旧）；<1 格：¼ 格步进 */
 function autoSmall(it){ /* 占格 ≤0.5 格＝小件：自动标成小物（可以直接摆到台面上），用户仍可手动取消 */
-  if(it&&!it.wall&&Math.max(it.w||1,it.d||1)<=0.5)it.sm=1;
+  if(it&&!it.wall&&!it.flat&&Math.max(it.w||1,it.d||1)<=0.5)it.sm=1; /* v34rug：地毯不自动当小物 */
 }
 function foldFoot(it){ /* v22q2：滚轮「大小」跨过 ¼ 档 → 把缩放折进占格（虚线框跟着变小），大小回 100%。
   两个方向都单调：缩小时 q(w*scale) ≤ w*scale ⇒ 图片只会更小，放大同理，单次跳变最多一档（0.25 格）。 */
@@ -1564,7 +1588,16 @@ function drawItem(it){
   y1-=LIFT;y2-=LIFT;
   var h=it.h*S;
   var fi=furnImg(it);
-  if(fi&&fi.img){ /* 真图模式：内容包围盒底边中点＝足迹近角下尖（虚线框），落地不悬空 */
+  if(fi&&fi.img&&it.flat){ /* v34rug 地毯：图片四角映射足迹菱形（贴地垫底 depKey=-500；不吃 scale/微调/体块高，整图铺满足迹） */
+    try{
+      var ru0x=px(GX,GY),ru0y=py(GX,GY);
+      var ruax=(px(GX+gw,GY)-ru0x)/fi.w,ruay=(py(GX+gw,GY)-ru0y)/fi.w;
+      if(it.flip){ruax=-ruax;ruay=-ruay;ru0x=px(GX+gw,GY);ru0y=py(GX+gw,GY);}
+      var rvax=(px(GX,GY+gd)-ru0x)/fi.h,rvay=(py(GX,GY+gd)-ru0y)/fi.h;
+      ctx.save();ctx.transform(ruax,ruay,rvax,rvay,ru0x,ru0y);ctx.drawImage(fi.img,0,0);ctx.restore();
+    }catch(err){}
+  }
+  else if(fi&&fi.img){ /* 真图模式：内容包围盒底边中点＝足迹近角下尖（虚线框），落地不悬空 */
     var mx=px(GX+gw/2,GY+gd/2); /* v22rot：锚点跟随转向后的足迹中心 */
     var dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w),dh=dw*fi.th/fi.tw;
     var ho=hugOff(it); /* v22hug：贴墙件图往里推 */
@@ -1923,6 +1956,7 @@ function render(){
   ctx.fillStyle=shade(wbH,1.04);ctx.fill();
   ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
   drawFloor();
+  drawBorder();drawRoof(); /* v35roof：屋外装饰/屋顶贴图（家具前画=家具压花沿） */
   for(var sp=0;sp<FURNITURE.length;sp++)drawGlowSpot(FURNITURE[sp]); /* v22glow：地面光斑画在地板之上、家具之下 */
   drawWallGrid();
   var fs=sortFurniture(),i,chDone=false,chD=CHAR.gx+CHAR.gy; /* v22char：角色按深度插进家具之间（站在家具后面会被挡住） */
@@ -2114,6 +2148,11 @@ function itemAt(sx,sy){
     mx=px(effGX(it)+effW(it)/2,effGY(it)+effD(it)/2); /* v22rot：命中盒跟转向后的占格/图走 */
     fi=furnImg(it);
     var ho3=hugOff(it);mx+=ho3[0]; /* v22hug：命中盒跟图一起走 */
+    if(it.flat){ /* v34rug 地毯：按足迹菱形包围盒判定 */
+      var rby2=py(effGX(it),effGY(it));
+      if(sx>=px(effGX(it),effGY(it)+effD(it))-4&&sx<=px(effGX(it)+effW(it),effGY(it))+4&&sy>=rby2-4&&sy<=py(effGX(it)+effW(it),effGY(it)+effD(it))+4)return it;
+      continue;
+    }
     if(fi&&fi.img){ /* 已加载：按内容包围盒判定（与 drawItem 同锚点） */
       dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w);dh=dw*fi.th/fi.tw;
       by=py(effGX(it)+effW(it),effGY(it)+effD(it))-liftOf(it)+ho3[1]; /* v22shelf：台面上的小物按抬高后的位置判定；v22rot：按转向后占格 */
@@ -2236,7 +2275,7 @@ function addFurniture(defId,gx,gy){ /* V22：按家具库定义生成实例（�
   if(!def)return null;
   FID++;
   var it={id:"f"+FID,def:def.id,name:def.name,img:def.src,gx:0,gy:0,w:def.w,d:def.d,h:def.h,scale:def.scale||1,color:"#c9b8a3",flip:def.flip||"",rot:"",ox:def.ox||0,oy:def.oy||0,wall:def.wall||null, /* v22sync：占格/大小%/翻转/微调 都从家具定义带进来（工作台同步过来） */u:Math.round((ROOM.n-def.w)/2),v:1,vh:def.vh||1,glow:def.glow?{c:def.glow.c,s:def.glow.s,i:def.glow.i,b:def.glow.b,p:def.glow.p}:null,
-    sh:(def.wall?0:(def.sh||0)),sm:(def.wall?0:(def.sm||0)),sw:(def.wall?null:(def.sw||null)),sd:(def.wall?null:(def.sd||null)),on:null,su:0,sv:0}; /* v22shelf：台面高(行)/小物标记/台面范围 sw×sd/承托件 id/台面第几格 */
+    sh:(def.wall?0:(def.sh||0)),sm:(def.wall?0:(def.sm||0)),sw:(def.wall?null:(def.sw||null)),sd:(def.wall?null:(def.sd||null)),flat:def.flat||0,on:null,su:0,sv:0}; /* v22shelf：台面高(行)/小物标记/台面范围 sw×sd/承托件 id/台面第几格；v34rug：地毯 */
   autoSmall(it); /* v22q：占格 ≤0.5 格的家具（书/杯/花瓶）自动就是小物，可直接上桌 */
   if(it.wall){
     if(typeof gx==="number")it.u=Math.max(0,Math.min(ROOM.n-it.w,Math.round(gx)));
@@ -2463,9 +2502,13 @@ stage.addEventListener("wheel",function(e){
   /* v22sync（D）：装修模式滚轮不再缩放家具（大小在工作台定好随包进来），滚轮一律=画面缩放 */
   zoomAt(e.clientX,e.clientY,e.deltaY<0?1.12:1/1.12);
 },{passive:false});
+function decorFromSaved(v,fbk){ /* v33tex·B2：存档值是 assets/ 路径=贴图（type img），否则纯色（老档零迁移）；fb=兜底色沿用当前 */
+  if(typeof v==="string"&&v.indexOf("/")>=0)return {type:"img",value:v,fb:fbk||"#d2b48c"};
+  return {type:"color",value:v,fb:v};
+}
 function setDecor(key,patch){
   var e=DECOR[key];
-  if(!e)return;
+  if(!e){if(!patch)return;e=DECOR[key]={type:"color",value:"#f5e6d3",fb:"#f5e6d3"};} /* v35roof：roof/border 键首铺时新建 */
   for(var k2 in patch)e[k2]=patch[k2];
   if(e.type==="img")loadPattern(key);
   saveSoon();
@@ -3206,7 +3249,9 @@ var CAT=[
   ]},
   {label:"装修",subs:[
     {n:"墙面",swatches:[["#f5e6d3","奶油墙"],["#efe0c8","浅木墙"],["#e9c8cf","玫瑰墙"],["#3a2430","暗夜墙"],["custom","自定义"]]},
-    {n:"地板",swatches:[["#d2b48c","原木地板"],["#c8a274","暖棕地板"],["#cfc8bd","灰白地板"],["#6b4a2f","深褐地板"],["custom","自定义"]]}
+    {n:"地板",swatches:[["#d2b48c","原木地板"],["#c8a274","暖棕地板"],["#cfc8bd","灰白地板"],["#6b4a2f","深褐地板"],["custom","自定义"]]},
+    {n:"屋顶",tex:"roof"}, /* v35roof：包带屋顶贴图时出卡（老板指定「装修」子页签第三位） */
+    {n:"屋外装饰",tex:"border"} /* v35roof：第四位 */
   ]},
   {label:"主题",subs:[
     {n:"配色主题",themes:[
@@ -3251,6 +3296,10 @@ function renderGrid(){
     });
   }else if(sub.swatches){ /* 墙面/地板配色卡（墙面=两堵墙一起换；「custom」卡=方案B内嵌双滑条自定义） */
     sub.swatches.forEach(function(sw){elGrid.appendChild(makeSwCard(sw,curTab===1&&curSub===0));});
+    if(curTab===1&&curSub===0&&PACKTEX.wall)elGrid.appendChild(makeTexCard(PACKTEX.wall,"wall")); /* v33tex·B2：包带贴图卡（工作台同步的墙纸，双墙同铺） */
+    if(curTab===1&&curSub===1&&PACKTEX.floor)elGrid.appendChild(makeTexCard(PACKTEX.floor,"floor")); /* v33tex·B2：包带贴图卡（地板，整张覆盖） */
+  }else if(sub.tex){ /* v35roof：屋顶/屋外装饰=纯贴图卡页（包没带贴图就空页） */
+    if(PACKTEX[sub.tex])elGrid.appendChild(makeTexCard(PACKTEX[sub.tex],sub.tex));
   }else if(sub.themes){ /* 主题卡：三色条预览，一键换地板+两墙（主题页签下平铺 4 套） */
     sub.themes.forEach(function(th){elGrid.appendChild(makeThemeCard(th));});
   }
@@ -3298,6 +3347,26 @@ function makeSwCard(sw,isWall){ /* 墙面/地板配色卡；「custom」卡=方�
   }
   return card;
 }
+function makeTexCard(slot,kind){ /* v35roof：kind="wall"|"floor"|"roof"|"border"（v33tex·B2 原为 isWall 布尔）——包带来的贴图卡，点卡即换 */
+  var card=document.createElement("div");card.className="card";
+  var swd=document.createElement("div");swd.className="swatch";
+  var im=document.createElement("img");im.src=slot.src;im.alt=slot.name||"贴图";
+  im.style.cssText="width:100%;height:100%;object-fit:cover";
+  im.onerror=function(){card.style.opacity=.4;card.title="贴图文件缺失";};
+  swd.appendChild(im);
+  var nm=document.createElement("div");nm.className="cname";nm.textContent=slot.name||"贴图";nm.title=nm.textContent;
+  card.appendChild(swd);card.appendChild(nm);
+  card.addEventListener("click",function(){
+    if(kind==="wall"){
+      setDecor("wallBack",{type:"img",value:slot.src,fb:DECOR.wallBack.fb||"#f5e6d3"});
+      setDecor("wallLeft",{type:"img",value:slot.src,fb:DECOR.wallLeft.fb||"#ece0cd"});
+    }else{
+      setDecor(kind,{type:"img",value:slot.src,fb:(DECOR[kind]&&DECOR[kind].fb)||"#f5e6d3"}); /* v35roof：floor/roof/border 统一走 kind 键 */
+    }
+    toast("已换上「"+(slot.name||"贴图")+"」");
+  });
+  return card;
+}
 function makeThemeCard(th){ /* 主题卡：三色条预览，一键换地板+两墙 */
   var card=document.createElement("div");card.className="card";
   var t3=document.createElement("div");t3.className="theme3";
@@ -3340,6 +3409,7 @@ function saveState(){
     localStorage.setItem("maoor-v22-state-v2",JSON.stringify({
       v:1,zoom:VZ,
       floor:DECOR.floor.value,wallB:DECOR.wallBack.value,wallL:DECOR.wallLeft.value,grid:DECOR.grid,
+      roof:DECOR.roof?DECOR.roof.value:null,border:DECOR.border?DECOR.border.value:null, /* v35roof：屋顶/屋外贴图随档 */
       furn:FURNITURE.map(function(f){return{def:f.def,name:f.name,gx:f.gx,gy:f.gy,w:f.w,d:f.d,h:f.h,scale:f.scale,flip:f.flip||null,ox:f.ox||0,oy:f.oy||0,foot:f.foot||0,wall:f.wall||null,u:f.u||0,v:f.v||0,vh:f.vh||1,rot:f.rot||null,glow:f.glow?{c:f.glow.c,s:f.glow.s,i:f.glow.i,b:f.glow.b,p:f.glow.p}:null,
         sh:f.sh||0,sm:f.sm||0,sw:f.sw||null,sd:f.sd||null,on:f.on?(function(){var k;for(k=0;k<FURNITURE.length;k++)if(FURNITURE[k].id===f.on)return k;return -1;})():-1,su:f.su||0,sv:f.sv||0};}) /* v22shelf：on 存承托件在存档数组里的下标（读档时重新绑定，id 变了也不会错位） */
     }));
@@ -3352,9 +3422,11 @@ function restoreState(){
   if(!st||!Array.isArray(st.furn)||!st.furn.length){seedFurniture();return;} /* 无存档/空布局：预置展示 */
   try{
     if(st.zoom)applySavedView(st.zoom);
-    if(st.floor)setDecor("floor",{type:"color",value:st.floor,fb:st.floor});
-    if(st.wallB)setDecor("wallBack",{type:"color",value:st.wallB,fb:st.wallB});
-    if(st.wallL)setDecor("wallLeft",{type:"color",value:st.wallL,fb:st.wallL});
+    if(st.floor)setDecor("floor",decorFromSaved(st.floor,DECOR.floor.fb)); /* v33tex·B2：贴图存档（assets/ 路径）与老纯色档都认 */
+    if(st.wallB)setDecor("wallBack",decorFromSaved(st.wallB,DECOR.wallBack.fb));
+    if(st.wallL)setDecor("wallLeft",decorFromSaved(st.wallL,DECOR.wallLeft.fb));
+    if(st.roof)setDecor("roof",decorFromSaved(st.roof,(DECOR.roof&&DECOR.roof.fb)||"#f5e6d3")); /* v35roof：屋顶/屋外贴图存档回放 */
+    if(st.border)setDecor("border",decorFromSaved(st.border,(DECOR.border&&DECOR.border.fb)||"#f5e6d3"));
     var i,f,it;
     var made=[];
     for(i=0;i<st.furn.length;i++){
@@ -3838,7 +3910,7 @@ loadCal();calRender();renderMemo();
 window.__roomHooks={
   setDecor:setDecor,sortFurniture:sortFurniture,
   effW:effW,effD:effD,hugOff:hugOff,WALLHUG:WALLHUG,askConfirm:askConfirm,cfmClose:cfmClose, /* v22hug/v22cfm 测试入口 */
-  CIMG:CIMG,CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,charSeat:charSeat,drawChar:drawChar,footBlocked:footBlocked,footFree:footFree,charGreet:charGreet,charHitAt:charHitAt,charPreload:charPreload,seedFurniture:seedFurniture, /* v22char 测试入口 */
+  CIMG:CIMG,PACKTEX:PACKTEX,CHAR:CHAR,CHAR_SAY:CHAR_SAY,CHAR_SIT:CHAR_SIT,CHAR_SITKEYS:CHAR_SITKEYS,charVisible:charVisible,charUpdate:charUpdate,charPath:charPath,charCellFree:charCellFree,charBlocked:charBlocked,charSofa:charSofa,charPlan:charPlan,charFrame:charFrame,charSay:charSay,charHome:charHome,charStop:charStop,charStart:charStart,charSeatLift:charSeatLift,charSeat:charSeat,drawChar:drawChar,footBlocked:footBlocked,footFree:footFree,charGreet:charGreet,charHitAt:charHitAt,charPreload:charPreload,seedFurniture:seedFurniture, /* v22char 测试入口 */
   PACK_INFO:(function(){var p=window.__MAOOR_PACK;return p?{ver:p.ver||"",date:p.date||"",count:(p.assets?p.assets.length:0),app:p.app||""}:null;})(),PACK_LOAD_OK:!!window.__MAOOR_PACK, /* E-20260921-04 包哨兵只读字段：排查时一眼知道玩家跑的哪版包 */
   addFurniture:addFurniture,
   mergePack:mergePack,applyDefSize:applyDefSize,PACKIDS:PACKIDS,FURN_DEF:FURN_DEF,DEF_MAP:DEF_MAP,CAT:CAT,minPx:minPx, /* v22sync 测试入口 */
