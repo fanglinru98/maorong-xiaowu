@@ -1030,7 +1030,7 @@ function mergePack(pk){ /* v22sync：把工作台「⬆ 同步到正式版」写
   if(pk&&pk.tex&&typeof pk.tex==="object"){
     ["floor","wall","roof","border"].forEach(function(sl){ /* v35roof：四槽 */
       var t=pk.tex[sl];
-      if(t&&t.src){PACKTEX[sl]={name:t.name||"贴图",src:t.src};texN++;}
+      if(t&&t.src){PACKTEX[sl]={name:t.name||"贴图",src:t.src,adj:t.adj||null};texN++;} /* ：屋顶/屋外大小/位移随包走（工作台 buildPrePack tex.adj） */
       else delete PACKTEX[sl]; /* 包里这格没了=老板收了贴图 → 本地卡也收掉（下次 renderGrid 不再出） */
     });
   }
@@ -1185,9 +1185,9 @@ function loadPattern(key){
   var im=new Image();
   im.onload=function(){
     PTN[ck]={p:ctx.createPattern(im,"repeat"),w:im.naturalWidth||im.width||64,h:im.naturalHeight||im.height||32,im:im}; /* im=原图引用：地板「整张覆盖」画法用（v33tex·B2，与工作台 v34floor 同口径） */
-    delete LOADING[ck];render();
+    delete LOADING[ck];resize();render();
   };
-  im.onerror=function(){delete LOADING[ck];render();};
+  im.onerror=function(){delete LOADING[ck];resize();render();};
   im.src=e.value;
 }
 /* ── 绘制 ── */
@@ -1259,11 +1259,13 @@ function drawFloor(){
     ctx.strokeStyle="rgba(90,80,68,"+(0.14*gridFade).toFixed(3)+")";ctx.lineWidth=1;ctx.stroke();
   }
 }
-function drawIsoTex(key,anchorY){ /* v35roof：屋顶/屋外装饰=整图等比铺贴（不 clip，塔尖/花沿出界自然露出）；图像宽=地板菱形宽，与工作台同口径 */
+function drawIsoTex(key,anchorY){ /* v35roof：屋顶/屋外装饰=整图等比铺贴（不 clip，塔尖/花沿出界自然露出）；图像宽=地板菱形宽，与工作台同口径；：大小/位移读包内 adj（老板在工作台调好→同步→游戏同款） */
   var pt=patternOf(key),N=ROOM.n;
   if(!pt||!pt.im)return;
-  var dw2=px(N,0)-px(0,N),sc=dw2/pt.w;
-  ctx.drawImage(pt.im,OX-dw2/2,anchorY-pt.h*sc,dw2,pt.h*sc);
+  var aj=(PACKTEX[key]&&PACKTEX[key].adj)||{},as=(typeof aj.s==="number"?aj.s:1),DW=px(N,0)-px(0,N);
+  var dw2=DW*as,sc=dw2/pt.w;
+  var tx=(typeof aj.x==="number"&&Math.abs(aj.x)<=0.75)?aj.x*DW:0,ty=(typeof aj.y==="number"&&Math.abs(aj.y)<=0.75)?aj.y*DW:0; /* v38ratio：位移=菱形宽比例（与工作台同口径，三视图换算后恒一致）；|值|>0.75=旧版像素残留→忽略（工作台重新同步一次即写新口径） */
+  ctx.drawImage(pt.im,OX-dw2/2+tx,anchorY-pt.h*sc+ty,pt.w*sc,pt.h*sc);
 }
 function drawRoof(){drawIsoTex("roof",py(ROOM.n,ROOM.n)-ROOM.wallH*S);} /* 图底边=墙顶菱形前角 */
 function drawBorder(){drawIsoTex("border",py(ROOM.n,ROOM.n)+ROOM.floorT*S);} /* 图底边=地板底座前角 */
@@ -1956,7 +1958,6 @@ function render(){
   ctx.fillStyle=shade(wbH,1.04);ctx.fill();
   ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
   drawFloor();
-  drawBorder();drawRoof(); /* v35roof：屋外装饰/屋顶贴图（家具前画=家具压花沿） */
   for(var sp=0;sp<FURNITURE.length;sp++)drawGlowSpot(FURNITURE[sp]); /* v22glow：地面光斑画在地板之上、家具之下 */
   drawWallGrid();
   var fs=sortFurniture(),i,chDone=false,chD=CHAR.gx+CHAR.gy; /* v22char：角色按深度插进家具之间（站在家具后面会被挡住） */
@@ -1965,6 +1966,7 @@ function render(){
     drawItem(fs[i]);
   }
   if(!chDone&&charVisible())drawChar();
+  drawBorder();drawRoof(); /* ：屋顶/屋外放最顶层（老板指定「放在所有物件的最顶层」），后于家具/角色画=不被压住 */
   if(SEL&&SEL.wall)drawWallSelBox(SEL); /* E-20260920-05②：选中墙饰的虚线框画在全部家具之上（不被地面家具遮；y 排序渲染不动） */
   drawShelfHint(); /* v22shelf：拖到台面上时高亮落点那一格 */
   drawCalib(); /* v22q：校准模式下画出高度线与 ¼ 格预览 */
@@ -2081,11 +2083,14 @@ function resize(){
   k=Math.min(k,4096/W,4096/Hc);
   cv.width=Math.max(1,Math.round(W*k));
   cv.height=Math.max(1,Math.round(Hc*k));
-  S=Math.min((W-36)/(ROOM.cw*2*ROOM.n),(Hc-36)/(ROOM.ch*2*ROOM.n+ROOM.wallH));
-  /* 房间在 HUD 与 dock 之间垂直居中（期1.5 反馈：四周留白少一些）；边距 96→36 房间更大 */
+  var sW=(W-36)/(ROOM.cw*2*ROOM.n),sH=(Hc-36)/(ROOM.ch*2*ROOM.n+ROOM.wallH),sFit=1e9,fw=ROOM.cw*2*ROOM.n,roofU=0; /* v37fit3：房间贴底+屋顶向上精确留白（与工作台同口径） */
+  var pr=patternOf("roof"),as1=(PACKTEX.roof&&PACKTEX.roof.adj&&typeof PACKTEX.roof.adj.s==="number")?PACKTEX.roof.adj.s:1;
+  if(pr&&pr.im&&pr.im.complete&&pr.w)roofU=fw*as1*(pr.h/pr.w);
   var topPad=88,botPad=92,avail=Math.max(120,Hc-topPad-botPad);
+  if(roofU>0)sFit=avail/(2*ROOM.wallH+ROOM.ch*2*ROOM.n+roofU);
+  S=Math.min(sW,sH,sFit);
   var contentH=ROOM.wallH*S+ROOM.ch*2*ROOM.n*S;
-  OX=W/2;OY=topPad+Math.max(10,(avail-contentH)/2)+ROOM.wallH*S;
+  OX=W/2;OY=roofU>0?(Hc-botPad-ROOM.ch*2*ROOM.n*S):(topPad+Math.max(10,(avail-contentH)/2)+ROOM.wallH*S);
   LWS=Math.max(0.45,S*2.2);
   render();
 }
