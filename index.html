@@ -2122,7 +2122,7 @@ function resize(){
   var topPad=88,botPad=92,avail=Math.max(120,Hc-topPad-botPad);
   if(roofU>0)sFit=avail/(ROOM.wallH+ROOM.ch*2*ROOM.n+Math.max(0,roofU-ROOM.wallH)); /* v37roofit：分母墙高只算一次（原 2*wallH 重复=塔尖上方多一格墙高空白+画面压小）；屋顶不足墙高时只补 0 */
   S=Math.min(sW,sH,sFit);
-  var topBlock=roofU>0?Math.max(ROOM.wallH*S,roofU):ROOM.wallH*S; /* v39②：内容顶块=屋顶图高与墙高取大（与 sFit 分母同口径，S=1 时恒等） */
+  var topBlock=Math.max(ROOM.wallH,roofU)*S; /* v39②/v40fix：内容顶块=墙高与屋顶图高取大再乘 S（roofU 是 S=1 口径的内容高，直接混进屏幕像素=OY 被推到画布外→有屋顶启用时整屏黑屏）；roofU=0 或不足墙高时=wallH*S 恒等 */
   OX=W/2;OY=topPad+Math.max(10,(avail-(topBlock+ROOM.ch*2*ROOM.n*S))/2)+topBlock; /* v39②：两分支统一垂直居中（原屋顶分支贴底 botPad=「位置靠下拖不上去」根因；无屋顶分支数学恒等不变） */
   LWS=Math.max(0.45,S*2.2);
   render();
