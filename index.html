@@ -29,14 +29,14 @@ body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidde
 /* ── 顶部 HUD：头像组合（金框+头像+Lv+进度条，UI 升级批：图一样式，屋名/心情文字按用户要求移除） ── */
 .hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
   justify-content:flex-start;padding:calc(12px + env(safe-area-inset-top)) 16px 0;pointer-events:none}
-.avatar-stack{position:relative;width:72px;pointer-events:auto;filter:drop-shadow(0 3px 8px rgba(20,10,5,.4))}
+.avatar-stack{position:relative;width:72px;pointer-events:auto} /* v39③：整框投影删除（老板：头像去阴影） */
 .avatar-stack .av-frame{width:100%;display:block}
 .avatar-stack .av-face{position:absolute;left:50%;top:47%;width:73.5%;transform:translate(-50%,-52%)} /* v22cal7：脸放大贴参考示意（参考脸占框宽 76.7%、60% 时渲染实测 63.6%，含发丝溢出 1.06 → 73.5% 二调）；top 46→47 脸大后中心微降 */
 .avatar-stack .av-lv{position:absolute;left:50%;top:83.5%;transform:translateX(-50%);font-size:15px;font-weight:900; /* v32av：字 13.5→15（图二字宽≈圆径 59%，原 51%）、中心对齐圆底缘下 7%——图二口径；DOM 实测三元素中心线本已全对齐 551.6，视觉左移=glyph 不对称 */
   font-family:"幼圆","YouYuan","Yuanti SC","Microsoft YaHei",sans-serif;letter-spacing:.5px;white-space:nowrap;color:#bd8d63;
   text-shadow:-2px -2px 0 #fffdf6,2px -2px 0 #fffdf6,-2px 2px 0 #fffdf6,2px 2px 0 #fffdf6,-2px 0 0 #fffdf6,2px 0 0 #fffdf6,0 -2px 0 #fffdf6,0 2px 0 #fffdf6,0 3px 4px rgba(60,25,10,.4)}
-.avatar-stack .av-bar{position:absolute;left:8%;right:8%;bottom:-18.5px;height:11px;border-radius:6px;background:#38130f; /* v32av：下移 -10→-18.5，DOM 实测原 bar 顶 86.5 压住 Lv 字底 92.5 重叠 6px，现让出≈图二的字下间隙（间隙≈圆径 1.8%） */
-  border:2px solid #fffdf6;box-shadow:0 2px 4px rgba(20,8,4,.45);overflow:hidden}
+.avatar-stack .av-bar{position:absolute;left:10%;right:10%;bottom:-6px;height:8px;border-radius:5px;background:#38130f; /* v39③：贴紧框底沿（-18.5→-6 消 7px 悬空=「露黑底」观感）+改扁 11→8px+去投影 */
+  border:1.5px solid #fffdf6;overflow:hidden}
 .avatar-stack .av-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(180deg,#c94b3a,#8e2a20);
   box-shadow:inset 0 1px 0 rgba(255,220,190,.35)}
 /* ── 右侧功能列（V21 原位） ── */
@@ -277,6 +277,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #dList{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;
   align-content:start;padding:0}
 #dList::-webkit-scrollbar{width:0}
+.d-empty{display:grid;place-items:center;height:60%;font-size:13px;color:#a08a6a;text-align:center;letter-spacing:1px} /* v39⑤：日记列表空状态 */
 .dcard{position:relative;aspect-ratio:689/472;border-radius:10px;overflow:hidden;
   background:url("assets/ui/diary-card.png") center/100% 100% no-repeat;
   display:flex;align-items:stretch;text-align:left;transition:transform .12s}
@@ -328,7 +329,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .wr-save .wsq{display:none} /* 切图自带羽毛笔，CSS 版退役 */
 .wdeco{position:absolute;left:31.1%;bottom:15.5%;width:41%;pointer-events:none;z-index:4;filter:drop-shadow(0 2px 4px rgba(90,50,30,.18))} /* 返工6：装饰右移 10px（left 29→31.1%，10px≈书页宽 2.1%） */
 /* 三胶囊下拉面板：JS 打开时按胶囊 offsetLeft 对位 */
-.ddrop{display:none;position:absolute;z-index:9;top:calc(31% + 36px);background:#fffdf6;border:1.5px solid #d9c39a;border-radius:11px;
+.ddrop{display:none;position:absolute;z-index:9;background:#fffdf6; /* v39⑥：top 写死退役——openDrop 实时对齐胶囊（错位修复） */border:1.5px solid #d9c39a;border-radius:11px;
   box-shadow:0 8px 20px rgba(40,25,10,.3);padding:5px;max-height:190px;overflow-y:auto;scrollbar-width:none}
 .ddrop::-webkit-scrollbar{display:none}
 .ddrop.open{display:block}
@@ -456,7 +457,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #cal{position:absolute;left:3%;top:12%;bottom:10.5%;width:min(64%,246px);z-index:45;display:flex;flex-direction:column;
   transform:translateX(-130%);transition:transform .38s cubic-bezier(.22,.9,.32,1);--hs:1; /* v22cal3：心形改由自身尺寸对齐烘焙槽，缩放变量归1 */
   background:url(assets/ui/cal-panel.png) center/100% 100% no-repeat;
-  border-radius:18px;box-shadow:0 6px 16px rgba(0,0,0,.3);overflow-x:hidden;overflow-y:auto;scrollbar-width:none} /* v22fb4：整页可上下滚动（模块不压扁；滚动轴隐藏）；阴影减弱：大范围投影在异形透明边缘外晕出一圈"半透明层"（用户排查） */
+  border-radius:18px;overflow-x:hidden;overflow-y:auto;scrollbar-width:none} /* v22fb4：整页可上下滚动（模块不压扁；滚动轴隐藏）；v39④：盒阴影整删——大范围投影在异形透明边缘外晕出半透明层=老板说的左上/左下半透明框（根因实锤） */
 #cal.open{transform:translateX(0)}
 #cal::-webkit-scrollbar{width:0;height:0;display:none} /* v22fb4：藏滚动轴（外观与原来一致） */
 /* v22cal2：.cback 返回钮 CSS 随 ‹ 钮一起退役 */
@@ -819,14 +820,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <span><span class="lab">音效与环境声</span><span class="sub">二期接入，敬请期待</span></span>
     <button class="switch" role="switch" aria-checked="false" disabled aria-label="音效与环境声"></button>
   </div>
-  <div class="set-row">
-    <span><span class="lab">减弱动效</span><span class="sub">停用点击反馈动画与爱心粒子</span></span>
-    <button class="switch" id="swCalm" role="switch" aria-checked="false" aria-label="减弱动效"></button>
-  </div>
-  <div class="set-row">
-    <span><span class="lab">今日互动</span><span class="sub">今天戳了小猫多少下</span></span>
-    <span class="tap-big" id="tapCount">0</span>
-  </div>
+  <!-- v39⑦：减弱动效/今日互动两项退役（老板指令）；setSt.calm/taps 字段保留兼容旧档 -->
   <!-- 卡4：存档导出/恢复 + 存档码 -->
   <div class="set-row set-row-act" id="rowExport" role="button" tabindex="0" aria-label="导出存档">
     <span><span class="lab">📤 导出存档</span><span class="sub">房间/换装/日记/相册/日历/设置 打包成一个 JSON 文件</span></span>
@@ -1018,7 +1012,7 @@ var FURN_DEF=[
   {id:"f311",name:"书籍",src:"assets/2.5d/f311.png",w:0.25,d:0.25,h:40,scale:1.164,glow:null,sm:1},
   {id:"f312",name:"棋盘桌",src:"assets/2.5d/f312.png",w:1,d:1,h:40,glow:null},
   {id:"f313",name:"落地灯",src:"assets/2.5d/f313.png",w:0.5,d:0.5,h:40,scale:0.857,glow:null,sm:1},
-  {id:"f314",name:"床边柜",src:"assets/2.5d/f314.png",w:1,d:1,h:40,scale:0.794,glow:null,oy:-0.04},
+  {id:"f314",name:"床边柜",src:"assets/2.5d/f314.png",w:1,d:1,h:40,scale:0.794,glow:null,oy:-0.04,sh:1.3}, /* v39：sh 与包对齐（E04 双轨对齐：老板工作台给床边柜设了台面高 1.3 行，主线内嵌跟上） */
   {id:"f315",name:"宝石",src:"assets/2.5d/f315.png",w:1,d:1,h:40,scale:0.926,glow:null,wall:"back"},
   {id:"f316",name:"摆件",src:"assets/2.5d/f316.png",w:0.75,d:0.75,h:40,scale:0.691,glow:null,sm:1,ox:-0.1,oy:-0.18},
   {id:"f317",name:"新家具",src:"assets/2.5d/f317.png",w:1,d:1,h:40,scale:1,glow:null},
@@ -1037,7 +1031,8 @@ function mergePack(pk){ /* v22sync：把工作台「⬆ 同步到正式版」写
       if(t&&t.src){PACKTEX[sl]={name:t.name||"贴图",src:t.src,adj:t.adj||null};texN++;} /* ：屋顶/屋外大小/位移随包走（工作台 buildPrePack tex.adj） */
       else delete PACKTEX[sl]; /* 包里这格没了=老板收了贴图 → 本地卡也收掉（下次 renderGrid 不再出） */
     });
-  }
+    PACKTEX.extra=(pk.tex.extra&&pk.tex.extra.length)?pk.tex.extra.map(function(x){return {kind:x.kind,id:x.id,name:x.name,src:x.src};}):[]; /* v39①：资产库其余贴图全量进游戏（装修面板同类出卡可切换） */
+  }else if(PACKTEX.extra&&PACKTEX.extra.length){PACKTEX.extra=[];}
   if(!pk||!pk.assets||!pk.assets.length)return texN;
   var n=0,i,j,k,a,def,fid,subs=null,order=pk.panel&&pk.panel.order;
   for(i=0;i<pk.assets.length;i++){
@@ -2038,7 +2033,7 @@ function clampPan(){
   var r=stage.getBoundingClientRect();
   var rx=Math.max(0,r.width*(VZ-1)/2),ry=Math.max(0,r.height*(VZ-1)/2);
   /* v22fab：装修模式放宽垂直上拖余量（约一个面板高，把被底边栏挡住的房间下半部拖出来看）；退出装修自动收拢归位 */
-  var up=decoMode?Math.round(r.height*0.43):0;
+  var up=Math.round(r.height*(decoMode?0.43:0.12)); /* v39②：游玩模式也给 12% 上拖余量（VZ=1 时原恒 0=「屋顶加入后拖不上去」）；装修模式维持 43% */
   VPX=Math.max(-rx,Math.min(rx,VPX));
   VPY=Math.max(-ry-up,Math.min(ry,VPY));
 }
@@ -2086,6 +2081,7 @@ stage.addEventListener("pointermove",function(e){
     vdrag.moved=true;VPX=vdrag.px+dx;VPY=vdrag.py+dy;applyView();
   }
 });
+var dblTap=null; /* v39②：双击复位检测状态 */
 function endPtr(e){
   pts.delete(e.pointerId);
   if(pts.size<2)pinch0=null;
@@ -2097,7 +2093,13 @@ function endPtr(e){
       charGreet(2400);var tt=Date.now();charSay(tt,2600);
       vdrag=null;return;
     }
-  }
+    /* v39②：双击空白（320ms 内两次轻点、位移<28px）=视角复位回中 */
+    var now=Date.now();
+    if(dblTap&&now-dblTap.t<320&&Math.hypot(e.clientX-dblTap.x,e.clientY-dblTap.y)<28&&(VPX||VPY||VZ>1)){
+      VPX=0;VPY=0;VZ=1;applyView();vdrag=null;dblTap=null;return;
+    }
+    dblTap={t:now,x:e.clientX,y:e.clientY};
+  }else{dblTap=null}
   if(vdrag&&e.pointerId===vdrag.id)vdrag=null;
 }
 stage.addEventListener("pointerup",endPtr);
@@ -2120,8 +2122,8 @@ function resize(){
   var topPad=88,botPad=92,avail=Math.max(120,Hc-topPad-botPad);
   if(roofU>0)sFit=avail/(ROOM.wallH+ROOM.ch*2*ROOM.n+Math.max(0,roofU-ROOM.wallH)); /* v37roofit：分母墙高只算一次（原 2*wallH 重复=塔尖上方多一格墙高空白+画面压小）；屋顶不足墙高时只补 0 */
   S=Math.min(sW,sH,sFit);
-  var contentH=ROOM.wallH*S+ROOM.ch*2*ROOM.n*S;
-  OX=W/2;OY=roofU>0?(Hc-botPad-ROOM.ch*2*ROOM.n*S):(topPad+Math.max(10,(avail-contentH)/2)+ROOM.wallH*S);
+  var topBlock=roofU>0?Math.max(ROOM.wallH*S,roofU):ROOM.wallH*S; /* v39②：内容顶块=屋顶图高与墙高取大（与 sFit 分母同口径，S=1 时恒等） */
+  OX=W/2;OY=topPad+Math.max(10,(avail-(topBlock+ROOM.ch*2*ROOM.n*S))/2)+topBlock; /* v39②：两分支统一垂直居中（原屋顶分支贴底 botPad=「位置靠下拖不上去」根因；无屋顶分支数学恒等不变） */
   LWS=Math.max(0.45,S*2.2);
   render();
 }
@@ -2669,7 +2671,7 @@ function openDrop(id,pill){ /* v22cal11：点胶囊开下拉，left/width 对齐
   if(wDrop===id){closeDrop();return}
   closeDrop();wDrop=id;
   var dp=$(id);dp.classList.add("open");
-  dp.style.left=pill.offsetLeft+"px";dp.style.minWidth=Math.max(pill.offsetWidth,120)+"px";
+  dp.style.left=pill.offsetLeft+"px";dp.style.top=(pill.offsetTop+pill.offsetHeight+6)+"px";dp.style.minWidth=Math.max(pill.offsetWidth,120)+"px"; /* v39⑥：top 紧贴胶囊下沿（同一 offsetParent=.pg-write，参照系一致） */
   if(id==="dropDate")renderDCal();
   if(id==="dropWx")renderDOpts(id,WX,dWxi,function(i){dWxi=i;syncPills();closeDrop()});
   if(id==="dropMood")renderDOpts(id,MOODS,dSt.mood,function(i){dSt.mood=(dSt.mood===i?-1:i);syncPills();closeDrop()});
@@ -2684,6 +2686,10 @@ function renderList(){
   var list=ENTRIES.slice().sort(function(a,b){return descSort?entrySort(b)-entrySort(a):entrySort(a)-entrySort(b)});
   var pages=Math.max(1,Math.ceil(list.length/PER));
   if(dpage>pages-1)dpage=pages-1;
+  if(!list.length){ /* v39⑤：空状态（老板文案） */
+    box.innerHTML='<div class="d-empty">小猫还没有写日记哦~</div>';
+    $("dPage").textContent="0 / 0 页";$("dPrev").disabled=true;$("dNext").disabled=true;return;
+  }
   list.slice(dpage*PER,dpage*PER+PER).forEach(function(e){
     var c=document.createElement("button");
     c.className="dcard";
@@ -2857,7 +2863,6 @@ var setSt={calm:false,taps:0};
 function setSave(){try{localStorage.setItem(SETKEY,JSON.stringify(setSt))}catch(e){}}
 function applyCalm(){
   document.getElementById("screen").classList.toggle("calm",!!setSt.calm);
-  $("swCalm").setAttribute("aria-checked",String(!!setSt.calm));
 }
 function openSettings(){
   closeDiary();closeAlbum();setDress(false);closeCal();
@@ -2867,7 +2872,6 @@ function closeSettings(){
   sheetEl.classList.remove("show");sheetEl.setAttribute("aria-hidden","true");
   closeCode();resetClear();syncVeil();
 }
-$("swCalm").addEventListener("click",function(){setSt.calm=!setSt.calm;setSave();applyCalm();});
 var btnClear=$("btnClear"),armed=false,armTimer=null;
 function resetClear(){armed=false;btnClear.classList.remove("confirm");btnClear.textContent="清空本地存档";}
 btnClear.addEventListener("click",function(){
@@ -2880,7 +2884,7 @@ btnClear.addEventListener("click",function(){
   try{
     for(var ci=0;ci<SAVE_KEYS.length;ci++)localStorage.removeItem(SAVE_KEYS[ci]);
   }catch(e){}
-  setSt={calm:false,taps:0};applyCalm();$("tapCount").textContent="0";
+  setSt={calm:false,taps:0};applyCalm();
   /* v22clr：清空存档 = 回到出厂初始状态，配色与缩放也要复位。
      原先只清家具，saveSoon() 会把内存里的旧配色/旧缩放原样写回新存档，玩家看着像「清空没生效」。 */
   applyTheme({floor:DECOR0.floor,back:DECOR0.wallBack,left:DECOR0.wallLeft});
@@ -3084,7 +3088,7 @@ window.__saveHooks={
     if(typeof d.calm==="boolean")setSt.calm=d.calm;
     if(typeof d.taps==="number"&&d.taps>=0)setSt.taps=d.taps;
   }catch(e){}
-  applyCalm();$("tapCount").textContent=setSt.taps;
+  applyCalm();
 })();
 /* ═══ 拍照 → 拍立得 → 存入相册（批6.6；照片档 PKEY 独立，快照只留最近 5 张） ═══ */
 var PKEY="maoor-v22-photos-v1";
@@ -3272,7 +3276,7 @@ function dFloatHeart(){
   dressEl.appendChild(s);
 }
 $("dCharImg").addEventListener("click",function(){
-  setSt.taps++;$("tapCount").textContent=setSt.taps;setSave(); /* 今日互动计数（设置面板） */
+  setSt.taps++;setSave(); /* v39⑦：tapCount UI 退役，字段保留 */
   var c=$("dCharImg");
   c.classList.remove("pop","wiggle");
   if(setSt.calm){dSay(dPickLine(DCLICK_LINES));return} /* 减弱动效：只说话，不晃不出爱心 */
@@ -3336,10 +3340,13 @@ function renderGrid(){
   }else if(sub.swatches){ /* 墙面/地板配色卡（墙面=两堵墙一起换；「custom」卡=方案B内嵌双滑条自定义） */
     sub.swatches.forEach(function(sw){elGrid.appendChild(makeSwCard(sw,curTab===1&&curSub===0));});
     if(curTab===1&&curSub===0&&PACKTEX.wall)elGrid.appendChild(makeTexCard(PACKTEX.wall,"wall")); /* v33tex·B2：包带贴图卡（工作台同步的墙纸，双墙同铺） */
+    if(curTab===1&&curSub===0)(PACKTEX.extra||[]).forEach(function(x){if(x.kind==="wall"&&(!PACKTEX.wall||PACKTEX.wall.src!==x.src))elGrid.appendChild(makeTexCard(x,"wall"));}); /* v39①：资产库其余墙纸也出卡 */
     if(curTab===1&&curSub===1&&PACKTEX.floor)elGrid.appendChild(makeTexCard(PACKTEX.floor,"floor")); /* v33tex·B2：包带贴图卡（地板，整张覆盖） */
+    if(curTab===1&&curSub===1)(PACKTEX.extra||[]).forEach(function(x){if(x.kind==="floor"&&(!PACKTEX.floor||PACKTEX.floor.src!==x.src))elGrid.appendChild(makeTexCard(x,"floor"));}); /* v39①：资产库其余地板也出卡 */
   }else if(sub.tex){ /* v35roof→v37：屋顶/屋外装饰=固定「不使用」取消卡（第一位）+贴图卡（第二位，老板拍板排位） */
     elGrid.appendChild(makeNoneCard(sub.tex));
     if(PACKTEX[sub.tex])elGrid.appendChild(makeTexCard(PACKTEX[sub.tex],sub.tex));
+    (PACKTEX.extra||[]).forEach(function(x){if(x.kind===sub.tex&&(!PACKTEX[sub.tex]||PACKTEX[sub.tex].src!==x.src))elGrid.appendChild(makeTexCard(x,sub.tex));}); /* v39①：资产库其余同类贴图也出卡（使用中那张已在上面，不重复） */
   }else if(sub.bg){ /* v37bg：背景子页=6 预设+自定义卡（写 body 背景，随档） */
     BG_PRESETS.forEach(function(bs){elGrid.appendChild(makeBgCard(bs));});
   }
