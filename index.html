@@ -1175,6 +1175,32 @@ function face(x1,y1,x2,y2,x3,y3,x4,y4,col,r){
 }
 /* ── 贴图缓存（createPattern 平铺，方向对齐等距轴） ── */
 var PTN={},LOADING={};
+function sealTex(im){ /* v38seal：屋顶/屋外贴图「垂直填洞」——同一列上下实心像素之间的透明段衬上暗实心平均色（瓦底色），V谷切缝不再透出深色墙（黑线修复）。只处理 roof/border 两槽；floor/wall 是平铺图案保持原样。图顶/图底悬空透明区不填。 */
+  try{
+    var w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;
+    var c=document.createElement("canvas");c.width=w;c.height=h;
+    var g=c.getContext("2d");g.drawImage(im,0,0);
+    var d=g.getImageData(0,0,w,h),a=d.data,x,y,k,o,seg;
+    var sr=0,sg=0,sb=0,sn=0;
+    for(y=0;y<h;y+=2)for(x=0;x<w;x+=2){o=(y*w+x)*4; /* 一遍统计暗实心像素平均色=衬底色（黑瓦勾缝色） */
+      if(a[o+3]>200&&a[o]<70&&a[o+1]<70&&a[o+2]<70){sr+=a[o];sg+=a[o+1];sb+=a[o+2];sn++;}
+    }
+    if(sn<50){sr=24;sg=22;sb=26;}else{sr=Math.round(sr/sn);sg=Math.round(sg/sn);sb=Math.round(sb/sn);}
+    for(x=0;x<w;x++){
+      var solid=-1;
+      for(y=0;y<h;y++){
+        if(a[(y*w+x)*4+3]>40){
+          if(solid>=0){seg=y-solid-1;
+            if(seg>0&&seg<=240){for(k=solid+1;k<y;k++){o=(k*w+x)*4;a[o]=sr;a[o+1]=sg;a[o+2]=sb;a[o+3]=255;}}
+          }
+          solid=y;
+        }
+      }
+    }
+    g.putImageData(d,0,0);
+    return c;
+  }catch(e){return im;}
+}
 function patternOf(key){
   var e=DECOR[key];
   if(!e||e.type!=="img")return null;
@@ -1188,7 +1214,8 @@ function loadPattern(key){
   LOADING[ck]=1;
   var im=new Image();
   im.onload=function(){
-    PTN[ck]={p:ctx.createPattern(im,"repeat"),w:im.naturalWidth||im.width||64,h:im.naturalHeight||im.height||32,im:im}; /* im=原图引用：地板「整张覆盖」画法用（v33tex·B2，与工作台 v34floor 同口径） */
+    var src=(key==="roof"||key==="border")?sealTex(im):im; /* v38seal：屋顶/屋外整图贴画做透明缝衬底（V谷缝不透深墙）；floor/wall 平铺图案保持原样 */
+    PTN[ck]={p:ctx.createPattern(src,"repeat"),w:im.naturalWidth||im.width||64,h:im.naturalHeight||im.height||32,im:src}; /* im=绘制源（roof/border=sealTex 处理后的 canvas）：地板「整张覆盖」画法用（v33tex·B2，与工作台 v34floor 同口径） */
     delete LOADING[ck];resize();render();
   };
   im.onerror=function(){delete LOADING[ck];resize();render();};
@@ -2518,15 +2545,16 @@ function decorFromSaved(v,fbk){ /* v33tex·B2：存档值是 assets/ 路径=贴�
   if(typeof v==="string"&&v.indexOf("/")>=0)return {type:"img",value:v,fb:fbk||"#d2b48c"};
   return {type:"color",value:v,fb:v};
 }
-function applyBg(){ /* v37bg：bg 键值→body 背景；无值/被删=回落 CSS 默认渐变（暗夜） */
+function applyBg(){ /* v38bgfix：bg 键值→游戏画面（.screen）背景；无值/被删=回落 CSS 默认 #3a2a1b；body 两侧恒默认渐变（游戏是手机全屏 PWA，玩家看不到两侧） */
   var e=DECOR.bg;
-  document.body.style.background=(e&&e.value)?e.value:"";
+  $("screen").style.background=(e&&e.value)?e.value:"";
+  document.body.style.background="";
 }
 function setDecor(key,patch){
   var e=DECOR[key];
   if(!e){if(!patch)return;e=DECOR[key]={type:"color",value:"#f5e6d3",fb:"#f5e6d3"};} /* v35roof：roof/border 键首铺时新建 */
   for(var k2 in patch)e[k2]=patch[k2];
-  if(key==="bg")applyBg(); /* v37bg：背景实时写 body（预设/自定义/清空回默认共用） */
+  if(key==="bg")applyBg(); /* v38bgfix：背景实时写游戏画面（预设/自定义/清空回默认共用） */
   if(e.type==="img")loadPattern(key);
   saveSoon();
   render();
