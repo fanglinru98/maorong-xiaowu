@@ -2091,7 +2091,7 @@ function resize(){
   var pr=patternOf("roof"),as1=(PACKTEX.roof&&PACKTEX.roof.adj&&typeof PACKTEX.roof.adj.s==="number")?PACKTEX.roof.adj.s:1;
   if(pr&&pr.im&&pr.im.complete&&pr.w)roofU=fw*as1*(pr.h/pr.w);
   var topPad=88,botPad=92,avail=Math.max(120,Hc-topPad-botPad);
-  if(roofU>0)sFit=avail/(2*ROOM.wallH+ROOM.ch*2*ROOM.n+roofU);
+  if(roofU>0)sFit=avail/(ROOM.wallH+ROOM.ch*2*ROOM.n+Math.max(0,roofU-ROOM.wallH)); /* v37roofit：分母墙高只算一次（原 2*wallH 重复=塔尖上方多一格墙高空白+画面压小）；屋顶不足墙高时只补 0 */
   S=Math.min(sW,sH,sFit);
   var contentH=ROOM.wallH*S+ROOM.ch*2*ROOM.n*S;
   OX=W/2;OY=roofU>0?(Hc-botPad-ROOM.ch*2*ROOM.n*S):(topPad+Math.max(10,(avail-contentH)/2)+ROOM.wallH*S);
@@ -2106,6 +2106,9 @@ function cCustomApply(){
   if(cslTarget==="floor"){
     setDecor("floor",{type:"color",value:c,fb:c});
     sw=document.getElementById("cCardSwF");
+  }else if(cslTarget==="bg"){ /* v37bg：背景自定义=纯色写 body */
+    setDecor("bg",{type:"color",value:c,fb:c});
+    sw=document.getElementById("cCardSwB");
   }else{
     setDecor("wallBack",{type:"color",value:c,fb:c});
     setDecor("wallLeft",{type:"color",value:c,fb:c});
@@ -2515,10 +2518,15 @@ function decorFromSaved(v,fbk){ /* v33tex·B2：存档值是 assets/ 路径=贴�
   if(typeof v==="string"&&v.indexOf("/")>=0)return {type:"img",value:v,fb:fbk||"#d2b48c"};
   return {type:"color",value:v,fb:v};
 }
+function applyBg(){ /* v37bg：bg 键值→body 背景；无值/被删=回落 CSS 默认渐变（暗夜） */
+  var e=DECOR.bg;
+  document.body.style.background=(e&&e.value)?e.value:"";
+}
 function setDecor(key,patch){
   var e=DECOR[key];
   if(!e){if(!patch)return;e=DECOR[key]={type:"color",value:"#f5e6d3",fb:"#f5e6d3"};} /* v35roof：roof/border 键首铺时新建 */
   for(var k2 in patch)e[k2]=patch[k2];
+  if(key==="bg")applyBg(); /* v37bg：背景实时写 body（预设/自定义/清空回默认共用） */
   if(e.type==="img")loadPattern(key);
   saveSoon();
   render();
@@ -2848,6 +2856,7 @@ btnClear.addEventListener("click",function(){
   /* v22clr：清空存档 = 回到出厂初始状态，配色与缩放也要复位。
      原先只清家具，saveSoon() 会把内存里的旧配色/旧缩放原样写回新存档，玩家看着像「清空没生效」。 */
   applyTheme({floor:DECOR0.floor,back:DECOR0.wallBack,left:DECOR0.wallLeft});
+  delete DECOR.bg;applyBg(); /* v37bg：清空存档=背景也回出厂渐变 */
   var cm=/^hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$/.exec(DECOR0.wallBack);
   if(cm){cslTarget="wall";$("cHue").value=cm[1];$("cSat").value=cm[2];$("cDep").value=cm[3];}
   applySavedView(VZ0);
@@ -3260,15 +3269,8 @@ var CAT=[
     {n:"墙面",swatches:[["#f5e6d3","奶油墙"],["#efe0c8","浅木墙"],["#e9c8cf","玫瑰墙"],["#3a2430","暗夜墙"],["custom","自定义"]]},
     {n:"地板",swatches:[["#d2b48c","原木地板"],["#c8a274","暖棕地板"],["#cfc8bd","灰白地板"],["#6b4a2f","深褐地板"],["custom","自定义"]]},
     {n:"屋顶",tex:"roof"}, /* v35roof：包带屋顶贴图时出卡（老板指定「装修」子页签第三位） */
-    {n:"屋外装饰",tex:"border"} /* v35roof：第四位 */
-  ]},
-  {label:"主题",subs:[
-    {n:"配色主题",themes:[
-      {n:"原木暖居",theme:{floor:"#d2b48c",back:"#f5e6d3",left:"#ece0cd"}},
-      {n:"猩红古堡",theme:{floor:"#6b2f2f",back:"#3a2430",left:"#2f1d28"}},
-      {n:"海盐假日",theme:{floor:"#b8cfc9",back:"#eef4f2",left:"#dfe9e6"}},
-      {n:"樱花物语",theme:{floor:"#e8c9cf",back:"#fbeef1",left:"#f3dfe5"}}
-    ]}
+    {n:"屋外装饰",tex:"border"}, /* v35roof：第四位 */
+    {n:"背景",bg:1} /* v37bg：第五位=整页背景（6 预设+自定义；「主题」页签按老板指令删除，主题配色并入各色卡） */
   ]}
 ];
 var PRICE={f270:250,f271:250,f272:30,f273:180,f274:180,f275:30,f276:120,f277:30,f278:30,f279:180,f280:180,f281:30,f282:420,f283:120,f284:60,f285:60,f286:30,f287:250,f288:60,f289:420,f290:250,f291:30,f292:250};
@@ -3307,10 +3309,11 @@ function renderGrid(){
     sub.swatches.forEach(function(sw){elGrid.appendChild(makeSwCard(sw,curTab===1&&curSub===0));});
     if(curTab===1&&curSub===0&&PACKTEX.wall)elGrid.appendChild(makeTexCard(PACKTEX.wall,"wall")); /* v33tex·B2：包带贴图卡（工作台同步的墙纸，双墙同铺） */
     if(curTab===1&&curSub===1&&PACKTEX.floor)elGrid.appendChild(makeTexCard(PACKTEX.floor,"floor")); /* v33tex·B2：包带贴图卡（地板，整张覆盖） */
-  }else if(sub.tex){ /* v35roof：屋顶/屋外装饰=纯贴图卡页（包没带贴图就空页） */
+  }else if(sub.tex){ /* v35roof→v37：屋顶/屋外装饰=固定「不使用」取消卡（第一位）+贴图卡（第二位，老板拍板排位） */
+    elGrid.appendChild(makeNoneCard(sub.tex));
     if(PACKTEX[sub.tex])elGrid.appendChild(makeTexCard(PACKTEX[sub.tex],sub.tex));
-  }else if(sub.themes){ /* 主题卡：三色条预览，一键换地板+两墙（主题页签下平铺 4 套） */
-    sub.themes.forEach(function(th){elGrid.appendChild(makeThemeCard(th));});
+  }else if(sub.bg){ /* v37bg：背景子页=6 预设+自定义卡（写 body 背景，随档） */
+    BG_PRESETS.forEach(function(bs){elGrid.appendChild(makeBgCard(bs));});
   }
   updateOwned(); /* 渲染后刷新「拥有：N」 */
 }
@@ -3356,7 +3359,7 @@ function makeSwCard(sw,isWall){ /* 墙面/地板配色卡；「custom」卡=方�
   }
   return card;
 }
-function makeTexCard(slot,kind){ /* v35roof：kind="wall"|"floor"|"roof"|"border"（v33tex·B2 原为 isWall 布尔）——包带来的贴图卡，点卡即换 */
+function makeTexCard(slot,kind){ /* v35roof：kind="wall"|"floor"|"roof"|"border"（v33tex·B2 原为 isWall 布尔）——包带来的贴图卡，点卡即换；v37：启用中金边高亮、roof/border 启停改布局几何→resize */
   var card=document.createElement("div");card.className="card";
   var swd=document.createElement("div");swd.className="swatch";
   var im=document.createElement("img");im.src=slot.src;im.alt=slot.name||"贴图";
@@ -3365,6 +3368,7 @@ function makeTexCard(slot,kind){ /* v35roof：kind="wall"|"floor"|"roof"|"border
   swd.appendChild(im);
   var nm=document.createElement("div");nm.className="cname";nm.textContent=slot.name||"贴图";nm.title=nm.textContent;
   card.appendChild(swd);card.appendChild(nm);
+  if(DECOR[kind]&&DECOR[kind].type==="img"&&DECOR[kind].value===slot.src)card.style.boxShadow="0 0 0 2px #d9b56a"; /* v37：启用中高亮 */
   card.addEventListener("click",function(){
     if(kind==="wall"){
       setDecor("wallBack",{type:"img",value:slot.src,fb:DECOR.wallBack.fb||"#f5e6d3"});
@@ -3372,19 +3376,55 @@ function makeTexCard(slot,kind){ /* v35roof：kind="wall"|"floor"|"roof"|"border
     }else{
       setDecor(kind,{type:"img",value:slot.src,fb:(DECOR[kind]&&DECOR[kind].fb)||"#f5e6d3"}); /* v35roof：floor/roof/border 统一走 kind 键 */
     }
+    if(kind==="roof"||kind==="border")resize(); /* v37：贴图启停改变 roofU→重算 S/OY（wall/floor 不影响几何不调） */
     toast("已换上「"+(slot.name||"贴图")+"」");
   });
   return card;
 }
-function makeThemeCard(th){ /* 主题卡：三色条预览，一键换地板+两墙 */
+var BG_PRESETS=[ /* v37bg：背景预设（暗夜=出厂默认渐变；色系随主题家族）；「主题」页签退役后配色以色卡+此页延续 */
+  ["linear-gradient(#4a3624,#332416)","暗夜"],
+  ["linear-gradient(#f5e6d3,#e2cba4)","米金"],
+  ["linear-gradient(#6b2f2f,#3a2430)","猩红"],
+  ["linear-gradient(#b8cfc9,#dfe9e6)","海盐"],
+  ["linear-gradient(#e8c9cf,#fbeef1)","樱花"],
+  ["linear-gradient(#2a2a2e,#141416)","玄黑"],
+  ["custom","自定义"]
+];
+function makeNoneCard(key){ /* v37：固定取消卡（第一位，老板拍板）——点=恢复无贴图；未启用贴图时金边高亮 */
   var card=document.createElement("div");card.className="card";
-  var t3=document.createElement("div");t3.className="theme3";
-  [th.theme.back,th.theme.left,th.theme.floor].forEach(function(c2){
-    var i2=document.createElement("i");i2.style.background=c2;t3.appendChild(i2);
+  var swd=document.createElement("div");swd.className="swatch";
+  swd.style.cssText="display:grid;place-items:center;color:#8f7551;font-size:26px;background:#efe4cd";
+  swd.textContent="✕";
+  var nm=document.createElement("div");nm.className="cname";nm.textContent="不使用";
+  card.appendChild(swd);card.appendChild(nm);
+  if(!(DECOR[key]&&DECOR[key].type==="img"))card.style.boxShadow="0 0 0 2px #d9b56a";
+  card.addEventListener("click",function(){
+    setDecor(key,{type:"none",value:null}); /* v37：value 一并清 null——残留旧路径会让存档刷新后贴图复活 */
+    if(key==="roof"||key==="border")resize(); /* 布局几何随 roofU 归零重算 */
+    toast("已取消贴图");
   });
-  var nm=document.createElement("div");nm.className="cname";nm.textContent=th.n;
-  card.appendChild(t3);card.appendChild(nm);
-  card.addEventListener("click",function(){applyTheme(th.theme);toast("主题已切换："+th.n);});
+  return card;
+}
+function makeBgCard(bs){ /* v37bg：背景预设卡；custom 卡=cSlid 滑条（cslTarget="bg"，走 cCustomApply bg 分支） */
+  var card=document.createElement("div");card.className="card";
+  var swd=document.createElement("div");swd.className="swatch";
+  var nm=document.createElement("div");nm.className="cname";nm.textContent=bs[1];
+  if(bs[0]==="custom"){
+    swd.id="cCardSwB";
+    swd.style.background="linear-gradient(135deg,#f5e6d3,#e9c8cf,#3a2430)";
+    swd.style.cssText+=";display:grid;place-items:center;color:#fff;font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)";
+    swd.textContent="🎨";
+    card.appendChild(swd);card.appendChild(nm);
+    card.addEventListener("click",function(){cslTarget="bg";$("cSlid").classList.toggle("open");});
+  }else{
+    swd.style.background=bs[0];
+    card.appendChild(swd);card.appendChild(nm);
+    if(DECOR.bg&&DECOR.bg.value===bs[0])card.style.boxShadow="0 0 0 2px #d9b56a"; /* 当前背景高亮 */
+    card.addEventListener("click",function(){
+      setDecor("bg",{type:"color",value:bs[0],fb:bs[0]});
+      toast("背景已换："+bs[1]);
+    });
+  }
   return card;
 }
 function updateOwned(){ /* v22bar2：「拥有：N」=该家具已在房间里摆放的数量（实时） */
@@ -3419,6 +3459,7 @@ function saveState(){
       v:1,zoom:VZ,
       floor:DECOR.floor.value,wallB:DECOR.wallBack.value,wallL:DECOR.wallLeft.value,grid:DECOR.grid,
       roof:DECOR.roof?DECOR.roof.value:null,border:DECOR.border?DECOR.border.value:null, /* v35roof：屋顶/屋外贴图随档 */
+      bg:DECOR.bg?DECOR.bg.value:null, /* v37bg：背景随档（老档无此键=保持默认渐变） */
       furn:FURNITURE.map(function(f){return{def:f.def,name:f.name,gx:f.gx,gy:f.gy,w:f.w,d:f.d,h:f.h,scale:f.scale,flip:f.flip||null,ox:f.ox||0,oy:f.oy||0,foot:f.foot||0,wall:f.wall||null,u:f.u||0,v:f.v||0,vh:f.vh||1,rot:f.rot||null,glow:f.glow?{c:f.glow.c,s:f.glow.s,i:f.glow.i,b:f.glow.b,p:f.glow.p}:null,
         sh:f.sh||0,sm:f.sm||0,sw:f.sw||null,sd:f.sd||null,on:f.on?(function(){var k;for(k=0;k<FURNITURE.length;k++)if(FURNITURE[k].id===f.on)return k;return -1;})():-1,su:f.su||0,sv:f.sv||0};}) /* v22shelf：on 存承托件在存档数组里的下标（读档时重新绑定，id 变了也不会错位） */
     }));
@@ -3436,6 +3477,7 @@ function restoreState(){
     if(st.wallL)setDecor("wallLeft",decorFromSaved(st.wallL,DECOR.wallLeft.fb));
     if(st.roof)setDecor("roof",decorFromSaved(st.roof,(DECOR.roof&&DECOR.roof.fb)||"#f5e6d3")); /* v35roof：屋顶/屋外贴图存档回放 */
     if(st.border)setDecor("border",decorFromSaved(st.border,(DECOR.border&&DECOR.border.fb)||"#f5e6d3"));
+    if(st.bg)setDecor("bg",{type:"color",value:st.bg,fb:st.bg}); /* v37bg：背景随档回放（CSS 值不含 / 不走 decorFromSaved） */
     var i,f,it;
     var made=[];
     for(i=0;i<st.furn.length;i++){
