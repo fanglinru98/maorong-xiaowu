@@ -32,7 +32,7 @@ body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidde
 .avatar-stack{position:relative;width:72px;pointer-events:auto} /* v39③：整框投影删除（老板：头像去阴影） */
 .avatar-stack .av-frame{width:100%;display:block}
 .avatar-stack .av-face{position:absolute;left:50%;top:47%;width:73.5%;transform:translate(-50%,-52%)} /* v22cal7：脸放大贴参考示意（参考脸占框宽 76.7%、60% 时渲染实测 63.6%，含发丝溢出 1.06 → 73.5% 二调）；top 46→47 脸大后中心微降 */
-.avatar-stack .av-lv{position:absolute;left:50%;top:83.5%;transform:translateX(-50%);font-size:15px;font-weight:900; /* v32av：字 13.5→15（图二字宽≈圆径 59%，原 51%）、中心对齐圆底缘下 7%——图二口径；DOM 实测三元素中心线本已全对齐 551.6，视觉左移=glyph 不对称 */
+.avatar-stack .av-lv{position:absolute;left:50%;top:76.5%;transform:translateX(-50%);font-size:15px;font-weight:900; /* v32av：字 13.5→15（图二字宽≈圆径 59%，原 51%）、中心对齐圆底缘下 7%——图二口径；DOM 实测三元素中心线本已全对齐 551.6，视觉左移=glyph 不对称 */
   font-family:"幼圆","YouYuan","Yuanti SC","Microsoft YaHei",sans-serif;letter-spacing:.5px;white-space:nowrap;color:#bd8d63;
   text-shadow:-2px -2px 0 #fffdf6,2px -2px 0 #fffdf6,-2px 2px 0 #fffdf6,2px 2px 0 #fffdf6,-2px 0 0 #fffdf6,2px 0 0 #fffdf6,0 -2px 0 #fffdf6,0 2px 0 #fffdf6,0 3px 4px rgba(60,25,10,.4)}
 .avatar-stack .av-bar{position:absolute;left:10%;right:10%;bottom:-6px;height:8px;border-radius:5px;background:#38130f; /* v39③：贴紧框底沿（-18.5→-6 消 7px 悬空=「露黑底」观感）+改扁 11→8px+去投影 */
@@ -274,10 +274,10 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .d-add{position:absolute;top:calc(6% + 10px);right:calc(7% + 20px);width:26%;transition:transform .12s}
 .d-add img{width:100%;display:block}
 .d-add:active{transform:scale(.93)}
-#dList{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;
+#dList{position:relative;flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;
   align-content:start;padding:0}
 #dList::-webkit-scrollbar{width:0}
-.d-empty{display:grid;place-items:center;height:60%;font-size:13px;color:#a08a6a;text-align:center;letter-spacing:1px} /* v39⑤：日记列表空状态 */
+.d-empty{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:#a08a6a;text-align:center;letter-spacing:1px;white-space:nowrap} /* v39⑤：日记列表空状态 */
 .dcard{position:relative;aspect-ratio:689/472;border-radius:10px;overflow:hidden;
   background:url("assets/ui/diary-card.png") center/100% 100% no-repeat;
   display:flex;align-items:stretch;text-align:left;transition:transform .12s}
@@ -358,6 +358,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   filter:drop-shadow(0 14px 30px rgba(0,0,0,.45));
   padding:16% 5.9% 7.5%;display:flex;flex-direction:column}
 #album.open{transform:translateX(0)}
+  .a-title{position:absolute;top:3.8%;left:0;right:0;text-align:center;font-size:19px;font-weight:900;color:#7c2a20;letter-spacing:5px;text-shadow:0 1px 0 rgba(255,244,222,.8);z-index:2;pointer-events:none} /* v42③：相册标题（字号真机校） */
 #aGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:14px 12px;
   align-content:start;padding:2px 2px 10px}
 #aGrid::-webkit-scrollbar{width:14px}
@@ -493,7 +494,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .day.ev .h,.day.today .h{background:transparent} /* 切图未到：亮心位置只留烘焙暗心与数字 */
 /* 选中态：深一度圆圈框住日期 */
 .day.sel::before{display:none} /* v22cal：去掉选中日的大圆圈（用户目检），选中靠 .day.sel .h 放大 6% 表示 */
-.day.sel .h{transform:translate(-50%,-50%) scale(calc(var(--hs,1)*1.06))}
+.day.sel .h{background:url(assets/ui/heart-gold.png) center/100% 100% no-repeat;clip-path:none;transform:translate(-50%,-50%) scale(calc(var(--hs,1)*1.06))} /* v42⑥：选中日金爱心切图（heart-gold.png MD5 390FE3B4） */
 .day:active .h{transform:translate(-50%,-50%) scale(calc(var(--hs,1)*.9))}
 /* 三视图切换（日/周/月）：周视图=本周 7 心 */
 #vDay,#vWeek{display:none} /* v22fb4：不再作为弹性子项被压扁——日/周/月三视图整体整页上下滚动（#cal overflow），模块按自然高度铺排 */
@@ -797,6 +798,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 </section>
 <!-- 相册面板（批11：切图版，底板整图，点暗罩/面板外收起） -->
 <section id="album" aria-label="相册">
+  <div class="a-title">相册</div><!-- v42③：面板标题（参考日历横幅规格） -->
   <div id="aGrid"></div>
   <div class="a-pager">
     <button class="a-arrow" id="aPrev" title="上一页"><img src="assets/ui/arrow-al.png" alt="上一页"></button>
@@ -2601,6 +2603,7 @@ $("cfmNo").addEventListener("click",cfmClose);
 $("cfm").addEventListener("click",function(e){ if(e.target===$("cfm"))cfmClose(); });
 $("mAlbum").addEventListener("click",function(){openAlbum();}); /* 相册已接入（批6） */
 $("mCalendar").addEventListener("click",function(){openCal();}); /* 日历已接入（批6.7） */
+  $("avatarStack").addEventListener("click",function(){toast("还在开发中~");}); /* v42②：头像点击占位提示（老板指令） */
 $("mDiary").addEventListener("click",function(){openDiary();}); /* 日记本已接入（批4） */
 $("mSettings").addEventListener("click",function(){openSettings();}); /* 设置面板已接入（批6.5） */
 /* dShot 拍照已在批6.6 拍立得段接线 */
@@ -3417,13 +3420,13 @@ function makeTexCard(slot,kind){ /* v35roof：kind="wall"|"floor"|"roof"|"border
   });
   return card;
 }
-var BG_PRESETS=[ /* v37bg：背景预设（暗夜=出厂默认渐变；色系随主题家族）；「主题」页签退役后配色以色卡+此页延续 */
-  ["linear-gradient(#4a3624,#332416)","暗夜"],
-  ["linear-gradient(#f5e6d3,#e2cba4)","米金"],
-  ["linear-gradient(#6b2f2f,#3a2430)","猩红"],
-  ["linear-gradient(#b8cfc9,#dfe9e6)","海盐"],
-  ["linear-gradient(#e8c9cf,#fbeef1)","樱花"],
-  ["linear-gradient(#2a2a2e,#141416)","玄黑"],
+var BG_PRESETS=[ /* v42⑤：背景预设全纯色（老板：不要渐变）；「主题」页签退役后配色以色卡+此页延续 */
+  ["#3e2d1d","暗夜"],
+  ["#ecd9bb","米金"],
+  ["#532a2f","猩红"],
+  ["#ccdcda","海盐"],
+  ["#f1dce0","樱花"],
+  ["#1f1f22","玄黑"],
   ["custom","自定义"]
 ];
 function makeNoneCard(key){ /* v37：固定取消卡（第一位，老板拍板）——点=恢复无贴图；未启用贴图时金边高亮 */
