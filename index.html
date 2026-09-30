@@ -29,16 +29,8 @@ body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidde
 /* ── 顶部 HUD：头像组合（金框+头像+Lv+进度条，UI 升级批：图一样式，屋名/心情文字按用户要求移除） ── */
 .hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
   justify-content:flex-start;padding:calc(12px + env(safe-area-inset-top)) 16px 0;pointer-events:none}
-.avatar-stack{position:relative;width:72px;pointer-events:auto} /* v39③：整框投影删除（老板：头像去阴影） */
-.avatar-stack .av-frame{width:100%;display:block}
-.avatar-stack .av-face{position:absolute;left:50%;top:47%;width:73.5%;transform:translate(-50%,-52%)} /* v22cal7：脸放大贴参考示意（参考脸占框宽 76.7%、60% 时渲染实测 63.6%，含发丝溢出 1.06 → 73.5% 二调）；top 46→47 脸大后中心微降 */
-.avatar-stack .av-lv{position:absolute;left:50%;top:76.5%;transform:translateX(-50%);font-size:15px;font-weight:900; /* v32av：字 13.5→15（图二字宽≈圆径 59%，原 51%）、中心对齐圆底缘下 7%——图二口径；DOM 实测三元素中心线本已全对齐 551.6，视觉左移=glyph 不对称 */
-  font-family:"幼圆","YouYuan","Yuanti SC","Microsoft YaHei",sans-serif;letter-spacing:.5px;white-space:nowrap;color:#bd8d63;
-  text-shadow:-2px -2px 0 #fffdf6,2px -2px 0 #fffdf6,-2px 2px 0 #fffdf6,2px 2px 0 #fffdf6,-2px 0 0 #fffdf6,2px 0 0 #fffdf6,0 -2px 0 #fffdf6,0 2px 0 #fffdf6,0 3px 4px rgba(60,25,10,.4)}
-.avatar-stack .av-bar{position:absolute;left:10%;right:10%;bottom:-6px;height:8px;border-radius:5px;background:#38130f; /* v39③：贴紧框底沿（-18.5→-6 消 7px 悬空=「露黑底」观感）+改扁 11→8px+去投影 */
-  border:1.5px solid #fffdf6;overflow:hidden}
-.avatar-stack .av-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(180deg,#c94b3a,#8e2a20);
-  box-shadow:inset 0 1px 0 rgba(255,220,190,.35)}
+.avatar-stack{position:relative;width:72px;pointer-events:auto} /* v43：头像=单张成品图（框+脸+Lv+进度条烧图），av-frame/av-face/av-lv/av-bar 四层合成退役（老板指令：直接删掉所有，替换成这张png） */
+.avatar-stack .av-badge{width:100%;display:block}
 /* ── 右侧功能列（V21 原位） ── */
 .menu-right{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top) + 10px);z-index:10;
   display:flex;flex-direction:column;gap:16px}
@@ -736,10 +728,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 </div>
 <header class="hud-top">
   <div class="avatar-stack" id="avatarStack" title="彻子 Lv12">
-    <img class="av-frame" src="assets/ui/avatar-frame.png" alt="">
-    <img class="av-face" src="assets/ui/avatar-face.png" alt="彻子的头像">
-    <div class="av-lv">Lv<span id="avLv">12</span></div>
-    <div class="av-bar"><i id="avProg" style="width:65%"></i></div>
+    <img class="av-badge" src="assets/ui/avatar-badge.png" alt="彻子的头像"> <!-- v43：成品图整块替换 -->
   </div>
 </header>
 <nav class="menu-right" aria-label="功能菜单">
@@ -4038,13 +4027,11 @@ window.__roomHooks={
     doneRows:$("mRows").querySelectorAll(".mrow.done,.mdrow.done").length};},
 };
 window.__roomHooks.photos=PHOTOS; /* 批6.6：拍立得存入相册的实时数组（unshift 置顶） */
-/* 头像等级（UI 升级批：Lv+进度条占位，后续接等级系统；avatarState(lv,prog) 可改可查） */
+/* v43：Lv12/65% 烧进 avatar-badge.png 成品图不再动态渲染；avatarState 钩子保留只存值（等级系统上线再接 DOM） */
 var AVLV=12,AVPROG=0.65;
-$("avLv").textContent=String(AVLV);
-$("avProg").style.width=Math.round(AVPROG*100)+"%";
 __roomHooks.avatarState=function(lv,prog){
-  if(typeof lv==="number"){AVLV=lv;$("avLv").textContent=String(lv)}
-  if(typeof prog==="number"){AVPROG=prog;$("avProg").style.width=Math.round(prog*100)+"%"}
+  if(typeof lv==="number")AVLV=lv;
+  if(typeof prog==="number")AVPROG=prog;
   return{lv:AVLV,prog:AVPROG};
 };
 /* ═══ 新手引导（批17/v22tut2）：聚光灯导览（方案A）7 步；第 1 步聚光打在角色身上并挥手打招呼 ═══ */
