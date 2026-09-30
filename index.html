@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>毛茸小屋 V22 装修 demo</title>
 <!-- PWA 全屏支持（V21 同款方案）：加到主屏幕后全屏运行 -->
 <meta name="theme-color" content="#332416">
@@ -20,11 +20,12 @@
 *{box-sizing:border-box;margin:0;padding:0}
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer} /* v22bar2b：全局按钮重置（照装修底边栏demo 第22行），去 UA 灰底黑边 */
 html,body{height:100%}
+html{background:#332416} /* v44①：长屏 cover 下 html 兜底色（刘海区/橡皮筋过滚动不露白） */
 body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidden;
   display:flex;align-items:center;justify-content:center;
   font:15px/1.6 var(--font-display)}
 /* ═══ 游戏界面壳（期1.5 批1）：390×844 · HUD 原位（照正式版 V21） ═══ */
-.screen{position:relative;width:min(390px,100vw);height:min(844px,100vh);overflow:hidden;
+.screen{position:relative;width:min(390px,100vw);height:min(844px,100vh);height:min(844px,100dvh);overflow:hidden; /* v44①：dvh 动态视口高（iOS 地址栏收展跟随），旧浏览器自动用上行 vh */
   background:#3a2a1b;box-shadow:0 12px 48px rgba(0,0,0,.5)}
 /* ── 顶部 HUD：头像组合（金框+头像+Lv+进度条，UI 升级批：图一样式，屋名/心情文字按用户要求移除） ── */
 .hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
@@ -97,7 +98,7 @@ body.barOpen #decoBar{transform:translateY(0)}
 #grid::-webkit-scrollbar-thumb{background:#dcb87e;border:2px solid #f8eed6;border-radius:99px}
 /* v22bar2c：滚动条=奶油轨道+焦糖胶囊滑块（照用户 09-04 卡片图右缘样式），换装层 .d-grid 同款 */
 /* v22bar2（卡片回退）：竖版卡片=图片区(细金边内框、家具居中完整不裁切)→名称粗体居中→「拥有：N」居中 */
-.card{height:118px;background:#fdf6e3;border:1px solid #e5d3a8;border-radius:12px;padding:5px 4px 6px;
+.card{height:100px;background:#fdf6e3; /* v44③：拥有行退役，卡高 118→100（图片区 flex:1 自动吃高） */border:1px solid #e5d3a8;border-radius:12px;padding:5px 4px 6px;
   display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all .12s;overflow:hidden}
 .card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 3px 10px rgba(90,70,50,.18)}
 .card .cimg{flex:1 1 0;min-height:0;width:100%;position:relative;padding:3px;
@@ -108,7 +109,6 @@ body.barOpen #decoBar{transform:translateY(0)}
 .card .theme3{flex:1 1 0;min-height:0;width:100%;border-radius:9px;overflow:hidden;display:flex;border:1px solid rgba(90,70,50,.25)}
 .card .theme3 i{flex:1}
 .card .cname{flex:0 0 auto;width:100%;font-size:12px;font-weight:700;color:var(--ink);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.card .cown{flex:0 0 auto;font-size:10.5px;font-weight:600;color:var(--ink-soft)}
 /* 面板外右上三圆钮（面板展开时才出现） */
 #quickBtns{position:absolute;right:10px;bottom:calc(min(390px,100vw)*0.7796 + 10px);display:flex;gap:8px;z-index:30;
   /* 修按钮压页签（图二）：面板实际高=宽×1751/2246（aspect-ratio 驱动），--barH 的 36.1% 是屏高近似在矮屏/大屏失真，改按同款公式锚定 */
@@ -2301,7 +2301,7 @@ function removeSelected(){
     }
     FURNITURE.splice(i,1);
   }
-  SEL=null;updateSelChip();saveSoon();render();updateOwned();
+  SEL=null;updateSelChip();saveSoon();render();
 }
 function addFurniture(defId,gx,gy){ /* V22：按家具库定义生成实例（存档只存 def 引用）；墙件（def.wall）默认右墙中层居中 */
   var def=DEF_MAP[defId];
@@ -2757,16 +2757,16 @@ function initDiary(){
 veilEl.addEventListener("click",function(){closeDiary();closeAlbum();closeSettings();closeCal();});
 /* ═══ 相册（批6：照相册页demo 移植，左滑入+真翻页+灯箱+点外关闭） ═══ */
 var albumEl=$("album");
-var PHOTOS=[]; /* v30clr：相册预设照片全下线（老板 09-24 拍板清空）；玩家拍的照片仍存 maoor-v22-photos-v1，刷新自动回来 */
+var PHOTOS=[]; /* v30clr：预设照片下线；v44⑤方案B：玩家照片（拍照+上传）存 IDB maoor-photos（旧档 maoor-v22-photos-v1 自动迁移），无 5 张帽，刷新自动回来 */
 var A_PER=8,A_PAGE=0;
 function aPageCount(){return Math.ceil((PHOTOS.length+1)/A_PER)}
 function aRender(){
   var g=$("aGrid");g.innerHTML="";
-  if(A_PAGE===0){ /* 首格=New Photo 占位（加号=开发中提示，用户拍板：相册入口不做拍照） */
+  if(A_PAGE===0){ /* v44⑤：首格=加号→从手机相册选图上传（旧「开发中」占位退役；拍照仍走底部 dock 拍照钮） */
     var np=document.createElement("button");
     np.className="pcard newphoto";np.id="npCard";
-    np.setAttribute("aria-label","New Photo"); /* 添加照片卡整图做底，＋号烧在图里 */
-    np.addEventListener("click",function(){toast("开发中~")}); /* 相册加号=占位提示（用户拍板：此处不做拍照，拍照走底部 dock 拍照钮） */
+    np.setAttribute("aria-label","上传照片"); /* 添加照片卡整图做底，＋号烧在图里 */
+    np.addEventListener("click",albumUploadPick);
     g.appendChild(np);
   }
   var first=A_PAGE===0?0:A_PER-1;
@@ -2812,7 +2812,7 @@ function aRender(){
         ev.stopPropagation();
         try{
           var a=document.createElement("a");
-          a.href=p.src;a.download="彻子小屋-"+p.d+"-照片"+(i+1)+".png";
+          a.href=p.src;a.download="彻子小屋-"+p.d+"-照片"+(i+1)+(String(p.src).indexOf("data:image/jpeg")===0?".jpg":".png"); /* v44⑤：上传图是 jpeg，下载扩展名跟实际格式 */
           document.body.appendChild(a);a.click();a.remove();
           toast("已保存图片");
         }catch(e4){toast("这张保存不了（不是本地快照）")}
@@ -2885,7 +2885,7 @@ btnClear.addEventListener("click",function(){
   var cm=/^hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$/.exec(DECOR0.wallBack);
   if(cm){cslTarget="wall";$("cHue").value=cm[1];$("cSat").value=cm[2];$("cDep").value=cm[3];}
   applySavedView(VZ0);
-  FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();updateOwned();
+  FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();
   resetClear();closeSettings();toast("存档已清空，已恢复初始配色与布局");
 });
 /* ═══ 卡4：存档导出/恢复 + 存档码（自 V22存档导出原型 合入；6 存档 key 全量） ═══ */
@@ -3119,20 +3119,109 @@ function plSaveNow(){ /* v31shot3：拍立得确定入册的唯一入口（存�
   toast("已存入相册 · 共 "+PHOTOS.length+" 张");
 }
 $("plSave").addEventListener("click",plSaveNow);
-function photosPersist(){
+/* v44⑤方案B：IDB 照片仓 maoor-photos/photos（单记录 key="all" 全量数组）——localStorage 5 张帽退役；
+   IDB 不可用（老浏览器/jsdom/隐私模式）自动回退旧 localStorage 逻辑。上传图压缩长边 1280 JPEG(0.78)≈250KB/张，可存几百张 */
+var pdb=null;
+function pdbOpen(cb){
+  if(pdb){cb(pdb);return}
+  try{
+    var rq=indexedDB.open("maoor-photos",1);
+    rq.onupgradeneeded=function(){try{rq.result.createObjectStore("photos")}catch(e0){}};
+    rq.onsuccess=function(){pdb=rq.result;cb(pdb)};
+    rq.onerror=function(){cb(null)};
+  }catch(e){cb(null)}
+}
+function pPutAll(arr,cb){
+  pdbOpen(function(db){
+    if(!db){cb(false);return}
+    try{
+      var tx=db.transaction("photos","readwrite");
+      tx.objectStore("photos").put(arr,"all");
+      tx.oncomplete=function(){cb(true)};
+      tx.onerror=function(){cb(false)};
+      tx.onabort=function(){cb(false)};
+    }catch(e){cb(false)}
+  });
+}
+function pGetAll(cb){
+  pdbOpen(function(db){
+    if(!db){cb(null);return}
+    try{
+      var tx=db.transaction("photos","readonly");
+      var rq=tx.objectStore("photos").get("all");
+      rq.onsuccess=function(){cb(rq.result||null)};
+      rq.onerror=function(){cb(null)};
+    }catch(e){cb(null)}
+  });
+}
+function photosLsFallback(){ /* 回退路径：旧 localStorage 逻辑（5 张帽；超容量只存 2 张文字元数据） */
   try{localStorage.setItem(PKEY,JSON.stringify(PHOTOS.filter(function(p){return p.shot}).slice(0,5)))}
-  catch(e){ /* 超容量降级：只存文字元数据 */
+  catch(e){
     try{localStorage.setItem(PKEY,JSON.stringify(PHOTOS.filter(function(p){return p.shot}).slice(0,2).map(function(p){return{d:p.d,t:p.t}})))}catch(e2){}
   }
 }
-(function(){ /* 照片档恢复：存档快照卡插回 PHOTOS 最前 */
+function photosPersist(){ /* v44⑤：IDB 优先（全量无帽）；写成功后删旧档防重复回插；IDB 不可用→回退 */
+  pPutAll(PHOTOS.filter(function(p){return p.shot||p.up}),function(ok){
+    if(ok){try{localStorage.removeItem(PKEY)}catch(e){}}
+    else photosLsFallback();
+  });
+}
+function albumUploadPick(){ /* v44⑤：相册加号=选手机图→长边 1280 JPEG 压缩→入册（替代旧「开发中」占位） */
+  var old=document.getElementById("upFileIn");if(old)old.remove(); /* 防取消选择后 input 堆积 */
+  var fi=document.createElement("input");
+  fi.type="file";fi.accept="image/*";fi.id="upFileIn";fi.style.display="none";
+  fi.addEventListener("click",function(e){e.stopPropagation()}); /* v44⑤：程序性 fi.click() 冒泡到 document 会触发相册「点外关闭」——截住冒泡（弹文件选择框是默认行为，不受影响） */
+  fi.addEventListener("change",function(){
+    var f=fi.files&&fi.files[0];
+    if(!f){return}
+    if(f.type&&f.type.indexOf("image/")!==0){toast("只能上传图片文件");return}
+    var rd;
+    try{rd=new FileReader()}catch(e1){toast("这台设备不支持读取文件");return}
+    rd.onload=function(){
+      var im=new Image();
+      im.onload=function(){
+        var w=im.naturalWidth||im.width||1280,h=im.naturalHeight||im.height||1280;
+        var k=Math.min(1,1280/Math.max(w,h)); /* 长边压到 1280，小图不放大 */
+        var c2=document.createElement("canvas");
+        c2.width=Math.max(1,Math.round(w*k));c2.height=Math.max(1,Math.round(h*k));
+        var drew=false;
+        try{c2.getContext("2d").drawImage(im,0,0,c2.width,c2.height);drew=true}catch(e3){}
+        var src="";
+        if(drew)try{src=c2.toDataURL("image/jpeg",0.78)}catch(e4){}
+        if(!src||src.length<200){toast("这张图读不出来");return}
+        var d=new Date();
+        var nm=(f.name||"").replace(/\.[^.]+$/,"").slice(0,16)||"我的照片";
+        PHOTOS.unshift({d:(d.getMonth()+1)+"月"+d.getDate()+"日 · 上传照片",t:nm,src:src,shot:1,up:1});
+        A_PAGE=0;aRender();photosPersist();
+        if(navigator.storage&&navigator.storage.persist)try{navigator.storage.persist()}catch(e5){} /* PWA 持久存储：防 iOS 7 天 ITP 清理 */
+        toast("已上传到相册 · 共 "+PHOTOS.length+" 张");
+      };
+      im.onerror=function(){toast("这张图读不出来")};
+      im.src=rd.result;
+    };
+    rd.onerror=function(){toast("这张图读不出来")};
+    try{rd.readAsDataURL(f)}catch(e6){toast("这张图读不出来")}
+  });
+  document.body.appendChild(fi);
+  try{fi.click()}catch(e7){}
+}
+(function(){ /* v44⑤照片档恢复：IDB 优先；IDB 空且旧 localStorage 档在→迁移；异步完成后重绘相册 */
+  var migrated=null;
   try{
-    var r=localStorage.getItem(PKEY);if(!r)return;
-    var arr=JSON.parse(r);
-    if(Object.prototype.toString.call(arr)==="[object Array]"){
-      arr.reverse().forEach(function(p){if(p&&p.d&&p.t)PHOTOS.unshift({d:p.d,t:p.t,src:p.src||"assets/bg-new.jpg",shot:!!p.src})});
-    }
+    var r=localStorage.getItem(PKEY);
+    if(r){var arr=JSON.parse(r);if(Object.prototype.toString.call(arr)==="[object Array]")migrated=arr;}
   }catch(e){}
+  pGetAll(function(stored){
+    var list=(stored&&Object.prototype.toString.call(stored)==="[object Array]"&&stored.length)?stored:null;
+    if(list){
+      list.slice().reverse().forEach(function(p){if(p&&p.d&&p.t)PHOTOS.unshift({d:p.d,t:p.t,src:p.src||"assets/bg-new.jpg",shot:!!p.src,up:p.up?1:0})});
+      if(migrated)try{localStorage.removeItem(PKEY)}catch(e2){} /* IDB 为准，旧档删掉防下次混淆 */
+    }else if(migrated){
+      migrated.reverse().forEach(function(p){if(p&&p.d&&p.t)PHOTOS.unshift({d:p.d,t:p.t,src:p.src||"assets/bg-new.jpg",shot:!!p.src,up:p.up?1:0})});
+      photosPersist(); /* 迁移：写进 IDB 并删旧档（回退环境会幂等写回旧档，无害） */
+    }
+    try{aRender()}catch(e3){} /* IDB 是异步的：恢复完刷新相册网格/页码（jsdom 同步立即执行，渲染空网格无副作用） */
+  });
 })();
 /* 拍照钩子见文末 __roomHooks（photos） */
 $("dShot").addEventListener("click",function(){ /* v31shot3：一键拍照=闪白→截房间画布+合成角色（装修模式下角色也进照）→拍立得预览停 2s：不点钮=自动入册；「取消」=不入册；「存入相册」=立即入册（老板 09-25：至少停 2s、收下改取消、取消不存） */
@@ -3343,7 +3432,6 @@ function renderGrid(){
   }else if(sub.bg){ /* v37bg：背景子页=6 预设+自定义卡（写 body 背景，随档） */
     BG_PRESETS.forEach(function(bs){elGrid.appendChild(makeBgCard(bs));});
   }
-  updateOwned(); /* 渲染后刷新「拥有：N」 */
 }
 var HIDE_IDS={f274:1,f277:1,f288:1,f285:1,f292:1,f270:1}; /* v22hide2：老板件撤栏——宝石宝箱/国际象棋/红黑地球仪/黄铜挂历；v22hide3：再撤三件旧货——玫瑰茶几 f292 / 哥特书架 f270 / 老长桌 f302（定义与图片保留，旧存档照旧显示）；v29：f302 已被老板改成挂墙时钟，09-24 解禁回栏 */
 function defHidden(id){ var d=DEF_MAP[id]; return !!((d&&/^占位家具/.test(d.name||""))||HIDE_IDS[id]); } /* v22hide：栏里不显示的名字——16 件占位家具 + 上述 7 件；定义与图片都保留 */
@@ -3353,11 +3441,10 @@ function makeFurnCard(id){ /* 家具卡：点击=真实放进房间 */
   var img=document.createElement("div");img.className="cimg";
   var im=document.createElement("img");im.src=def.src;im.alt=def.name;img.appendChild(im);
   var nm=document.createElement("div");nm.className="cname";nm.textContent=def.name;nm.title=def.name;
-  var ow=document.createElement("div");ow.className="cown";ow.dataset.id=id;ow.textContent="拥有：0";
-  card.appendChild(img);card.appendChild(nm);card.appendChild(ow);
+  card.appendChild(img);card.appendChild(nm);
   card.addEventListener("click",function(){
     var it=addFurniture(id);
-    if(it){select(it);updateOwned();toast("「"+def.name+"」已放进房间，拖到喜欢的位置");}
+    if(it){select(it);toast("「"+def.name+"」已放进房间，拖到喜欢的位置");}
   });
   return card;
 }
@@ -3455,13 +3542,7 @@ function makeBgCard(bs){ /* v37bg：背景预设卡；custom 卡=cSlid 滑条（
   }
   return card;
 }
-function updateOwned(){ /* v22bar2：「拥有：N」=该家具已在房间里摆放的数量（实时） */
-  elGrid.querySelectorAll(".cown").forEach(function(o){
-    var id=o.dataset.id,n=0;
-    FURNITURE.forEach(function(f){if(f.def===id)n++;});
-    o.textContent="拥有："+n;
-  });
-}
+/* v44③：updateOwned（拥有行）退役——老板指令删卡上「拥有：N」行，卡高 118→100 图片区自动吃高 */
 function applyTheme(t){
   setDecor("floor",{type:"color",value:t.floor,fb:t.floor});
   setDecor("wallBack",{type:"color",value:t.back,fb:t.back});
@@ -3472,7 +3553,7 @@ function applyTheme(t){
 document.querySelector(".qb-save").addEventListener("click",function(){saveState();setDecoMode(false);toast("布局已保存");}); /* v22tap：保存后收起底栏回主界面 */
 document.querySelector(".qb-reset").addEventListener("click",function(){
   askConfirm("确定要清空房间、恢复初始摆放吗？",function(){ /* v22cfm：清空是不可逆操作，先问一句 */
-    FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();updateOwned();toast("已恢复初始摆放");
+    FURNITURE.length=0;SEL=null;updateSelChip();seedFurniture();saveSoon();toast("已恢复初始摆放");
   });
 });
 /* 商店钮已按用户要求移除（2026-09 反馈②，商店功能二期再评估） */
@@ -4034,17 +4115,18 @@ __roomHooks.avatarState=function(lv,prog){
   if(typeof prog==="number")AVPROG=prog;
   return{lv:AVLV,prog:AVPROG};
 };
-/* ═══ 新手引导（批17/v22tut2）：聚光灯导览（方案A）7 步；第 1 步聚光打在角色身上并挥手打招呼 ═══ */
+/* ═══ 新手引导（批17/v22tut2/v44④）：聚光灯导览（方案A）8 步；第 1 步聚光打在角色身上并挥手打招呼，末步全屏文案教添加到手机桌面 ═══ */
 var TUTKEY="maoor-v22-tutorial-v1";
 var tutEl=$("tut"),tutVeil=$("tutVeil"),tutHole=$("tutHole"),tutBub=$("tutBub"),tutFinger=$("tutFinger");
-var TUT_STEPS=[ /* v22tut2（用户定稿顺序）：打招呼→装修→换装→相册→日历→日记→头像。pos=气泡尾巴朝向，切图最后微调时再动 */
+var TUT_STEPS=[ /* v22tut2（用户定稿顺序）：打招呼→装修→换装→相册→日历→日记→头像→v44④添加到主屏幕。pos=气泡尾巴朝向，切图最后微调时再动 */
   {char:1,greet:2400,pos:"top",t:"你好呀，我是彻子~ 欢迎来到你的小屋！点一下继续吧"},
   {sel:"dDecor",pos:"top",t:"这是装修模式，点它可以换墙色、摆家具、调光效"},
   {sel:"dDress",pos:"top",t:"这是换装，可以给角色搭配不同的衣服"},
   {sel:"mAlbum",pos:"left",t:"这是相册，你拍的照片都会收在这里"},
   {sel:"mCalendar",pos:"left",t:"这是日历，每天的任务和活动记在这儿"},
   {sel:"mDiary",pos:"left",t:"这是日记本，写下每天的心情与故事"},
-  {sel:"avatarStack",pos:"right",t:"这里是你的角色信息，能看等级和进度"}
+  {sel:"avatarStack",pos:"right",t:"这里是你的角色信息，能看等级和进度"},
+  {full:1,t:"把游戏添加到手机桌面，就能全屏玩更沉浸哦：iPhone 点底部分享按钮→「添加到主屏幕」；安卓点右上角 ⋮ →「添加到主屏幕」"} /* v44④：全屏收尾步（老板指令：引导末步教添加到手机桌面） */
 ];
 var tutI=-1,tutOn=false,tutFin=0,tutCur=null; /* tutFin: 0=普通步 1=待点换装 2=待点小猫 */
 function tutStart(){
@@ -4073,7 +4155,11 @@ function tutCharRect(){ /* v22tut2：角色屏幕框（第 1 步把聚光灯打�
 function tutShow(s){
   tutCur=s;
   var r=null,el=null;
-  if(s.char){ r=tutCharRect(); if(s.greet)charGreet(s.greet); } /* 打招呼步：角色原地挥手 */
+  if(s.full){ /* v44④：全屏步（无目标元素）——洞盖满整个 veil */
+    var srF=tutEl.getBoundingClientRect(),kF=FITK||1;
+    r={l:0,t:0,w:srF.width/kF,h:srF.height/kF,sw:srF.width/kF,sh:srF.height/kF};
+  }
+  else if(s.char){ r=tutCharRect(); if(s.greet)charGreet(s.greet); } /* 打招呼步：角色原地挥手 */
   else{
     el=document.getElementById(s.sel);
     if(!el){tutNext();return} /* 目标缺失自动跳步（防旧档/改版空引用） */
@@ -4088,7 +4174,8 @@ function tutShow(s){
   tutBub.className="pos-"+s.pos;
   tutBub.textContent=s.t;
   var bw=tutBub.offsetWidth||200,bh=tutBub.offsetHeight||70; /* 实测气泡尺寸（transform 不影响布局值），防长文案钳制失准 */
-  if(s.pos==="left"){bx=r.l-bw-18;by=r.t+r.h/2-bh/2}
+  if(s.full){bx=r.sw/2-bw/2;by=r.sh/2-bh/2} /* v44④：全屏步气泡居中 */
+  else if(s.pos==="left"){bx=r.l-bw-18;by=r.t+r.h/2-bh/2}
   else if(s.pos==="right"){bx=r.l+r.w+18;by=r.t+r.h/2-bh/2}
   else if(s.pos==="top"){bx=r.l+r.w/2-bw/2;by=r.t-bh-16}
   else{bx=r.l+r.w/2-bw/2;by=r.t+r.h+16}
@@ -4097,6 +4184,7 @@ function tutShow(s){
   void tutBub.offsetWidth;tutBub.classList.add("on");
   tutFinger.classList.remove("on");
   setTimeout(function(){
+    if(s.full)return; /* v44④：全屏步不出手指 */
     var r2=(s.char?tutCharRect():tutRect(el));
     if(!r2)return;
     tutFinger.style.left=(r2.l+r2.w/2-13)+"px";tutFinger.style.top=(r2.t+r2.h+6)+"px";
