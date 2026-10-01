@@ -839,7 +839,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   </div>
 </div>
 <!-- 卡4：恢复存档用的隐藏文件选择器（accept 限制 JSON） -->
-<input type="file" id="fileRestore" accept="application/json,.json" hidden>
+<!-- v45③：hidden 属性(display:none) 在 iOS/微信内核对 f.click() 经常不弹文件选择器(=老板报「恢复存档按了没反应」)→改 1px 透明占位，程序性 click 全内核可用 -->
+<input type="file" id="fileRestore" accept="application/json,.json" style="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1" tabindex="-1" aria-hidden="true">
 <!-- 卡4：存档码面板（复制带走 / 粘贴恢复） -->
 <section id="codeSheet" aria-hidden="true" aria-label="存档码">
   <h3>存档码 <button class="btn-mini" id="codeClose">✕</button></h3>
@@ -1492,7 +1493,7 @@ function wallFreeV(it,v){ /* 从落点行向外找第一个不撞的行（先往
    多盏灯天然叠亮；呼吸走 rAF 重绘循环（只在有「呼吸」灯存在时启动，页面隐藏即停）。 */
 var LAMP_IDS={f281:1,f293:1,f313:1,f315:1}; /* v22lamp：灯=哥特提灯 f281 / 壁灯 f293 / 落地灯 f313 / 宝石 f315——v32lamp：后两盏是家具包同步来的新灯，老板报「常亮不受一键开灯管」，加进白名单即默认灭、受总开关管；以后再加灯就把编号写进来 */
 function glowOf(it){ var g=it&&it.glow; if(!g||!g.c)return null;
-  if(LAMP_IDS[it.def]&&!it.lamp)return null; /* v22lamp：灯默认灭（运行时状态、不进存档），点「一键开灯」两盏一起亮 */
+  if(LAMP_IDS[it.def]&&!it.lamp)return null; /* v22lamp：灯默认灭；v45④ 起 lamp 随存档持久化，开灯后刷新仍亮 */
   return g; }
 function glowSeed(it){ /* 每盏灯一个固定相位，避免多盏灯同步眨眼 */
   var s=String((it&&it.id)||""),h=0,i;
@@ -2918,9 +2919,15 @@ function buildSaveObj(){
   return {app:SAVE_APP,ver:SAVE_VER,date:saveDateStr(new Date()),keys:keys,size:size};
 }
 /* 导出：Blob + a.download 下载 maoor-save-YYYYMMDD.json（无 Blob 环境静默降级，仍返回数据） */
-function exportSave(){
-  var obj=buildSaveObj(),txt="";
-  try{txt=JSON.stringify(obj)}catch(e){toast("导出失败：存档无法序列化");return null}
+function exportSave(cb){ /* v45①：异步化——先从 IDB 取照片全量打进存档再序列化导出（照片随文件版存档走；存档码照旧瘦身不含照片） */
+  var obj=buildSaveObj();
+  pGetAll(function(stored){
+    var nPhoto=(stored&&Object.prototype.toString.call(stored)==="[object Array]")?stored.length:0;
+    if(nPhoto){
+      try{obj.keys[PKEY]=JSON.stringify(stored);obj.size[PKEY]=saveByteLen(obj.keys[PKEY]);}catch(e0){}
+    }
+    var txt="";
+    try{txt=JSON.stringify(obj)}catch(e){toast("导出失败：存档无法序列化");if(typeof cb==="function")cb(null);return}
   var name="maoor-save-"+saveFileDate(new Date())+".json";
   try{
     var blob=new Blob([txt],{type:"application/json;charset=utf-8"});
@@ -2932,8 +2939,10 @@ function exportSave(){
       if(a.parentNode)a.parentNode.removeChild(a);},0);
   }catch(e2){ /* jsdom 等无 createObjectURL 时忽略 */ }
   lastExport={name:name,text:txt,obj:obj};
-  toast("存档已导出："+name);
-  return obj;
+    toast("存档已导出："+name+(nPhoto?("（含 "+nPhoto+" 张照片）"):""));
+    if(typeof cb==="function")cb(obj);
+  });
+  return obj; /* v45①：同步返回骨架对象（照片由异步回调补进 obj.keys），兼容旧调用方 */
 }
 /* 校验：app / ver 数字 / keys 对象，任一不符即拒绝 */
 function validateSave(o){
@@ -2948,14 +2957,28 @@ function applyRestore(text){
   var o;
   try{o=JSON.parse(text)}catch(e){return{ok:false,why:"JSON 解析失败，文件可能已损坏"}}
   var v=validateSave(o);if(!v.ok)return v;
-  var pairs=[],i,k,val;
+  var pairs=[],i,k,val,photoVal=null;
   for(i=0;i<SAVE_KEYS.length;i++){
     k=SAVE_KEYS[i];val=o.keys[k];
     if(val==null)continue;                     /* 文件里没这个 key → 跳过，不改动本地 */
     if(typeof val!=="string")return{ok:false,why:"存档字段格式不对："+k};
+    if(k===PKEY){photoVal=val;continue} /* v45①：照片不走 localStorage，直写 IDB，刷新后启动恢复链读回 */
     pairs.push([k,val]);
   }
-  if(!pairs.length)return{ok:false,why:"文件里没有任何可恢复的存档内容"};
+  if(photoVal!=null){ /* v45①：导入的照片整体覆盖写进 IDB；无 IDB 降级环境写回 localStorage（旧 5 张帽逻辑接住） */
+    var parr=null;
+    try{var pj=JSON.parse(photoVal);
+      if(Object.prototype.toString.call(pj)==="[object Array]")parr=pj;
+      else if(pj&&Object.prototype.toString.call(pj.photos)==="[object Array]")parr=pj.photos; /* v45①：v44 及更早旧存档照片键={photos:[...]} 对象格式，一并认（test-v22 L614 抓到的真兼容 bug） */
+    }catch(eP){parr=null}
+    if(parr){
+      pPutAll(parr,function(okP){
+        if(okP){try{localStorage.removeItem(PKEY)}catch(eQ){}}
+        else{try{localStorage.setItem(PKEY,photoVal)}catch(eR){}}
+      });
+    }
+  }
+  if(!pairs.length&&photoVal==null)return{ok:false,why:"文件里没有任何可恢复的存档内容"};
   var backup=[],old;
   try{
     for(i=0;i<pairs.length;i++){
@@ -2972,7 +2995,7 @@ function applyRestore(text){
     return{ok:false,why:"写入本地存储失败，已回滚（浏览器存储可能已满）"};
   }
   RST_PENDING=true;
-  return{ok:true,ver:o.ver,date:typeof o.date==="string"?o.date:"",count:pairs.length};
+  return{ok:true,ver:o.ver,date:typeof o.date==="string"?o.date:"",count:pairs.length+(parr?1:0)}; /* v45①：照片也计入恢复项数（走 IDB/回退路径，不在 pairs 里） */
 }
 var RST_PENDING=false; /* v22fix：存档码/文件恢复后内存是旧态，刷新前不许写档 */
 function showRestoreBar(r){
@@ -3169,7 +3192,7 @@ function photosPersist(){ /* v44⑤：IDB 优先（全量无帽）；写成功�
 function albumUploadPick(){ /* v44⑤：相册加号=选手机图→长边 1280 JPEG 压缩→入册（替代旧「开发中」占位） */
   var old=document.getElementById("upFileIn");if(old)old.remove(); /* 防取消选择后 input 堆积 */
   var fi=document.createElement("input");
-  fi.type="file";fi.accept="image/*";fi.id="upFileIn";fi.style.display="none";
+  fi.type="file";fi.accept="image/*";fi.id="upFileIn";fi.style.cssText="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1"; /* v45③：display:none 在 iOS/微信对程序性 click 不弹选择器→1px 透明占位（与 fileRestore 同款修法） */
   fi.addEventListener("click",function(e){e.stopPropagation()}); /* v44⑤：程序性 fi.click() 冒泡到 document 会触发相册「点外关闭」——截住冒泡（弹文件选择框是默认行为，不受影响） */
   fi.addEventListener("change",function(){
     var f=fi.files&&fi.files[0];
@@ -3223,6 +3246,14 @@ function albumUploadPick(){ /* v44⑤：相册加号=选手机图→长边 1280 
     try{aRender()}catch(e3){} /* IDB 是异步的：恢复完刷新相册网格/页码（jsdom 同步立即执行，渲染空网格无副作用） */
   });
 })();
+function shotBgColor(){ /* v45⑤：快照底色=.screen 当前背景（v38 起 applyBg 写 .screen；纯色直接读 computed，渐变/透明回退默认深棕 #3a2a1b） */
+  var c="#3a2a1b";
+  try{
+    var cs=getComputedStyle($("screen"));
+    if(cs&&cs.backgroundColor&&cs.backgroundColor!=="transparent"&&cs.backgroundColor.indexOf("rgba(0, 0, 0, 0)")<0)c=cs.backgroundColor;
+  }catch(e){}
+  return c;
+}
 /* 拍照钩子见文末 __roomHooks（photos） */
 $("dShot").addEventListener("click",function(){ /* v31shot3：一键拍照=闪白→截房间画布+合成角色（装修模式下角色也进照）→拍立得预览停 2s：不点钮=自动入册；「取消」=不入册；「存入相册」=立即入册（老板 09-25：至少停 2s、收下改取消、取消不存） */
   closeSettings();closeCal();
@@ -3230,7 +3261,9 @@ $("dShot").addEventListener("click",function(){ /* v31shot3：一键拍照=闪�
   var shot="";
   try{
     var snap=document.createElement("canvas");snap.width=cv.width;snap.height=cv.height;
-    var sx2=snap.getContext("2d");sx2.drawImage(cv,0,0);
+    var sx2=snap.getContext("2d");
+    sx2.fillStyle=shotBgColor();sx2.fillRect(0,0,snap.width,snap.height); /* v45⑤：先铺当前画面背景色（老板调的背景色所见即所得进照片；房间画布空白处原本透明→导出 PNG 透底） */
+    sx2.drawImage(cv,0,0);
     if(CHAR.on&&!charVisible())drawChar(sx2); /* 装修模式把角色藏了：拍照时补画进快照 */
     shot=snap.toDataURL("image/png");
   }catch(e){try{shot=cv.toDataURL("image/png")}catch(e2){shot=""}}
@@ -3569,7 +3602,7 @@ function saveState(){
       floor:DECOR.floor.value,wallB:DECOR.wallBack.value,wallL:DECOR.wallLeft.value,grid:DECOR.grid,
       roof:DECOR.roof?DECOR.roof.value:null,border:DECOR.border?DECOR.border.value:null, /* v35roof：屋顶/屋外贴图随档 */
       bg:DECOR.bg?DECOR.bg.value:null, /* v37bg：背景随档（老档无此键=保持默认渐变） */
-      furn:FURNITURE.map(function(f){return{def:f.def,name:f.name,gx:f.gx,gy:f.gy,w:f.w,d:f.d,h:f.h,scale:f.scale,flip:f.flip||null,ox:f.ox||0,oy:f.oy||0,foot:f.foot||0,wall:f.wall||null,u:f.u||0,v:f.v||0,vh:f.vh||1,rot:f.rot||null,glow:f.glow?{c:f.glow.c,s:f.glow.s,i:f.glow.i,b:f.glow.b,p:f.glow.p}:null,
+      furn:FURNITURE.map(function(f){return{def:f.def,name:f.name,gx:f.gx,gy:f.gy,w:f.w,d:f.d,h:f.h,scale:f.scale,flip:f.flip||null,ox:f.ox||0,oy:f.oy||0,foot:f.foot||0,wall:f.wall||null,u:f.u||0,v:f.v||0,vh:f.vh||1,rot:f.rot||null,glow:f.glow?{c:f.glow.c,s:f.glow.s,i:f.glow.i,b:f.glow.b,p:f.glow.p}:null,lamp:f.lamp?1:0, /* v45④：一键开灯状态随档（原「运行时状态、不进存档」，刷新即灭=老板报的 bug） */
         sh:f.sh||0,sm:f.sm||0,sw:f.sw||null,sd:f.sd||null,on:f.on?(function(){var k;for(k=0;k<FURNITURE.length;k++)if(FURNITURE[k].id===f.on)return k;return -1;})():-1,su:f.su||0,sv:f.sv||0};}) /* v22shelf：on 存承托件在存档数组里的下标（读档时重新绑定，id 变了也不会错位） */
     }));
   }catch(err){}
@@ -3604,6 +3637,7 @@ function restoreState(){
       it.ox=f.ox||0;it.oy=f.oy||0; /* v22sync：资产微调（相对图片宽/高的比例偏移），老存档缺省 0 */
       if(f.foot)it.foot=1; /* v22sync·A：这件在游戏里手动改过占格 → 以后的家具表同步不再覆盖它 */
       if("glow" in f)it.glow=(f.glow===true)?{c:"#ffd27a",s:1.6,i:0.95,b:1,p:1}:((f.glow&&typeof f.glow==="object")?f.glow:null); /* v22fix：老档布尔 true 归一成默认暖黄（原来 glowOf 静默不亮） */
+      if(f.lamp)it.lamp=1; /* v45④：灯状态回放（老档无字段=灭，兼容）；启动末尾 lampSync() 会同步「一键关灯」文案 */
       if("sh" in f)it.sh=Math.max(0,Math.min(6,f.sh||0)); /* v22shelf：台面高（行） */
       if("sm" in f)it.sm=f.sm?1:0;
       if("sw" in f)it.sw=f.sw||null;if("sd" in f)it.sd=f.sd||null; /* v22sync：台面范围（格，null=跟占格一样） */
@@ -4058,6 +4092,23 @@ $("mDel").addEventListener("click",function(){
   calRender();renderMemo();renderDay();if(calView==="week")renderWeek();saveCal();toast("已删除待办"); /* v22cal8：同步周视图 */
 });
 $("mTxt").addEventListener("keydown",function(e){if(e.key==="Enter")addMemo();});
+/* v45②：备忘输入键盘避让（老板：系统输入框弹出盖住时间尺）——mTxt 聚焦且软键盘弹出时把 #cal 面板整体上移贴键盘顶（iOS layout viewport 不动、钉底的 mForm 必被盖；行内编辑在可滚动区系统自动露出，不干预）。visualViewport iOS13+/Chrome61+，不支持的内核不动作 */
+(function(){
+  if(!window.visualViewport)return;
+  var vv=window.visualViewport,calEl=$("cal");
+  function kbLift(){
+    var f=$("mForm"),act=document.activeElement;
+    if(!calEl||!f||!f.classList.contains("show")||!act||act.id!=="mTxt"){if(calEl)calEl.style.transform="";return}
+    calEl.style.transform=""; /* 先归零再量，避免叠旧抬升量 */
+    var r=f.getBoundingClientRect();
+    var visBottom=vv.offsetTop+vv.height; /* 可视底=键盘顶 */
+    var lift=Math.round(r.bottom-visBottom+10);
+    if(lift>0)calEl.style.transform="translateY(-"+lift+"px)";
+  }
+  vv.addEventListener("resize",kbLift);
+  vv.addEventListener("scroll",kbLift);
+  $("mTxt").addEventListener("blur",function(){setTimeout(function(){if(calEl)calEl.style.transform=""},120)}); /* 失焦归位（延时让「确认」钮的 click 先过去） */
+})();
 /* 开合（复用 #dimVeil，与日记/相册/设置/换装互斥） */
 function openCal(){
   closeDiary();closeAlbum();closeSettings();setDress(false);
