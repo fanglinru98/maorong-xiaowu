@@ -148,66 +148,26 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* ═══ 换装界面覆盖层（v22dress：照 09-04 验收版换装demo 整体替换，d- 前缀防与底边栏类名冲突） ═══ */
 #dressLayer{position:absolute;inset:0;z-index:50;background:#241a11;opacity:0;pointer-events:none;transition:opacity .22s ease}
 #dressLayer.show{opacity:1;pointer-events:auto}
-.d-scene-bg{ /* 更衣室图：顶对齐按宽铺满，底部空缺深棕渐变过渡（同换装demo） */
+.d-scene-bg{ /* v46：老板切图——全屏更衣室场景（红帘+角色已烧进图），cover 铺满 */
   position:absolute;inset:0;
-  background:url("assets/dress-bg.png") top center/100% auto no-repeat,#241a11}
-.d-scene-bg::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(36,26,17,0) 55%,rgba(36,26,17,.55) 66%,#241a11 75%,#1c130c 100%)}
-.d-back{position:absolute;left:12px;top:14px;z-index:30;width:46px;height:46px;border-radius:50%;
-  background:linear-gradient(#fdf6e3,#f3e7c8);border:2px solid var(--gold-deep);color:var(--ink2);
-  font-size:24px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.35);
-  display:grid;place-items:center;transition:transform .12s;cursor:pointer}
+  background:url("assets/ui/dress-scene.png") center/cover no-repeat,#241a11}
+.d-back{position:absolute;left:12px;top:14px;z-index:30;width:52px;aspect-ratio:294/246;padding:0;
+  background:url("assets/ui/dress-back.png") center/100% 100% no-repeat;border:none;
+  transition:transform .12s;cursor:pointer} /* v46：切图返回钮 */
 .d-back:active{transform:scale(.88)}
-.d-plaque{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:30;
-  display:flex;align-items:center;gap:8px;padding:9px 30px 10px;
-  background:linear-gradient(#5a3a2c,#3a251c);border:2px solid var(--gold);border-radius:14px;
-  box-shadow:0 5px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(234,217,174,.3)}
-.d-plaque::before{content:"❤️";position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:15px;
-  filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
-.d-plaque i{font-style:normal;font-size:15px}
-.d-plaque span{font-size:19px;font-weight:700;letter-spacing:6px;text-indent:6px;color:#f3e3b8}
-#dTopBtns{position:absolute;right:0;bottom:100%;margin-bottom:10px;display:flex;gap:8px;z-index:30} /* 装修 quickBtns 同位：悬浮面板右上角（bottom:100% 自动跟随面板高度） */
-.d-qb{height:30px;padding:0 12px;border-radius:15px;font-size:13px;font-weight:600;line-height:1;display:grid;place-items:center;
-  border:1.5px solid rgba(255,255,255,.35);box-shadow:0 4px 10px rgba(74,54,40,.28);transition:transform .12s;white-space:nowrap;cursor:pointer}
-.d-qb:active{transform:scale(.9)}
-.d-qb-save{background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12}
-.d-qb-reset{background:#f4ead0;color:#5a4632}
-.d-charimg{position:absolute;left:50%;top:37%;height:36%;transform:translate(-50%,-50%);z-index:5;cursor:pointer;
-  filter:drop-shadow(0 10px 14px rgba(20,10,5,.35))}
-.d-charimg.pop{animation:dpop .5s ease}
-@keyframes dpop{0%{transform:translate(-50%,-50%) scale(1)}35%{transform:translate(-50%,-50%) scale(.95) translateY(3px)}70%{transform:translate(-50%,-52%) scale(1.04)}100%{transform:translate(-50%,-50%) scale(1)}}
-.d-charimg.wiggle{animation:dwiggle .55s ease} /* 点 IP：果冻微晃 */
-@keyframes dwiggle{0%{transform:translate(-50%,-50%) scale(1,1)}25%{transform:translate(-50%,-50%) scale(1.05,.94)}50%{transform:translate(-50%,-49.5%) scale(.96,1.05)}75%{transform:translate(-50%,-50%) scale(1.03,.97)}100%{transform:translate(-50%,-50%) scale(1,1)}}
-.d-heart{position:absolute;z-index:6;font-size:20px;pointer-events:none;animation:dheartUp 1s ease-out forwards}
-@keyframes dheartUp{0%{opacity:0;transform:translate(-50%,0) scale(.5)}18%{opacity:1}100%{opacity:0;transform:translate(-50%,-70px) scale(1.15)}}
-.d-saybub{position:absolute;left:50%;top:13.5%;transform:translateX(-50%) scale(.6);
-  background:#fffdf4;border:1.5px solid var(--gold);color:var(--ink2);font-size:12.5px;font-weight:600;
-  padding:7px 12px;border-radius:12px;opacity:0;pointer-events:none;transition:all .18s;z-index:10;white-space:nowrap;
-  box-shadow:0 3px 8px rgba(90,70,50,.15)}
-.d-saybub::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
-  border:6px solid transparent;border-top-color:#fffdf4;border-bottom:none}
-.d-saybub.show{opacity:1;transform:translateX(-50%) scale(1)}
-#dPanel{ /* 底部一整块面板：装修底边栏同款切图底板（UI 升级批），页签复用全局 .tab 组件 */
+.d-plaque{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:30;
+  width:38%;aspect-ratio:924/257;pointer-events:none;
+  background:url("assets/ui/dress-title.png") center/100% 100% no-repeat} /* v46：切图标题横幅（「换装」二字烧在图里） */
+.d-save{position:absolute;right:2%;bottom:calc(100% + 6px);z-index:30;width:26%;aspect-ratio:518/162;padding:0;
+  background:url("assets/ui/dress-save.png") center/100% 100% no-repeat;border:none;
+  transition:transform .12s;cursor:pointer} /* v46：切图保存胶囊（悬浮面板右上角，原 dTopBtns 位） */
+.d-save:active{transform:scale(.92)}
+/* v46：角色图/气泡/爱心/果冻晃 CSS 随占位页退役（角色已烧进场景切图） */
+#dPanel{ /* v46：底部一整块面板=老板切图（六页签+8样例卡+滚动条已烧进图，纯占位无交互） */
   position:absolute;left:10px;right:10px;bottom:10px;z-index:10;
-  aspect-ratio:2246/1751;
-  background:url(assets/ui/deco-panel.png) center/100% 100% no-repeat; /* v30fix：去米色兜底层（同 #decoBar，四角透明区不透米白） */
-  box-shadow:0 -8px 24px rgba(15,8,4,.35)}
-.d-tabs{position:absolute;left:0;right:0;top:3.4%;height:8.6%;display:flex;gap:6px;padding:0 10px;justify-content:center}
-.d-grid{position:absolute;left:4.6%;right:5.6%;top:20.6%;bottom:8.4%;overflow-y:auto;
-  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 0 6px;align-content:start;scrollbar-width:thin;scrollbar-color:#dcb87e #f8eed6} /* 用户拍板：删槽位软垫内衬（同装修底边栏） */
-.d-grid::-webkit-scrollbar{width:14px}
-.d-grid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:99px}
-.d-grid::-webkit-scrollbar-thumb{background:#dcb87e;border:2px solid #f8eed6;border-radius:99px}
-.d-card{position:relative;background:#fdf6e3;border:1px solid #e5d3a8;border-radius:12px;padding:5px 4px 6px;
-  display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;cursor:pointer}
-.d-card .d-cimg{ /* 细金边内框（装修家具卡同款） */
-  width:100%;height:56px;box-sizing:border-box;padding:3px;background:#fbf3df;border:1px solid #e8d5ac;border-radius:9px;
-  display:grid;place-items:center;font-size:30px;line-height:1;overflow:hidden}
-.d-card .d-cname{font-size:12px;font-weight:700;color:var(--ink2);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.d-card.sel{border-color:var(--gold-deep);background:#fffdf4;box-shadow:0 4px 10px rgba(90,70,50,.18),inset 0 -2px 0 var(--gold-line);transform:translateY(-1px)}
-.d-card.sel::after{content:"✓";position:absolute;right:-6px;top:-6px;width:23px;height:23px;border-radius:50%;
-  background:#3a2d20;color:#fdf6e3;font-size:12.5px;font-weight:700;display:grid;place-items:center;
-  border:2px solid #fffdf4;box-shadow:0 2px 5px rgba(0,0,0,.25)}
+  aspect-ratio:2294/1711;
+  background:url(assets/ui/dress-panel.png) center/100% 100% no-repeat}
+
 /* ═══ 新手引导（批17/v22tut2）：聚光灯导览 7 步＝打招呼→装修→换装→相册→日历→日记→头像；每步点一下继续，末步点一下收尾 ═══ */
 #tut{position:absolute;inset:0;z-index:52;display:none;pointer-events:none} /* 容器恒不拦截：收尾阶段点击穿透到换装/小猫；挡板由 #tutVeil 负责 */
 #tut.on{display:block}
@@ -917,17 +877,10 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- 换装界面覆盖层（点 dock「换装」弹出，‹ 返回主界面） -->
 <div id="dressLayer">
   <div class="d-scene-bg" aria-hidden="true"></div>
-  <button class="d-back" id="dBack" title="返回">‹</button>
-  <div class="d-plaque"><i>🌹</i><span>换装</span><i>🌹</i></div>
-  <img class="d-charimg" id="dCharImg" src="assets/character/stand.png" alt="角色">
-  <div class="d-saybub" id="dSayBub" role="status"></div>
+  <button class="d-back" id="dBack" title="返回" aria-label="返回"></button>
+  <div class="d-plaque" aria-label="换装"></div>
   <section id="dPanel" aria-label="换装面板">
-    <nav class="d-tabs" id="dTabs"></nav>
-    <div id="dTopBtns">
-      <button class="d-qb d-qb-save" id="dSave" title="保存装扮">💾 保存</button>
-      <button class="d-qb d-qb-reset" id="dReset" title="重置装扮">↺ 重置</button>
-    </div>
-    <div class="d-grid" id="dGrid"></div>
+    <button class="d-save" id="dSaveImg" aria-label="保存"></button>
   </section>
 </div>
 <!-- 新手引导（批17）：聚光灯导览；场景三步（床/茶几/壁炉）等初始布局定稿后补 -->
@@ -3302,73 +3255,15 @@ function dLoadState(){ /* 读档校验（非法类目/名称忽略） */
   }catch(e){}
 }
 function dSaveOutfit(){try{localStorage.setItem(DLSKEY,JSON.stringify(dPicked))}catch(e){}}
-function dResetOutfit(){ /* 装修页同语义：恢复默认并落档 */
-  dPicked={suit:"绅士派对"};dSaveOutfit();
-  dRenderGrid();dPop();toast("已重置");
-}
-var dressEl=$("dressLayer");
-function dRenderTabs(){
-  var box=$("dTabs");box.innerHTML="";
-  DCATS.forEach(function(c){
-    var b=document.createElement("button");
-    b.className="tab"+(c===dCat?" on":""); /* UI 升级批：直接复用装修页签 .tab 组件（猩红选中+金星） */
-    b.textContent=DCAT_NAME[c];
-    b.setAttribute("data-cat",c);
-    b.addEventListener("click",function(){dCat=c;dRenderTabs();dRenderGrid();});
-    box.appendChild(b);
-  });
-}
-function dRenderGrid(){
-  var box=$("dGrid");box.innerHTML="";
-  WARDROBE[dCat].forEach(function(item){
-    var d=document.createElement("div");
-    d.className="d-card"+(dPicked[dCat]===item.name?" sel":"");
-    d.setAttribute("data-name",item.name);
-    var img=document.createElement("div");img.className="d-cimg";img.textContent=item.icon;
-    var nm=document.createElement("div");nm.className="d-cname";nm.textContent=item.name;
-    d.appendChild(img);d.appendChild(nm);
-    d.addEventListener("click",function(){
-      if(dPicked[dCat]===item.name)return;
-      dPicked[dCat]=item.name;
-      dRenderGrid();
-      toast("已换上 "+item.name);
-      dSay(dPickLine(DRESS_LINES));
-      dPop();
-    });
-    box.appendChild(d);
-  });
-}
-function dPop(){
-  var c=$("dCharImg");
-  c.classList.remove("pop");
-  void c.offsetWidth; /* 重启动画 */
-  c.classList.add("pop");
-}
-var DRESS_LINES=["这个我挺喜欢的！","嗯...还行吧","哇，超合适的！","感觉元气满满~","有点不太像我呢","就决定是它了！","毛茸茸的最舒服了","换好啦，好看吗？"];
-var IDLE_LINES=["今天想穿点什么好呢~","衣柜里好多衣服呀","你帮我挑嘛~","待会去哪里玩呢？","镜子里的我帅不帅？","呼...站了好久啦"];
-var bubTimer=null,idleTimer=null,lastLine="";
-function dPickLine(arr){
-  var s;do{s=arr[Math.floor(Math.random()*arr.length)]}while(s===lastLine&&arr.length>1);
-  lastLine=s;return s;
-}
-function dSay(text){
-  var b=$("dSayBub");b.textContent=text;b.classList.add("show");
-  clearTimeout(bubTimer);
-  bubTimer=setTimeout(function(){b.classList.remove("show")},2000);
-}
-function dScheduleIdle(){
-  clearTimeout(idleTimer);
-  idleTimer=setTimeout(function(){dSay(dPickLine(IDLE_LINES));dScheduleIdle();},9000+Math.random()*6000);
-}
-function setDress(on){ /* 打开=渲染+启动闲聊计时；关闭=停闲聊；开换装时关日记/相册（三层互斥） */
+var dressEl=$("dressLayer"); /* v46：dResetOutfit 随占位页退役（dSaveOutfit 保留待真衣服切图接回） */
+/* v46：dRenderTabs/dRenderGrid/dPop/dSay/dScheduleIdle/dPickLine 及台词表随占位页退役（真衣服切图到位再接回；DCATS/WARDROBE/dPicked/dLoadState/dSaveOutfit 保留） */
+function setDress(on){ /* v46：占位页纯展示（无渲染/闲聊计时）；开换装关日记/相册/设置/日历（互斥） */
   if(on){closeDiary();closeAlbum();closeSettings();closeCal();}
   dressEl.classList.toggle("show",!!on);
-  if(on){dRenderTabs();dRenderGrid();dScheduleIdle();}
-  else clearTimeout(idleTimer);
 }
 /* v31gate：功能开关表（双版本机制）——玩家版=默认链接，只开已解锁功能（false=点按钮弹「开发中」）；
    老板版=链接带 ?boss=1 全开；也可单功能强开（如 ?dress=1）。新功能开发中→表里加一行 false，上线改 true。 */
-var FEATS={dress:false};
+var FEATS={dress:true}; /* v46：换装占位页对玩家开放（demo 展示，点任意处弹开发中提示） */
 var BOSS=/(^|[?&])boss=1/.test(location.search);
 for(var fk in FEATS){if(new RegExp("(^|[?&])"+fk+"=1").test(location.search))FEATS[fk]=true;}
 if(BOSS)for(var fk2 in FEATS)FEATS[fk2]=true;
@@ -3377,28 +3272,10 @@ $("dDress").addEventListener("click",function(){ /* v30hide：未解锁=玩家�
   setDress(true);
 });
 $("dBack").addEventListener("click",function(){setDress(false);});
-$("dSave").addEventListener("click",function(){dSaveOutfit();toast("已保存");});
-$("dReset").addEventListener("click",function(){dResetOutfit();});
-/* 点 IP：果冻微晃 + 随机台词 + 爱心/星星上飘（同换装demo） */
-var DCLICK_LINES=["嘿嘿，痒痒的~","别戳啦，怕痒","要出门了吗？","今天这身好看吗？","喵~","换好啦，再夸夸我嘛","咕噜咕噜~站好久啦"];
-function dFloatHeart(){
-  var s=document.createElement("span");
-  s.className="d-heart";
-  s.textContent=["❤️","💕","✨"][Math.floor(Math.random()*3)];
-  s.style.left="calc(50% + "+(Math.round(Math.random()*70)-35)+"px)";
-  s.style.top=(24+Math.random()*8)+"%";
-  s.addEventListener("animationend",function(){s.remove()});
-  dressEl.appendChild(s);
-}
-$("dCharImg").addEventListener("click",function(){
-  setSt.taps++;setSave(); /* v39⑦：tapCount UI 退役，字段保留 */
-  var c=$("dCharImg");
-  c.classList.remove("pop","wiggle");
-  if(setSt.calm){dSay(dPickLine(DCLICK_LINES));return} /* 减弱动效：只说话，不晃不出爱心 */
-  void c.offsetWidth; /* 重启动画 */
-  c.classList.add("wiggle");
-  dFloatHeart();
-  dSay(dPickLine(DCLICK_LINES));
+/* v46：占位页整页——点任意处（返回钮除外）弹开发中提示；保存胶囊暂无真实功能；戳 IP 互动等角色正式接入再启用 */
+dressEl.addEventListener("click",function(e){
+  if(e.target.closest("#dBack"))return;
+  toast("换装页面还在开发中~");
 });
 dLoadState();
 /* ═══ 装修底边栏（批16）：造景/装修/主题 三页签分类回退，底板=切图面板（批15 槽位擦除成果保留） ═══ */

@@ -3,7 +3,7 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v45';
+const CACHE_VER = 'maoor-v46';
 const PRECACHE = [
   './index.html',
   './manifest.json',
@@ -11,8 +11,7 @@ const PRECACHE = [
   './icon-192.png',
   './icon-512.png',
   './assets/bg-new.jpg',
-  './assets/dress-bg.png',
-  './assets/character/stand.png',
+  './assets/character/stand.png', /* v46：旧 dress-bg.png 出 PRECACHE（换装层已改 assets/ui/dress-* 五件套） */
   /* 2.5d 家具 23 张 */
   './assets/2.5d/f270.png','./assets/2.5d/f271.png','./assets/2.5d/f272.png','./assets/2.5d/f273.png',
   './assets/2.5d/f274.png','./assets/2.5d/f275.png','./assets/2.5d/f276.png','./assets/2.5d/f277.png',
@@ -29,7 +28,7 @@ const PRECACHE = [
   './assets/2.5d/f312.png','./assets/2.5d/f313.png','./assets/2.5d/f314.png', /* v27：工作台 09-23 同步新增两件家具 */
   './assets/2.5d/f315.png','./assets/2.5d/f316.png', /* v28：工作台 09-24 同步新增两件（宝石/摆件） */
   './assets/2.5d/f317.png','./assets/2.5d/f318.png', /* v36：09-29 新家具×2（同图两件，老板库里命名「新家具」） */
-'./assets/2.5d/f319.png','./assets/2.5d/f320.png',\n'./assets/2.5d/f321.png', /* v36：09-29 家具包同步（鸦鸦公仔×2；f295-f316 同名换图随包更新） */
+'./assets/2.5d/f319.png','./assets/2.5d/f320.png','./assets/2.5d/f321.png', /* v46fix：v41 插入时带入字面 \n 致整份 sw 语法错误（SW 从未注册），修复 */ /* v36：09-29 家具包同步（鸦鸦公仔×2；f295-f316 同名换图随包更新） */
   './boss.html', /* v31gate：老板版跳板（?boss=1 全解锁入口） */
   './assets/tex/floor.png',
 './assets/tex/wall.png',
@@ -41,6 +40,7 @@ const PRECACHE = [
   './icon/设置.png','./icon/装修.png','./icon/换装.png','./icon/拍照.png',
   /* UI 切图（日记/相册/日历/装修底板） */
   './assets/ui/deco-panel.png','./assets/ui/cal-panel.png',
+  './assets/ui/dress-scene.png','./assets/ui/dress-panel.png','./assets/ui/dress-title.png','./assets/ui/dress-back.png','./assets/ui/dress-save.png', /* v46：换装占位页切图五件套 */
   './assets/ui/diary-cover.png','./assets/ui/diary-page.png','./assets/ui/diary-card.png','./assets/ui/btn-diary-write.png',
   './assets/ui/diary-write-board.png','./assets/ui/diary-write-editor.png','./assets/ui/diary-write-deco.png','./assets/ui/diary-write-save.png', /* E-20260922-02 写日记页新美术 4 张 */
   './assets/ui/album-panel.png','./assets/ui/album-add.png','./assets/ui/photo-frame.png',
