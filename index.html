@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>毛茸小屋 V22 装修 demo</title>
+<title>彻子小屋</title>
 <!-- PWA 全屏支持（V21 同款方案）：加到主屏幕后全屏运行 -->
 <meta name="theme-color" content="#332416">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="毛茸小屋">
+<meta name="apple-mobile-web-app-title" content="彻子小屋">
 <style>
 :root{--ink:#2f2b28;--muted:#8d877f;--line:#e5e1da;--bg:#f5f3ef;--panel:#fbfaf8;--accent:#3a352f;
   --gold:#d9b56a;--gold-deep:#c9a55c;--gold-line:#ead9ae;--panel2:#f8f0d8;--ink2:#5a4632;
@@ -351,6 +351,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .sheet-grip{width:40px;height:4px;border-radius:2px;background:#d8c3a5;margin:0 auto 12px}
 #sheet h2{font-size:18px;color:#5a4632;margin:0 0 6px}
 .set-row{display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px solid #ead9ae}
+.set-row input[type=range]{flex:1;margin:0 10px 0 4px;accent-color:#c9a55c;height:26px;background:none}
+.volval{flex:none;min-width:30px;text-align:right;font-size:13px;color:#7c2a20;font-weight:700}
 .set-row:last-child{border-bottom:none}
 .lab{font-size:14px;font-weight:700;color:#5a4632;display:block}
 .sub{font-size:11.5px;color:#9a8163;display:block;margin-top:2px;max-width:230px}
@@ -778,6 +780,12 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <div class="set-row">
     <span><span class="lab">全局背景音</span><span class="sub">循环播放游戏背景音乐</span></span>
     <button class="switch" role="switch" aria-checked="true" id="swBgm" aria-label="全局背景音"></button>
+  </div>
+  <!-- v50vol：背景音音量滑杆（老板指令；红框位=背景音行下） -->
+  <div class="set-row">
+    <span><span class="lab">背景音音量</span><span class="sub">拖动调节背景音乐大小</span></span>
+    <input type="range" id="volBgm" min="0" max="100" step="5" value="70" aria-label="背景音音量">
+    <span class="volval" id="volVal">70</span>
   </div>
   <!-- v39⑦：减弱动效/今日互动两项退役（老板指令）；setSt.calm/taps 字段保留兼容旧档 -->
   <!-- 卡4：存档导出/恢复 + 存档码 -->
@@ -2820,18 +2828,18 @@ initDiary();aRender();
 /* ═══ 设置面板（批6.5：V21 同款底部抽屉移植；SETKEY 独立存档） ═══ */
 var sheetEl=$("sheet");
 var SETKEY="maoor-v22-settings-v1";
-var setSt={calm:false,taps:0,sound:true,click:true,bgm:true}; /* v48snd：sound 拆 click/bgm 两独立开关；sound 保留仅兼容旧档 */
+var setSt={calm:false,taps:0,sound:true,click:true,bgm:true,vol:70}; /* v48snd：sound 拆 click/bgm 两独立开关；sound 保留仅兼容旧档；v50vol：vol=背景音音量 0-100，默认 70（老板嫌响） */
 function setSave(){try{localStorage.setItem(SETKEY,JSON.stringify(setSt))}catch(e){}}
 /* ═══ v47snd：音效引擎——BGM 循环+点击音；浏览器自动播放红线=首次手势解锁播放（iOS/微信同款） ═══ */
 var SND={bgm:null,click:null};
-function sndInit(){if(SND.bgm)return;try{SND.bgm=new Audio("assets/audio/bgm.m4a?v=48m");SND.bgm.loop=true;SND.click=new Audio("assets/audio/click.wav?v=48m");}catch(e){}} /* v48snd：BGM 源换录屏无损解封装音轨 bgm.m4a（不进 PRECACHE，首播流式）；v48mime：?v=48m 破缓存——COS 首发的 octet-stream 响应被浏览器按 max-age=86400 缓存，换参数强制重取正确 MIME */
+function sndInit(){if(SND.bgm)return;try{SND.bgm=new Audio("assets/audio/bgm.m4a?v=48m");SND.bgm.loop=true;SND.click=new Audio("assets/audio/click.wav?v=48m");SND.bgm.volume=(typeof setSt.vol==="number"?setSt.vol:70)/100;}catch(e){}} /* v50vol：建 Audio 后即套存档音量 */ /* v48snd：BGM 源换录屏无损解封装音轨 bgm.m4a（不进 PRECACHE，首播流式）；v48mime：?v=48m 破缓存——COS 首发的 octet-stream 响应被浏览器按 max-age=86400 缓存，换参数强制重取正确 MIME */
 function sndClick(){if(!setSt.click||!SND.click)return;try{SND.click.currentTime=0;var p=SND.click.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
 function sndBgm(){if(!SND.bgm)return;try{if(setSt.bgm){var q2=SND.bgm.play();if(q2&&q2.catch)q2.catch(function(){});}else SND.bgm.pause();}catch(e){}}
 function sndUnlock(){sndInit();sndBgm();document.removeEventListener("pointerdown",sndUnlock);document.removeEventListener("keydown",sndUnlock);}
 document.addEventListener("pointerdown",sndUnlock);document.addEventListener("keydown",sndUnlock);
 document.addEventListener("click",function(e){if(!setSt.click)return;if(e.target&&e.target.closest&&e.target.closest("button,.card,[role='button'],[role='switch']"))sndClick();},true);
-function sndUI(){var b=document.getElementById("swClick");if(b)b.setAttribute("aria-checked",setSt.click?"true":"false");var g=document.getElementById("swBgm");if(g)g.setAttribute("aria-checked",setSt.bgm?"true":"false");}
-(function(){var b=document.getElementById("swClick");if(b)b.addEventListener("click",function(){setSt.click=!setSt.click;setSave();sndUI();});var g=document.getElementById("swBgm");if(g)g.addEventListener("click",function(){setSt.bgm=!setSt.bgm;setSave();sndUI();sndBgm();});sndUI();})(); /* v48snd：两独立开关；bgm 开关即停/即播 */
+function sndUI(){var b=document.getElementById("swClick");if(b)b.setAttribute("aria-checked",setSt.click?"true":"false");var g=document.getElementById("swBgm");if(g)g.setAttribute("aria-checked",setSt.bgm?"true":"false");var s=document.getElementById("volBgm");if(s)s.value=setSt.vol;var vv=document.getElementById("volVal");if(vv)vv.textContent=setSt.vol;} /* v50vol：滑杆与数值显示同步 */
+(function(){var b=document.getElementById("swClick");if(b)b.addEventListener("click",function(){setSt.click=!setSt.click;setSave();sndUI();});var g=document.getElementById("swBgm");if(g)g.addEventListener("click",function(){setSt.bgm=!setSt.bgm;setSave();sndUI();sndBgm();});var s=document.getElementById("volBgm");if(s)s.addEventListener("input",function(){setSt.vol=Math.max(0,Math.min(100,+s.value||0));setSave();if(SND.bgm)SND.bgm.volume=setSt.vol/100;var vv=document.getElementById("volVal");if(vv)vv.textContent=setSt.vol;});sndUI();})(); /* v50vol：滑杆即时生效+存设置档 */ /* v48snd：两独立开关；bgm 开关即停/即播 */
 function applyCalm(){
   document.getElementById("screen").classList.toggle("calm",!!setSt.calm);
 }
@@ -2855,7 +2863,7 @@ btnClear.addEventListener("click",function(){
   try{
     for(var ci=0;ci<SAVE_KEYS.length;ci++)localStorage.removeItem(SAVE_KEYS[ci]);
   }catch(e){}
-  setSt={calm:false,taps:0,sound:true,click:true,bgm:true};applyCalm();sndUI();sndBgm(); /* v48snd：重置回双开关全开并按新状态恢复 bgm */
+  setSt={calm:false,taps:0,sound:true,click:true,bgm:true,vol:70};applyCalm();sndUI();sndBgm(); /* v48snd：重置回双开关全开并按新状态恢复 bgm */
   /* v22clr：清空存档 = 回到出厂初始状态，配色与缩放也要复位。
      原先只清家具，saveSoon() 会把内存里的旧配色/旧缩放原样写回新存档，玩家看着像「清空没生效」。 */
   applyTheme({floor:DECOR0.floor,back:DECOR0.wallBack,left:DECOR0.wallLeft});
@@ -3083,6 +3091,7 @@ window.__saveHooks={
     if(typeof d.sound==="boolean")setSt.sound=d.sound; /* 旧档总开关 */
     if(typeof d.click==="boolean")setSt.click=d.click;else if(typeof d.sound==="boolean")setSt.click=d.sound; /* v48snd：旧档无 click/bgm 时按 sound 映射 */
     if(typeof d.bgm==="boolean")setSt.bgm=d.bgm;else if(typeof d.sound==="boolean")setSt.bgm=d.sound;
+    if(typeof d.vol==="number")setSt.vol=Math.max(0,Math.min(100,d.vol)); /* v50vol：旧档无 vol 落默认 70 */
   }catch(e){}
   applyCalm();sndUI(); /* v47snd：设置恢复后开关 UI 同步 */
 })();

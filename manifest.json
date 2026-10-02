@@ -1,7 +1,7 @@
 {
-  "name": "毛茸小屋",
-  "short_name": "毛茸小屋",
-  "description": "毛茸小屋 · 网页养成小游戏（PWA 版）",
+  "name": "彻子小屋",
+  "short_name": "彻子小屋",
+  "description": "彻子小屋 · 网页养成小游戏（PWA 版）",
   "lang": "zh-CN",
   "start_url": "./index.html",
   "scope": "./",
