@@ -2824,7 +2824,7 @@ var setSt={calm:false,taps:0,sound:true,click:true,bgm:true}; /* v48snd：sound 
 function setSave(){try{localStorage.setItem(SETKEY,JSON.stringify(setSt))}catch(e){}}
 /* ═══ v47snd：音效引擎——BGM 循环+点击音；浏览器自动播放红线=首次手势解锁播放（iOS/微信同款） ═══ */
 var SND={bgm:null,click:null};
-function sndInit(){if(SND.bgm)return;try{SND.bgm=new Audio("assets/audio/bgm.m4a");SND.bgm.loop=true;SND.click=new Audio("assets/audio/click.wav");}catch(e){}} /* v48snd：BGM 源换录屏无损解封装音轨 bgm.m4a（不进 PRECACHE，首播流式） */
+function sndInit(){if(SND.bgm)return;try{SND.bgm=new Audio("assets/audio/bgm.m4a?v=48m");SND.bgm.loop=true;SND.click=new Audio("assets/audio/click.wav?v=48m");}catch(e){}} /* v48snd：BGM 源换录屏无损解封装音轨 bgm.m4a（不进 PRECACHE，首播流式）；v48mime：?v=48m 破缓存——COS 首发的 octet-stream 响应被浏览器按 max-age=86400 缓存，换参数强制重取正确 MIME */
 function sndClick(){if(!setSt.click||!SND.click)return;try{SND.click.currentTime=0;var p=SND.click.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
 function sndBgm(){if(!SND.bgm)return;try{if(setSt.bgm){var q2=SND.bgm.play();if(q2&&q2.catch)q2.catch(function(){});}else SND.bgm.pause();}catch(e){}}
 function sndUnlock(){sndInit();sndBgm();document.removeEventListener("pointerdown",sndUnlock);document.removeEventListener("keydown",sndUnlock);}
