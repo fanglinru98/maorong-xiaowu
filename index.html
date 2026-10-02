@@ -805,6 +805,11 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <span><span class="lab">📖 重新查看引导</span><span class="sub">再看一遍各功能的新手导览</span></span>
     <span class="set-go" aria-hidden="true">›</span>
   </div>
+  <!-- v51pwa：保存到桌面（老板指令）——安卓 Chrome 一键弹系统安装框；iOS/其他弹全屏教学；微信内提示先开浏览器 -->
+  <div class="set-row set-row-act" id="rowPwa" role="button" tabindex="0" aria-label="保存到桌面">
+    <span><span class="lab">📲 保存到桌面</span><span class="sub" id="pwaSub">全屏玩：没有上下浏览器栏</span></span>
+    <span class="set-go" aria-hidden="true">›</span>
+  </div>
   <div id="restoreBar" hidden>
     <span class="rst-info" id="rstInfo"></span>
     <button class="btn-mini" id="btnReload">立即刷新</button>
@@ -4166,6 +4171,33 @@ tutVeil.addEventListener("pointerdown",function(){if(tutOn&&tutFin===0)tutNext()
 tutSkip.addEventListener("click",function(e){e.stopPropagation();tutFinish();});
 /* v22tut2：第 3 步只介绍换装功能（不点进去），原「点换装→点小猫」真互动收尾按用户要求取消，三处接线一并撤销 */
 $("rowTutorial").addEventListener("click",function(){closeSettings();setTimeout(tutStart,380);});
+/* ═══ v51pwa：保存到桌面（老板指令）═══
+   平台规矩：网页无权自装桌面——安卓 Chrome 类捕获 beforeinstallprompt 后可按钮唤起系统安装框；
+   iOS Safari 禁唤起只能教学（分享→添加到主屏幕，head 已有 apple-mobile-web-app-capable 三件套，装后全屏）；
+   微信/QQ 内置浏览器装不了，先引导「在浏览器打开」；已桌面运行（display-mode）则提示。 */
+var PWA_EVT=null;
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();PWA_EVT=e;pwaSub();});
+function pwaIn(){return (window.matchMedia&&window.matchMedia("(display-mode: fullscreen)").matches)||(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||!!navigator.standalone;}
+function pwaSub(){var s=document.getElementById("pwaSub");if(!s)return;s.textContent=pwaIn()?"已在桌面运行":(PWA_EVT?"一键安装：全屏无浏览器栏":"全屏玩：没有上下浏览器栏");}
+function pwaTeach(){ /* 复用新手引导第 8 步全屏教学气泡（tut 同款 UI；点面纱 tutNext→tutFinish 自动收） */
+  tutOn=true;tutFin=0;tutI=TUT_STEPS.length-1;
+  tutEl.classList.add("on","blocking");
+  tutShow(TUT_STEPS[tutI]);
+}
+$("rowPwa").addEventListener("click",function(){
+  if(pwaIn()){toast("已经在桌面里运行啦~");return}
+  if(PWA_EVT){
+    var p=PWA_EVT;PWA_EVT=null;pwaSub();
+    p.prompt();
+    if(p.userChoice)p.userChoice.then(function(r){if(r&&r.outcome==="accepted")toast("已添加到桌面，从桌面图标打开即全屏玩");});
+    return;
+  }
+  if(/MicroMessenger|QQ\//i.test(navigator.userAgent)){toast("微信里先点右上角 ⋯ →「在浏览器打开」，再添加到桌面");return}
+  closeSettings();setTimeout(pwaTeach,380);
+});
+pwaSub();
+window.__roomHooks.pwaTeach=pwaTeach;
+window.__roomHooks.pwaState=function(){return{evt:!!PWA_EVT,inPwa:pwaIn()};};
 var TUT_LOOP=false; /* v22tut2：验收完毕，恢复"只弹一次"（无 maoor-v22-tutorial-v1 标记才自动弹） */
 (function(){
   if(/jsdom/i.test(navigator.userAgent))return; /* 自动化测试不自动弹，由测试钩子手动驱动 */
