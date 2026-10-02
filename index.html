@@ -369,6 +369,14 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .tap-big{font-size:20px;font-weight:900;color:#5a4632}
 /* ── 卡4：存档导出/恢复 + 存档码 ── */
 .set-row-act{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+/* v53⑤⑥：设置分组（音效/存档，点击展开）+全屏显示置顶 */
+.set-grp{font-weight:700}
+.set-grp .lab{font-size:15px}
+.set-grp .grp-arrow{display:inline-block;transition:transform .18s;font-size:14px;color:#a08a5e}
+.set-grp.open .grp-arrow{transform:rotate(90deg)}
+.grp-kids{display:none}
+.grp-kids.open{display:block}
+.grp-kids .set-row{padding-left:16px}
 .set-row-act:active{background:#f6ecd4}
 .set-go{font-size:21px;font-weight:700;color:#b09b78;flex:none;line-height:1}
 #restoreBar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;
@@ -777,6 +785,13 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <div id="sheet" aria-hidden="true" role="dialog" aria-label="设置">
   <div class="sheet-grip" aria-hidden="true"></div>
   <h2>设置</h2>
+  <!-- v53⑥：全屏显示置顶（老板指令） -->
+  <div class="set-row set-row-act" id="rowFs" role="button" tabindex="0" aria-label="全屏显示">
+    <span><span class="lab">⛶ 全屏显示</span><span class="sub">隐藏所有图标，点右上角 ✕ 返回</span></span>
+    <span class="set-go" aria-hidden="true">›</span>
+  </div>
+  <div class="set-row set-grp" id="grpSound" role="button" tabindex="0" aria-label="展开或收起音效设置"><span><span class="lab">🎵 音效</span><span class="sub">按钮音 · 背景音 · 音量</span></span><span class="set-go grp-arrow" aria-hidden="true">▸</span></div>
+  <div class="grp-kids" id="kidsSound">
   <div class="set-row">
     <span><span class="lab">按钮音效</span><span class="sub">点卡片/按钮的「哒」声</span></span>
     <button class="switch" role="switch" aria-checked="true" id="swClick" aria-label="按钮音效"></button>
@@ -793,6 +808,10 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <span class="volval" id="volVal">70</span>
   </div>
   <!-- v39⑦：减弱动效/今日互动两项退役（老板指令）；setSt.calm/taps 字段保留兼容旧档 -->
+  </div><!-- /kidsSound -->
+  <!-- v53⑤：存档组（导出/恢复/存档码，点击展开，老板指令） -->
+  <div class="set-row set-grp" id="grpSave" role="button" tabindex="0" aria-label="展开或收起存档设置"><span><span class="lab">💾 存档</span><span class="sub">导出 · 恢复 · 存档码</span></span><span class="set-go grp-arrow" aria-hidden="true">▸</span></div>
+  <div class="grp-kids" id="kidsSave">
   <!-- 卡4：存档导出/恢复 + 存档码 -->
   <div class="set-row set-row-act" id="rowExport" role="button" tabindex="0" aria-label="导出存档">
     <span><span class="lab">📤 导出存档</span><span class="sub">房间/换装/日记/相册/日历/设置 打包成一个 JSON 文件</span></span>
@@ -807,6 +826,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <span><span class="lab">🔑 存档码</span><span class="sub">复制一串文本带走进度；粘贴即可恢复（不含照片快照）</span></span>
     <span class="set-go" aria-hidden="true">›</span>
   </div>
+  </div><!-- /kidsSave -->
   <div class="set-row set-row-act" id="rowTutorial" role="button" tabindex="0" aria-label="重新查看新手引导">
     <span><span class="lab">📖 重新查看引导</span><span class="sub">再看一遍各功能的新手导览</span></span>
     <span class="set-go" aria-hidden="true">›</span>
@@ -814,10 +834,6 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <!-- v51pwa：保存到桌面（老板指令）——安卓 Chrome 一键弹系统安装框；iOS/其他弹全屏教学；微信内提示先开浏览器 -->
   <div class="set-row set-row-act" id="rowPwa" role="button" tabindex="0" aria-label="保存到桌面">
     <span><span class="lab">📲 保存到桌面</span><span class="sub" id="pwaSub">全屏玩：没有上下浏览器栏</span></span>
-    <span class="set-go" aria-hidden="true">›</span>
-  </div>
-  <div class="set-row set-row-act" id="rowFs" role="button" tabindex="0" aria-label="全屏显示">
-    <span><span class="lab">⛶ 全屏显示</span><span class="sub">隐藏所有图标，点右上角 ✕ 返回</span></span>
     <span class="set-go" aria-hidden="true">›</span>
   </div>
   <div id="restoreBar" hidden>
@@ -2856,7 +2872,8 @@ function sndUnlock(){sndInit();sndBgm();document.removeEventListener("pointerdow
 document.addEventListener("pointerdown",sndUnlock);document.addEventListener("keydown",sndUnlock);
 document.addEventListener("click",function(e){if(!setSt.click)return;if(e.target&&e.target.closest&&e.target.closest("button,.card,[role='button'],[role='switch']"))sndClick();},true);
 function sndUI(){var b=document.getElementById("swClick");if(b)b.setAttribute("aria-checked",setSt.click?"true":"false");var g=document.getElementById("swBgm");if(g)g.setAttribute("aria-checked",setSt.bgm?"true":"false");var s=document.getElementById("volBgm");if(s)s.value=setSt.vol;var vv=document.getElementById("volVal");if(vv)vv.textContent=setSt.vol;} /* v50vol：滑杆与数值显示同步 */
-(function(){var b=document.getElementById("swClick");if(b)b.addEventListener("click",function(){setSt.click=!setSt.click;setSave();sndUI();});var g=document.getElementById("swBgm");if(g)g.addEventListener("click",function(){setSt.bgm=!setSt.bgm;setSave();sndUI();sndBgm();});var s=document.getElementById("volBgm");if(s)s.addEventListener("input",function(){setSt.vol=Math.max(0,Math.min(100,+s.value||0));setSave();if(SND.bgm)SND.bgm.volume=setSt.vol/100;var vv=document.getElementById("volVal");if(vv)vv.textContent=setSt.vol;});sndUI();})(); /* v50vol：滑杆即时生效+存设置档 */ /* v48snd：两独立开关；bgm 开关即停/即播 */
+(function(){var b=document.getElementById("swClick");if(b)b.addEventListener("click",function(){setSt.click=!setSt.click;setSave();sndUI();});var g=document.getElementById("swBgm");if(g)g.addEventListener("click",function(){setSt.bgm=!setSt.bgm;setSave();sndUI();sndBgm();});var s=document.getElementById("volBgm");if(s)s.addEventListener("input",function(){setSt.vol=Math.max(0,Math.min(100,+s.value||0));setSave();if(SND.bgm)SND.bgm.volume=setSt.vol/100;var vv=document.getElementById("volVal");if(vv)vv.textContent=setSt.vol;});sndUI();})();
+(function(){function tgGrp(hd,kd){if(!hd||!kd)return;hd.addEventListener("click",function(){var on=kd.classList.toggle("open");hd.classList.toggle("open",on);});} /* v53⑤：音效/存档分组点击展开 */ tgGrp(document.getElementById("grpSound"),document.getElementById("kidsSound"));tgGrp(document.getElementById("grpSave"),document.getElementById("kidsSave"));})(); /* v50vol：滑杆即时生效+存设置档 */ /* v48snd：两独立开关；bgm 开关即停/即播 */
 function applyCalm(){
   document.getElementById("screen").classList.toggle("calm",!!setSt.calm);
 }
