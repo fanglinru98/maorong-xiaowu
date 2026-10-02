@@ -768,8 +768,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <div class="sheet-grip" aria-hidden="true"></div>
   <h2>设置</h2>
   <div class="set-row">
-    <span><span class="lab">音效与环境声</span><span class="sub">二期接入，敬请期待</span></span>
-    <button class="switch" role="switch" aria-checked="false" disabled aria-label="音效与环境声"></button>
+    <span><span class="lab">音效与环境声</span><span class="sub">背景音乐与点击音总开关</span></span>
+    <button class="switch" role="switch" aria-checked="true" id="swSound" aria-label="音效与环境声"></button>
   </div>
   <!-- v39⑦：减弱动效/今日互动两项退役（老板指令）；setSt.calm/taps 字段保留兼容旧档 -->
   <!-- 卡4：存档导出/恢复 + 存档码 -->
@@ -957,14 +957,14 @@ var FURN_DEF=[
   {id:"f311",name:"书籍",src:"assets/2.5d/f311.png",w:0.25,d:0.25,h:40,scale:1.164,glow:null,sm:1},
   {id:"f312",name:"棋盘桌",src:"assets/2.5d/f312.png",w:1,d:1,h:40,glow:null},
   {id:"f313",name:"落地灯",src:"assets/2.5d/f313.png",w:0.5,d:0.5,h:40,scale:0.857,glow:null,sm:1},
-  {id:"f314",name:"床边柜",src:"assets/2.5d/f314.png",w:1,d:1,h:40,scale:0.794,glow:null,oy:-0.04,sh:1.3}, /* v39：sh 与包对齐（E04 双轨对齐：老板工作台给床边柜设了台面高 1.3 行，主线内嵌跟上） */
+  {id:"f314",name:"床边柜",src:"assets/2.5d/f314.png",w:1,d:1,h:40,scale:0.794,glow:null,oy:-0.04,sh:1.05}, /* v47：sh 1.3→1.05 与包对齐（老板工作台 10-01 同步调整） */
   {id:"f315",name:"宝石",src:"assets/2.5d/f315.png",w:1,d:1,h:40,scale:0.926,glow:null,wall:"back"},
   {id:"f316",name:"摆件",src:"assets/2.5d/f316.png",w:0.75,d:0.75,h:40,scale:0.691,glow:null,sm:1,ox:-0.1,oy:-0.18},
   {id:"f317",name:"新家具",src:"assets/2.5d/f317.png",w:1,d:1,h:40,scale:1,glow:null},
   {id:"f318",name:"新家具",src:"assets/2.5d/f318.png",w:1,d:1,h:40,scale:1,glow:null},
-  {id:"f319",name:"鸦鸦公仔（趴）",src:"assets/2.5d/f319.png",w:1,d:1,h:40,scale:1,glow:null}, /* v41：老板已改名 */
-  {id:"f320",name:"鸦鸦公仔",src:"assets/2.5d/f320.png",w:0.75,d:0.75,h:40,scale:0.926,glow:null},
-  {id:"f321",name:"欧式拱顶窗",src:"assets/2.5d/f321.png",w:3.25,d:0.5,h:40,scale:1.08,glow:null,ox:0.04,ovr:2.0125}, /* v41：老板资产库新增（随包同步） */
+  {id:"f319",name:"鸦鸦公仔（趴）",src:"assets/2.5d/f319.png",w:1,d:1,h:40,scale:0.916,glow:null,sm:1}, /* v47：scale 0.916+sm 小物与包对齐（老板工作台 10-01 同步调整；v41 老板已改名） */
+  {id:"f320",name:"鸦鸦公仔",src:"assets/2.5d/f320.png",w:0.75,d:0.75,h:40,scale:0.926,glow:null,sm:1}, /* v47：sm 小物与包对齐 */
+  {id:"f321",name:"欧式拱顶窗",src:"assets/2.5d/f321.png",w:3.25,d:0.5,h:40,scale:1.027,glow:null,ox:0.0241,oy:-0.0313,ovr:1.9108}, /* v47：scale/ox/oy/ovr 与包对齐（老板工作台 10-01 同步调整；v41 老板资产库新增） */
 ];
 var DEF_MAP={};(function(){var i;for(i=0;i<FURN_DEF.length;i++)DEF_MAP[FURN_DEF[i].id]=FURN_DEF[i];})();
 var PACKTEX={}; /* v35roof：包带贴图四槽 {floor,wall,roof,border}——工作台资产库同步出来的贴图（装修页出贴图卡） */
@@ -974,10 +974,10 @@ function mergePack(pk){ /* v22sync：把工作台「⬆ 同步到正式版」写
   if(pk&&pk.tex&&typeof pk.tex==="object"){
     ["floor","wall","roof","border"].forEach(function(sl){ /* v35roof：四槽 */
       var t=pk.tex[sl];
-      if(t&&t.src){PACKTEX[sl]={name:t.name||"贴图",src:t.src,adj:t.adj||null};texN++;} /* ：屋顶/屋外大小/位移随包走（工作台 buildPrePack tex.adj） */
+      if(t&&t.src){PACKTEX[sl]={name:t.name||"贴图",src:t.src,adj:t.adj||null,span:t.span?1:0};texN++;} /* v47span：长条模式随包 */ /* ：屋顶/屋外大小/位移随包走（工作台 buildPrePack tex.adj） */
       else delete PACKTEX[sl]; /* 包里这格没了=老板收了贴图 → 本地卡也收掉（下次 renderGrid 不再出） */
     });
-    PACKTEX.extra=(pk.tex.extra&&pk.tex.extra.length)?pk.tex.extra.map(function(x){return {kind:x.kind,id:x.id,name:x.name,src:x.src};}):[]; /* v39①：资产库其余贴图全量进游戏（装修面板同类出卡可切换） */
+    PACKTEX.extra=(pk.tex.extra&&pk.tex.extra.length)?pk.tex.extra.map(function(x){return {kind:x.kind,id:x.id,name:x.name,src:x.src,span:x.span?1:0};}):[]; /* v39①：资产库其余贴图全量进游戏（装修面板同类出卡可切换）；v47span：长条跟随 */
   }else if(PACKTEX.extra&&PACKTEX.extra.length){PACKTEX.extra=[];}
   if(!pk||!pk.assets||!pk.assets.length)return texN;
   var n=0,i,j,k,a,def,fid,subs=null,order=pk.panel&&pk.panel.order;
@@ -1163,6 +1163,12 @@ function loadPattern(key){
   im.src=e.value;
 }
 /* ── 绘制 ── */
+function spanOfSrc(src){ /* v47span：该贴图 src 是否长条模式（使用中墙纸槽或 extra 墙纸卡，随包） */
+  if(!src)return 0;
+  if(PACKTEX.wall&&PACKTEX.wall.src===src&&PACKTEX.wall.span)return 1;
+  var xa=PACKTEX.extra||[],ia;for(ia=0;ia<xa.length;ia++)if(xa[ia].kind==="wall"&&xa[ia].src===src&&xa[ia].span)return 1;
+  return 0;
+}
 function drawWall(key,i0,j0,i1,j1){
   var x0=px(i0,j0),y0=py(i0,j0),x1=px(i1,j1),y1=py(i1,j1),h=ROOM.wallH*S;
   var e=DECOR[key],pt=patternOf(key);
@@ -1175,8 +1181,8 @@ function drawWall(key,i0,j0,i1,j1){
   if(pt){
     ctx.save();ctx.clip();
     var ex=(x1-x0)/ROOM.n,ey=(y1-y0)/ROOM.n;      /* 每格棱向量 */
-    ctx.transform(ex/pt.w,ey/pt.w,0,-h/pt.h,x0,y0); /* 贴图 x=沿棱 y=向上，一格一repeat */
-    ctx.fillStyle=pt.p;ctx.fillRect(0,0,ROOM.n*pt.w,pt.h+2);
+    if(pt&&spanOfSrc(e&&e.value)){ctx.transform(ex*ROOM.n/pt.w,ey*ROOM.n/pt.w,0,-h/pt.h,x0,y0);ctx.fillStyle=pt.p;ctx.fillRect(0,0,pt.w,pt.h+2);} /* v47span：长条=一张图拉满整墙 */
+    else{ctx.transform(ex/pt.w,ey/pt.w,0,-h/pt.h,x0,y0);ctx.fillStyle=pt.p;ctx.fillRect(0,0,ROOM.n*pt.w,pt.h+2);} /* 贴图 x=沿棱 y=向上，一格一repeat */
     ctx.restore();
   }else{
     ctx.fillStyle=wc;ctx.fill();
@@ -2806,8 +2812,18 @@ initDiary();aRender();
 /* ═══ 设置面板（批6.5：V21 同款底部抽屉移植；SETKEY 独立存档） ═══ */
 var sheetEl=$("sheet");
 var SETKEY="maoor-v22-settings-v1";
-var setSt={calm:false,taps:0};
+var setSt={calm:false,taps:0,sound:true};
 function setSave(){try{localStorage.setItem(SETKEY,JSON.stringify(setSt))}catch(e){}}
+/* ═══ v47snd：音效引擎——BGM 循环+点击音；浏览器自动播放红线=首次手势解锁播放（iOS/微信同款） ═══ */
+var SND={bgm:null,click:null};
+function sndInit(){if(SND.bgm)return;try{SND.bgm=new Audio("assets/audio/bgm.mp3");SND.bgm.loop=true;SND.click=new Audio("assets/audio/click.wav");}catch(e){}}
+function sndClick(){if(!setSt.sound||!SND.click)return;try{SND.click.currentTime=0;var p=SND.click.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
+function sndBgm(){if(!SND.bgm)return;try{if(setSt.sound){var q2=SND.bgm.play();if(q2&&q2.catch)q2.catch(function(){});}else SND.bgm.pause();}catch(e){}}
+function sndUnlock(){sndInit();sndBgm();document.removeEventListener("pointerdown",sndUnlock);document.removeEventListener("keydown",sndUnlock);}
+document.addEventListener("pointerdown",sndUnlock);document.addEventListener("keydown",sndUnlock);
+document.addEventListener("click",function(e){if(!setSt.sound)return;if(e.target&&e.target.closest&&e.target.closest("button,.card,[role='button'],[role='switch']"))sndClick();},true);
+function sndUI(){var b=document.getElementById("swSound");if(b)b.setAttribute("aria-checked",setSt.sound?"true":"false");}
+(function(){var b=document.getElementById("swSound");if(!b)return;b.addEventListener("click",function(){setSt.sound=!setSt.sound;setSave();sndUI();sndBgm();});sndUI();})();
 function applyCalm(){
   document.getElementById("screen").classList.toggle("calm",!!setSt.calm);
 }
@@ -2831,7 +2847,7 @@ btnClear.addEventListener("click",function(){
   try{
     for(var ci=0;ci<SAVE_KEYS.length;ci++)localStorage.removeItem(SAVE_KEYS[ci]);
   }catch(e){}
-  setSt={calm:false,taps:0};applyCalm();
+  setSt={calm:false,taps:0,sound:true};applyCalm();sndUI();
   /* v22clr：清空存档 = 回到出厂初始状态，配色与缩放也要复位。
      原先只清家具，saveSoon() 会把内存里的旧配色/旧缩放原样写回新存档，玩家看着像「清空没生效」。 */
   applyTheme({floor:DECOR0.floor,back:DECOR0.wallBack,left:DECOR0.wallLeft});
@@ -3056,8 +3072,9 @@ window.__saveHooks={
     var d=JSON.parse(r);
     if(typeof d.calm==="boolean")setSt.calm=d.calm;
     if(typeof d.taps==="number"&&d.taps>=0)setSt.taps=d.taps;
+    if(typeof d.sound==="boolean")setSt.sound=d.sound;
   }catch(e){}
-  applyCalm();
+  applyCalm();sndUI(); /* v47snd：设置恢复后开关 UI 同步 */
 })();
 /* ═══ 拍照 → 拍立得 → 存入相册（批6.6；照片档 PKEY 独立，快照只留最近 5 张） ═══ */
 var PKEY="maoor-v22-photos-v1";

@@ -3,7 +3,7 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v46';
+const CACHE_VER = 'maoor-v47';
 const PRECACHE = [
   './index.html',
   './manifest.json',
@@ -11,7 +11,8 @@ const PRECACHE = [
   './icon-192.png',
   './icon-512.png',
   './assets/bg-new.jpg',
-  './assets/character/stand.png', /* v46：旧 dress-bg.png 出 PRECACHE（换装层已改 assets/ui/dress-* 五件套） */
+  './assets/character/stand.png',
+  './assets/audio/click.wav', /* v47snd：点击音效进 PRECACHE（bgm.mp3 3MB 不进：省首访流量，stale-while-revalidate 自然缓存） */ /* v46：旧 dress-bg.png 出 PRECACHE（换装层已改 assets/ui/dress-* 五件套） */
   /* 2.5d 家具 23 张 */
   './assets/2.5d/f270.png','./assets/2.5d/f271.png','./assets/2.5d/f272.png','./assets/2.5d/f273.png',
   './assets/2.5d/f274.png','./assets/2.5d/f275.png','./assets/2.5d/f276.png','./assets/2.5d/f277.png',
@@ -33,6 +34,7 @@ const PRECACHE = [
   './assets/tex/floor.png',
 './assets/tex/wall.png',
 './assets/tex/roof.png','./assets/tex/border.png', /* v35roof：屋顶/屋外装饰贴图（工作台同步覆盖写） */
+  './assets/tex/tex-a32.png','./assets/tex/tex-a33.png', /* v47：extra 贴图首次写盘（浅棕色地板/红木墙纸，老板 10-01 同步） */
   /* 家具表（工作台「⬆ 同步到正式版」写出的那份，双击 file:// 打开也要能读） */
   './assets/furn-pack.js','./assets/furn-pack.json',
   /* HUD 图标 8 张 */
