@@ -199,6 +199,19 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   font-size:11px;font-weight:700;letter-spacing:1px;transition:transform .12s}
 #tutSkip:active{transform:scale(.94)}
 /* ═══ 日记手帐书（批6：照日记页demo 三段版移植：封面→历史→写日记）+ 相册面板 ═══ */
+/* ═══ v57boot 开机加载页（切图=老板加载页 demo 定稿版） ═══ */
+#boot{position:absolute;inset:0;z-index:60;overflow:hidden;background:#7a4a2e;transition:opacity .45s}
+#boot.gone{opacity:0;pointer-events:none}
+#bootBg{position:absolute;inset:0;background:url("assets/ui/boot2-bg.jpg") center/cover no-repeat #7a4a2e}
+#bootTitle{position:absolute;left:50%;top:13%;transform:translateX(-50%);width:64%;z-index:3}
+#bootRow{position:absolute;left:50%;bottom:4.7%;transform:translateX(-50%);width:76%;aspect-ratio:1794/238;z-index:2}
+#bootBar{position:absolute;inset:0;width:100%;z-index:3}
+#bootFillWrap{position:absolute;left:4.6%;right:4.6%;top:17%;bottom:17%;overflow:hidden;z-index:2}
+#bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;transform:translateX(-100%)}
+#bootBear{position:absolute;left:-7%;bottom:82%;width:15.5%;z-index:1;container-type:inline-size;transition:left .25s ease-out}
+#bootBear img{width:100%;height:auto;display:block}
+#bootPct{position:absolute;left:36%;top:7%;width:62%;height:44%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:20cqw;letter-spacing:-.02em;color:#6b4423;text-shadow:0 1px 0 rgba(255,255,255,.55)}
 #dimVeil{position:absolute;inset:0;z-index:40;background:rgba(22,13,6,0);pointer-events:none;transition:background .32s ease}
 #dimVeil.show{background:rgba(22,13,6,.5);pointer-events:auto}
 /* 日记本 v3（UI 升级批1：美术底板）——容器只做定位，皮面/书脊/纸面/插画全部在图里 */
@@ -671,6 +684,17 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 </head>
 <body>
 <div class="screen" id="screen">
+  <!-- v57boot：开机加载页——预载全部素材（进度条=真实完成条目数），完成后淡出自动进游戏；?boot=0 跳过 -->
+  <div id="boot">
+    <div id="bootBg"></div>
+    <img id="bootTitle" src="assets/ui/boot2-title.webp" alt="彻子小屋">
+    <div id="bootRow">
+      <div id="bootFillWrap"><img id="bootFill" src="assets/ui/boot2-fill.webp" alt=""></div>
+      <img id="bootBar" src="assets/ui/boot2-bar.webp" alt="">
+      <div id="bootBear"><img src="assets/ui/boot2-bear.webp" alt=""><span id="bootPct">0%</span></div>
+    </div>
+  </div>
+
 <!-- ═══ 等距房间引擎（V22 装修 demo 底座） ═══ -->
 <div id="stage">
   <div id="scene"><canvas id="roomIso"></canvas>
@@ -3651,6 +3675,80 @@ window.__applyPackSentinel=function(){ /* E-20260921-04：可重触发（测试 
   }
 };
 window.__applyPackSentinel();
+
+/* ═══ v57boot 开机加载页 ═══
+   为什么必须并入主线本体（v55 诊断）：跨页面预载在 4399 本地服务下必然失效——serve.py 对静态文件发
+   Cache-Control: no-store，实测「预热 28/28 再进游戏」仍是 45 请求 / 20,949,084 字节 / 命中缓存 0 条。
+   同一页面同一 JS 上下文里预载才可靠：这里直接走主线自己的 loadPattern（含 v38seal 屋顶透明缝衬底）
+   与 furnImg/charImg 缓存槽，进游戏时 patternOf / furnImg 全部命中缓存 = 零重复下载。
+   预载清单运行时自举（FURN_DEF 遍历 + 角色帧表 + PACKTEX 四槽与 extra + CSSOM url() + DOM img + icon）：
+   老板以后在工作台加家具或换贴图，无需改代码就自动进清单（不再手写固定表漏件）。 */
+var BOOT_SKIP=(location.protocol==="file:")||/jsdom/i.test(navigator.userAgent)||/[?&]boot=0/.test(location.search);
+var BOOT_TEX=[],BOOT_N=0,BOOT_N_MAX=1,BOOT_FIN=0;
+function bootPaint(){
+  var p=Math.min(100,Math.round(BOOT_N/BOOT_N_MAX*100));
+  var f=$("bootFill"),b=$("bootBear"),t=$("bootPct");
+  if(f)f.style.transform="translateX("+(p-100)+"%)"; /* v57boot：高亮条左→右平移，右端圆头始终完整 */
+  if(b)b.style.left=(p-7)+"%";                       /* 小熊跟随进度从左走到右 */
+  if(t)t.textContent=p+"%";                           /* 木牌上的进度数值 */
+}
+function bootFinish(delay){
+  if(BOOT_FIN)return;BOOT_FIN=1;
+  var f=$("bootFill"),b=$("bootBear"),t=$("bootPct"),el=$("boot");
+  if(f)f.style.transform="translateX(0%)";
+  if(b)b.style.left="calc(100% - 7%)";
+  if(t)t.textContent="100%";
+  if(el)el.classList.add("gone");
+  if(delay>0)setTimeout(startGame,delay);else startGame(); /* 跳过场景（测试/file://）同步进游戏，不拖慢 */
+}
+function bootImg(u){var im=new Image();im.onload=im.onerror=function(){this.onload=this.onerror=null;BOOT_N++;bootPaint();if(BOOT_N>=BOOT_N_MAX)bootFinish()};awLoad(im,u);}
+function bootTex(key,src){ /* 贴图预热：借用主线 loadPattern（roof/border 自动过 sealTex 衬底）；DECOR 临时改完立刻还原（全程不写存档），缓存键 key|src 与还原后完全一致 → 进游戏命中缓存 */
+  var e=DECOR[key];if(!e||!src)return;
+  var bt=e.type,bv=e.value;
+  e.type="img";e.value=src;
+  try{loadPattern(key);}catch(err){}
+  e.type=bt;e.value=bv;
+}
+function bootCollect(){
+  var L=[],seen={},i,add=function(x){if(typeof x==="string"&&x&&/^(assets|icon)\//.test(x)&&!seen[x]){seen[x]=1;L.push(x);}};
+  for(i=0;i<FURN_DEF.length;i++)if(FURN_DEF[i]&&FURN_DEF[i].src)add(FURN_DEF[i].src);
+  var names=["stand","greet-1","greet-2","sit-cross-2","sit-achv-2","sit-love","sit-diary-2","jump-l","jump-r"],d;
+  for(d in CHAR_FRAMES)names=names.concat(CHAR_FRAMES[d]);
+  for(i=0;i<names.length;i++)add("assets/character/"+names[i]+".png");
+  var tv=function(k){var e=DECOR[k];return (e&&e.type==="img"&&e.value)?e.value:null;};
+  var tx=[["floor",tv("floor")||(PACKTEX.floor&&PACKTEX.floor.src)],
+          ["roof",tv("roof")||(PACKTEX.roof&&PACKTEX.roof.src)],
+          ["border",tv("border")||(PACKTEX.border&&PACKTEX.border.src)]];
+  var wv=tv("wallBack")||(PACKTEX.wall&&PACKTEX.wall.src);
+  if(wv)tx.push(["wallBack",wv],["wallLeft",wv]);
+  var ex=PACKTEX.extra||[];
+  for(i=0;i<ex.length;i++){var x=ex[i];if(!x||!x.src)continue;
+    if(x.kind==="wall")tx.push(["wallBack",x.src],["wallLeft",x.src]);
+    else if(x.kind==="floor")tx.push(["floor",x.src]);
+    else if(x.kind==="roof")tx.push(["roof",x.src]);
+    else if(x.kind==="border")tx.push(["border",x.src]);}
+  for(i=0;i<tx.length;i++)if(tx[i][1]){BOOT_TEX.push(tx[i]);add(tx[i][1]);}
+  try{var ss=document.styleSheets,si,rr,ri,re,mm,k;
+    for(si=0;si<ss.length;si++){try{rr=ss[si].cssRules||[];}catch(e){continue;}
+      for(ri=0;ri<rr.length;ri++){re=(rr[ri].cssText||"").match(/url\(["']?[^)"']+["']?\)/g);if(!re)continue;
+        for(k=0;k<re.length;k++)add(re[k].replace(/^url\(["']?/,"").replace(/["']?\)$/,""));}}}catch(e){}
+  var ims=document.querySelectorAll('img[src^="assets/"]');
+  for(i=0;i<ims.length;i++)add(ims[i].getAttribute("src"));
+  var keep=[],j;
+  for(j=0;j<L.length;j++)if(!/\.(wav|m4a|mp3)$/i.test(L[j]))keep.push(L[j]); /* 音频不参与 Image 预载（点击音 89KB 随播随取） */
+  return keep;
+}
+(function(){
+  var LIST=bootCollect(),i;
+  BOOT_N_MAX=Math.max(1,LIST.length);
+  for(i=0;i<BOOT_TEX.length;i++)bootTex(BOOT_TEX[i][0],BOOT_TEX[i][1]); /* 贴图走主线缓存槽（条目少，不计入进度条） */
+  if(BOOT_SKIP){bootFinish(0);return;} /* file:// 双击 / jsdom 测试 / ?boot=0：同步直接进游戏 */
+  for(i=0;i<LIST.length;i++)bootImg(LIST[i]);
+  setTimeout(function(){bootFinish(0);},45000); /* 弱网兜底：45s 强制放行，不让玩家干等 */
+})();
+window.__bootState=function(){return{skip:BOOT_SKIP,n:BOOT_N,max:BOOT_N_MAX,fin:BOOT_FIN,tex:BOOT_TEX.length,collect:bootCollect,texFn:bootTex};};
+
+function startGame(){ /* v57boot：启动链搬进函数，加载页预载完成后（淡出 0.46s）才调用 */
 restoreState();
 renderTabs();renderSubs();renderGrid();
 lampSync(); /* v22lamp：进屋默认两盏灯都是灭的，按钮文案=一键开灯 */
@@ -3660,6 +3758,7 @@ charPreload(); /* v22framefix：全帧预热，杜绝走动中"闪一下/消失�
 window.addEventListener("beforeunload",exitSave); /* v22fix */
 window.addEventListener("pagehide",exitSave); /* v22fix：iOS/微信杀进程收不到 beforeunload */
 document.addEventListener("visibilitychange",function(){if(document.hidden)exitSave();});
+}
 /* ── v8 扭曲系统已按用户要求整体移除（v22fab）：solveH/warpDraw/四角手柄/扭曲工具条全部退役，翻转保留走画布镜像 ── */
 /* ═══ 日历面板（批6.7：照日历界面demoA 移植；月/日两视图+心形月历+时刻流+备忘卡+自绘时间选择器） ═══ */
 var calEl=$("cal"),CALK="maoor-v22-calendar-v1";

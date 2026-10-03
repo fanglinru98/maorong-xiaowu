@@ -3,7 +3,7 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v56'; /* v52 四件+加载页 demo */
+const CACHE_VER = 'maoor-v57'; /* v57boot 开机加载页并入主线 */ /* v52 四件+加载页 demo */
 const PRECACHE = [
   './index.html',
   './manifest.json',
@@ -49,6 +49,7 @@ const PRECACHE = [
   './assets/ui/arrow-l.webp','./assets/ui/arrow-r.webp','./assets/ui/arrow-al.webp','./assets/ui/arrow-ar.webp',
   './assets/ui/avatar-badge.webp', /* v43：头像成品图整块（frame/face 退役） */
   './assets/ui/heart-gold.webp', /* v42⑥：日历选中日金爱心 */
+  './assets/ui/boot2-title.webp','./assets/ui/boot2-bar.webp','./assets/ui/boot2-fill.webp','./assets/ui/boot2-bear.webp','./assets/ui/boot2-bg.jpg', /* v57boot：开机加载页切图五件套（标题/外框/高亮条/小熊/背景） */
   /* UI 切图 v6：日历三模块/页签/备忘钮 */
   './assets/ui/btn-memo-add.webp',
   './assets/ui/cal-memo.webp',
