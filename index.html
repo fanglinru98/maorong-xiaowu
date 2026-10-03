@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>彻子小屋</title>
 <!-- PWA 全屏支持（V21 同款方案）：加到主屏幕后全屏运行 -->
-<meta name="theme-color" content="#332416">
+<meta name="theme-color" content="#4a3624"> <!-- v62①：状态栏色与游戏顶边(body渐变顶)同色（#922723 红是 manifest background_color，只管系统闪屏；此 meta 管浏览器/状态栏） -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -200,8 +200,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #tutSkip:active{transform:scale(.94)}
 /* ═══ 日记手帐书（批6：照日记页demo 三段版移植：封面→历史→写日记）+ 相册面板 ═══ */
 /* ═══ v57boot 开机加载页（切图=老板加载页 demo 定稿版） ═══ */
-#boot{position:absolute;inset:0;z-index:60;overflow:hidden;background:#7a4a2e;transition:opacity .45s}
-#boot.gone{opacity:0;pointer-events:none}
+#boot{position:absolute;inset:0;z-index:60;overflow:hidden;background:#7a4a2e;transition:opacity .45s,visibility 0s linear .45s} /* v62卡顿：visibility 延迟 0.45s 切换=淡出走完才从合成树脱落 */
+#boot.gone{opacity:0;pointer-events:none;visibility:hidden} /* v62卡顿：gone 后整层必须退出合成（opacity:0 全屏层仍每帧参与 GPU 合成=老板卡顿主嫌疑） */
 #bootBg{position:absolute;inset:0;background:url("assets/ui/boot2-bg.jpg") center/cover no-repeat #7a4a2e}
 #bootTitle{position:absolute;left:50%;top:13%;transform:translateX(-50%);width:64%;z-index:3}
 #bootRow{position:absolute;left:50%;bottom:4.7%;transform:translateX(-50%);width:76%;z-index:2;min-height:5%} /* v57fix：高度不再只靠 aspect-ratio（Chrome88/Safari15 才支持；不支持时容器高 0 → 进度条+小熊全不可见，只剩背景外壳）；改为由 #bootBar 切图自身撑高，min-height 仅极端兜底 */
@@ -335,7 +335,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .pfr{position:relative;display:block;width:100%;aspect-ratio:666/619}
 .pph{position:absolute;left:13%;top:14%;width:74%;height:71%;object-fit:cover;display:block}
 .pfr-img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.pimg{display:block;width:min(96vw,430px);height:min(84vh,720px);overflow:hidden;border-radius:3px;background:#efe4c8} /* v52③：灯箱图改全屏尺寸，不再正方形 */
+.pimg{display:block;width:100%;height:auto;flex:1 1 auto;min-height:0;max-height:min(80vh,690px);overflow:hidden;border-radius:3px;background:#efe4c8} /* v62②：改卡内弹性自适应（vh/dvh/浏览器地址栏口径差异下都不会把卡片顶出屏幕；真机 手机端图二=84vh 固定高+底部字>视口溢出） */
 .pimg img{width:100%;height:100%;object-fit:contain;display:block} /* v52③：全屏显示不裁切 */
 .pdate{font-size:10.5px;color:#8a7052;margin:5px 2px 0}
 .pcap{font-size:11.5px;font-weight:800;color:#6d3a2a;text-align:center;letter-spacing:1px;margin-top:4px;
@@ -350,8 +350,9 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #aCount{font-size:13px;font-weight:800;color:#6d3a2a;letter-spacing:1px}
 #lb{position:absolute;inset:0;z-index:43;background:rgba(20,12,5,.74);display:none;place-items:center}
 #lb.show{display:grid}
-.lb-card{width:76%;background:#fffdf6;border-radius:8px;padding:10px 10px 12px;
-  box-shadow:0 22px 60px rgba(0,0,0,.55)}
+.lb-card{width:76%;max-height:min(92vh,800px);background:#fffdf6;border-radius:8px;padding:10px 10px 12px;
+  display:flex;flex-direction:column;
+  box-shadow:0 22px 60px rgba(0,0,0,.55)} /* v62②：卡整体钳制在屏内+列弹性=底部日期/标题/提示永不溢出 */
 .lb-hint{font-size:10.5px;color:#b09b78;text-align:center;margin-top:7px}
 /* ═══ 设置面板（批6.5：V21 同款底部抽屉移植，z-44 在相册/灯箱之上，暗罩复用 #dimVeil） ═══ */
 #sheet{position:absolute;left:0;right:0;bottom:0;z-index:44;background:#fdf6e3;border-radius:24px 24px 0 0;
