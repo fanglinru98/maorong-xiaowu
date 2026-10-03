@@ -71,7 +71,7 @@ button,img{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #roomIso{display:block;width:100%;height:100%}
 /* ═══ 装修底边栏（批16：底框切图底板 + 造景/装修/主题 三页签分类回退）：几何按 2246×1751 实测 ═══ */
 #decoBar{position:absolute;left:0;right:0;bottom:0;z-index:20;aspect-ratio:2246/1751;
-  background:url(assets/ui/deco-panel.png) center/100% 100% no-repeat; /* v30fix：去米色兜底层——面板 PNG 四角是圆角透明（实测 A=0、对角 12px 才不透明），兜底色会从四角透明区透出=老板报的米白小角；切图缺失=面板透出场景，不黑屏 */
+  background:url(assets/ui/deco-panel.webp) center/100% 100% no-repeat; /* v30fix：去米色兜底层——面板 PNG 四角是圆角透明（实测 A=0、对角 12px 才不透明），兜底色会从四角透明区透出=老板报的米白小角；切图缺失=面板透出场景，不黑屏 */
   transform:translateY(112%);transition:transform .3s cubic-bezier(.32,.72,.28,1)}
 body.barOpen #decoBar{transform:translateY(0)}
 #tabs{position:absolute;left:0;right:0;top:3.4%;height:8.6%;display:flex;justify-content:center;gap:18px;align-items:center}
@@ -150,23 +150,23 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #dressLayer.show{opacity:1;pointer-events:auto}
 .d-scene-bg{ /* v46：老板切图——全屏更衣室场景（红帘+角色已烧进图），cover 铺满 */
   position:absolute;inset:0;
-  background:url("assets/ui/dress-scene.png") center/cover no-repeat,#241a11}
+  background:url("assets/ui/dress-scene.webp") center/cover no-repeat,#241a11}
 .d-back{position:absolute;left:12px;top:14px;z-index:30;width:52px;aspect-ratio:294/246;padding:0;
-  background:url("assets/ui/dress-back.png") center/100% 100% no-repeat;border:none;
+  background:url("assets/ui/dress-back.webp") center/100% 100% no-repeat;border:none;
   transition:transform .12s;cursor:pointer} /* v46：切图返回钮 */
 .d-back:active{transform:scale(.88)}
 .d-plaque{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:30;
   width:38%;aspect-ratio:924/257;pointer-events:none;
-  background:url("assets/ui/dress-title.png") center/100% 100% no-repeat} /* v46：切图标题横幅（「换装」二字烧在图里） */
+  background:url("assets/ui/dress-title.webp") center/100% 100% no-repeat} /* v46：切图标题横幅（「换装」二字烧在图里） */
 .d-save{position:absolute;right:2%;bottom:calc(100% + 6px);z-index:30;width:26%;aspect-ratio:518/162;padding:0;
-  background:url("assets/ui/dress-save.png") center/100% 100% no-repeat;border:none;
+  background:url("assets/ui/dress-save.webp") center/100% 100% no-repeat;border:none;
   transition:transform .12s;cursor:pointer} /* v46：切图保存胶囊（悬浮面板右上角，原 dTopBtns 位） */
 .d-save:active{transform:scale(.92)}
 /* v46：角色图/气泡/爱心/果冻晃 CSS 随占位页退役（角色已烧进场景切图） */
 #dPanel{ /* v46：底部一整块面板=老板切图（六页签+8样例卡+滚动条已烧进图，纯占位无交互） */
   position:absolute;left:10px;right:10px;bottom:10px;z-index:10;
   aspect-ratio:2294/1711;
-  background:url(assets/ui/dress-panel.png) center/100% 100% no-repeat}
+  background:url(assets/ui/dress-panel.webp) center/100% 100% no-repeat}
 
 /* ═══ 新手引导（批17/v22tut2）：聚光灯导览 7 步＝打招呼→装修→换装→相册→日历→日记→头像；每步点一下继续，末步点一下收尾 ═══ */
 #tut{position:absolute;inset:0;z-index:52;display:none;pointer-events:none} /* 容器恒不拦截：收尾阶段点击穿透到换装/小猫；挡板由 #tutVeil 负责 */
@@ -213,15 +213,15 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #book.st-list .pg-list{display:flex}
 #book.st-write{width:min(85%,340px)} /* E-20260922-02 返工附加：写页书宽收窄（背景房间多露出，更松弛）；封面/历史页尺寸不动 */
 #book.st-write .pg-write{display:flex}
-/* 封面：整张美术封面 assets/ui/diary-cover.png（标题/圆窗/锁扣全在图里） */
+/* 封面：整张美术封面 assets/ui/diary-cover.webp（标题/圆窗/锁扣全在图里） */
 .pg-cover{position:absolute;inset:0;z-index:2;cursor:pointer}
 .cv-img{width:100%;height:100%;object-fit:contain;display:block}
 .cv-hint{position:absolute;left:0;right:0;bottom:3.5%;text-align:center;font-size:10.5px;color:#f0d9a8;
   letter-spacing:3px;text-shadow:0 1px 4px rgba(60,20,10,.75);animation:cvH 1.6s ease-in-out infinite}
 @keyframes cvH{0%,100%{opacity:.5}50%{opacity:1}}
-/* 历史列表：内页底板 assets/ui/diary-page.png（书脊+纸面+猫插画+底部翻页胶囊全在图里） */
+/* 历史列表：内页底板 assets/ui/diary-page.webp（书脊+纸面+猫插画+底部翻页胶囊全在图里） */
 .pg-list{position:absolute;inset:0;z-index:1;flex-direction:column;
-  background:url("assets/ui/diary-page.png") center/100% 100% no-repeat;
+  background:url("assets/ui/diary-page.webp") center/100% 100% no-repeat;
   padding:31% 13.4% 12.5% 12.6%}
 .d-add{position:absolute;top:calc(6% + 10px);right:calc(7% + 20px);width:26%;transition:transform .12s}
 .d-add img{width:100%;display:block}
@@ -231,7 +231,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #dList::-webkit-scrollbar{width:0}
 .d-empty{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:#a08a6a;text-align:center;letter-spacing:1px;white-space:nowrap} /* v39⑤：日记列表空状态 */
 .dcard{position:relative;aspect-ratio:689/472;border-radius:10px;overflow:hidden;
-  background:url("assets/ui/diary-card.png") center/100% 100% no-repeat;
+  background:url("assets/ui/diary-card.webp") center/100% 100% no-repeat;
   display:flex;align-items:stretch;text-align:left;transition:transform .12s}
 .dcard:active{transform:scale(.96)}
 .dnum{flex:0 0 25%;display:flex;align-items:center;justify-content:center;
@@ -253,7 +253,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .sortB{position:absolute;top:calc(6% + 54px);right:calc(7% + 25px);font-size:10px;font-weight:700;color:#7a6248;padding:2px 8px;border:1px solid #d2b98c;border-radius:11px;background:rgba(255,253,244,.85)}
 /* 写日记页：同内页底板，保存钮正压在图里自带的翻页胶囊上（写页不用翻页器） */
 .pg-write{position:absolute;inset:0;z-index:1;flex-direction:column;
-  background:url("assets/ui/diary-write-board.png") center/100% 100% no-repeat;
+  background:url("assets/ui/diary-write-board.webp") center/100% 100% no-repeat;
   padding:6.5% 13% 7.5% 13%} /* 返工4：老板微调——内容块再下移 1%（约 10px） */
 /* v22cal11 写页=图二复刻：三胶囊(日期/天气/心情)带下拉、大白纸写作区+玫瑰角饰+字数、红金保存钮（底板仍=diary-page.png 与目录页同张） */
 .wtop{display:flex;gap:6px;padding:0 0 8px}
@@ -266,7 +266,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .wpill .wi{flex:none;font-size:11px}
 .wpill .wt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
 .wpill .wcar{flex:none;width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent;border-top:4.5px solid #b08d5e}
-.wwrap{position:relative;flex:none;height:57%;min-height:0;background:url("assets/ui/diary-write-editor.png") center/100% 100% no-repeat;display:flex;margin:0 0 6px} /* 返工2：编辑框高=书页 50.4%（图二实量；57% 为 content box 基准换算） */
+.wwrap{position:relative;flex:none;height:57%;min-height:0;background:url("assets/ui/diary-write-editor.webp") center/100% 100% no-repeat;display:flex;margin:0 0 6px} /* 返工2：编辑框高=书页 50.4%（图二实量；57% 为 content box 基准换算） */
 .b-body{flex:1;min-height:0;overflow-y:auto;margin:0;padding:5.5% 7% 12%;
   font-size:12.5px;line-height:2;color:#4a3826;outline:none;cursor:text;
   background:transparent;border-radius:12px} /* E-20260922-02：透明底（框线/底纹来自切图），横线渐变退役 */
@@ -275,7 +275,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .wcnt{position:absolute;right:4.5%;bottom:3.2%;font-size:11px;font-weight:700;color:#b09a78;pointer-events:none} /* E-20260922-02：对位切图原字数区（PIL 实测右下 87.5%,94.8%），实时 n/1000 */
 .wr-save{position:absolute;left:50%;bottom:7.5%;transform:translateX(-50%);z-index:5;height:auto;min-width:37%;aspect-ratio:750/251;padding:0; /* 返工2：图二实量——保存钮独立一行居中（中心 49.7%）、宽 36.8%、底距书页底 7.5%（角色下方） */
   border:none;border-radius:14px;display:flex;align-items:center;justify-content:center;
-  background:url("assets/ui/diary-write-save.png") center/100% 100% no-repeat;color:transparent; /* 文字透明（切图自带「保存」） */
+  background:url("assets/ui/diary-write-save.webp") center/100% 100% no-repeat;color:transparent; /* 文字透明（切图自带「保存」） */
   filter:drop-shadow(0 3px 6px rgba(60,20,10,.35));transition:transform .12s}
 .wr-save:active{transform:translateX(-50%) scale(.93)}
 .wr-save .wsq{display:none} /* 切图自带羽毛笔，CSS 版退役 */
@@ -306,7 +306,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #album{position:absolute;left:6%;top:13.5%;height:76%;aspect-ratio:1639/3513;z-index:42;
   transform:translateX(-118%);
   transition:transform .38s cubic-bezier(.22,.9,.32,1);
-  background:url(assets/ui/album-panel.png) center/100% 100% no-repeat;
+  background:url(assets/ui/album-panel.webp) center/100% 100% no-repeat;
   filter:drop-shadow(0 14px 30px rgba(0,0,0,.45));
   padding:16% 5.9% 7.5%;display:flex;flex-direction:column}
 #album.open{transform:translateX(0)}
@@ -328,7 +328,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .pcap{font-size:11.5px;font-weight:800;color:#6d3a2a;text-align:center;letter-spacing:1px;margin-top:4px;
   max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard.newphoto{width:100%;aspect-ratio:669/718;align-self:start;
-  background:url(assets/ui/album-add.png) center/100% 100% no-repeat}
+  background:url(assets/ui/album-add.webp) center/100% 100% no-repeat}
 .a-pager{display:flex;align-items:center;justify-content:center;gap:30px;padding:8px 0 2px}
 .a-arrow{display:grid;place-items:center;padding:4px;transition:transform .12s}
 .a-arrow img{height:18px;display:block}
@@ -427,7 +427,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* ═══ 日历面板（批6.7：照日历界面demoA 移植，左滑入+心形月历+时刻流+备忘卡，z-45） ═══ */
 #cal{position:absolute;left:3%;top:12%;bottom:10.5%;width:min(64%,246px);z-index:45;display:flex;flex-direction:column;
   transform:translateX(-130%);transition:transform .38s cubic-bezier(.22,.9,.32,1);--hs:1; /* v22cal3：心形改由自身尺寸对齐烘焙槽，缩放变量归1 */
-  background:url(assets/ui/cal-panel.png) center/100% 100% no-repeat;
+  background:url(assets/ui/cal-panel.webp) center/100% 100% no-repeat;
   border-radius:18px;overflow-x:hidden;overflow-y:auto;scrollbar-width:none} /* v22fb4：整页可上下滚动（模块不压扁；滚动轴隐藏）；v39④：盒阴影整删——大范围投影在异形透明边缘外晕出半透明层=老板说的左上/左下半透明框（根因实锤） */
 #cal.open{transform:translateX(0)}
 #cal::-webkit-scrollbar{width:0;height:0;display:none} /* v22fb4：藏滚动轴（外观与原来一致） */
@@ -437,17 +437,17 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* 页签三钮=切图版（文字与图标已烧死在切图里，HTML 空心 <i> 贴图；选中=金描边猩红底 -on 图） */
 .ctab{flex:1;max-width:84px;border:none;background:none;padding:0;position:relative;transition:transform .15s}
 .ctab i{display:block;width:100%;aspect-ratio:400/393;font-size:0;line-height:0;
-  background:url(assets/ui/cal-tab-month.png) center/100% 100% no-repeat;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
-.ctab[data-v="day"] i{background-image:url(assets/ui/cal-tab-day.png)}
-.ctab[data-v="week"] i{background-image:url(assets/ui/cal-tab-week.png)}
-.ctab.on i{background-image:url(assets/ui/cal-tab-month-on.png)}
-.ctab.on[data-v="day"] i{background-image:url(assets/ui/cal-tab-day-on.png)}
-.ctab.on[data-v="week"] i{background-image:url(assets/ui/cal-tab-week-on.png)}
+  background:url(assets/ui/cal-tab-month.webp) center/100% 100% no-repeat;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.ctab[data-v="day"] i{background-image:url(assets/ui/cal-tab-day.webp)}
+.ctab[data-v="week"] i{background-image:url(assets/ui/cal-tab-week.webp)}
+.ctab.on i{background-image:url(assets/ui/cal-tab-month-on.webp)}
+.ctab.on[data-v="day"] i{background-image:url(assets/ui/cal-tab-day-on.webp)}
+.ctab.on[data-v="week"] i{background-image:url(assets/ui/cal-tab-week-on.webp)}
 .ctab:active{transform:scale(.94)}
 /* 心形月历：心形=clip-path，发光用父级 filter（clip 内会被裁） */
 /* 月视图底板=cal-month.png 切图（红金匾+星期行+6×7 空心格烘焙；格上只叠 ev/today/sel 与数字） */
 #vMonth{margin:8px 14px 6px;position:relative;left:0;aspect-ratio:700/740; /* v22d2b：左移3px（原 3px，用户微调回到0）；底板烘焙凹槽与格层同步动，心不错位 */
-  background:url(assets/ui/cal-month.png) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+  background:url(assets/ui/cal-month.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 #calMonth{position:absolute;left:50%;top:8.2%;transform:translate(-50%,-50%);font-style:normal;
   font-size:15px;font-weight:900;color:#f9ecd2;letter-spacing:2px;text-shadow:0 1px 1px rgba(80,15,8,.7)}
 .crow{display:grid;grid-template-columns:repeat(7,1fr)}
@@ -459,12 +459,12 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   background:transparent}
 .day .h b{position:absolute;left:0;right:0;top:50%;transform:translateY(-52%);text-align:center;font-size:9px;font-weight:800;color:#8f6f5a} /* v22cal5：数字随心缩小 10→9；-52% 字形光学微调保留 */
 /* v22cal6：CSS 亮心（有记录红/今天金）暂时移除（用户 2026-09-17：后期给亮色爱心切图替换）。ev/today 类仍挂在格子上，切图到位后启用：
-.day.ev .h{background:url(assets/ui/heart-rec.png) center/100% 100% no-repeat;clip-path:none}
-.day.today .h{background:url(assets/ui/heart-today.png) center/100% 100% no-repeat;clip-path:none} */
+.day.ev .h{background:url(assets/ui/heart-rec.webp) center/100% 100% no-repeat;clip-path:none}
+.day.today .h{background:url(assets/ui/heart-today.webp) center/100% 100% no-repeat;clip-path:none} */
 .day.ev .h,.day.today .h{background:transparent} /* 切图未到：亮心位置只留烘焙暗心与数字 */
 /* 选中态：深一度圆圈框住日期 */
 .day.sel::before{display:none} /* v22cal：去掉选中日的大圆圈（用户目检），选中靠 .day.sel .h 放大 6% 表示 */
-.day.sel .h{background:url(assets/ui/heart-gold.png) center/100% 100% no-repeat;clip-path:none;transform:translate(-50%,-50%) scale(calc(var(--hs,1)*1.06))} /* v42⑥：选中日金爱心切图（heart-gold.png MD5 390FE3B4） */
+.day.sel .h{background:url(assets/ui/heart-gold.webp) center/100% 100% no-repeat;clip-path:none;transform:translate(-50%,-50%) scale(calc(var(--hs,1)*1.06))} /* v42⑥：选中日金爱心切图（heart-gold.png MD5 390FE3B4） */
 .day:active .h{transform:translate(-50%,-50%) scale(calc(var(--hs,1)*.9))}
 /* 三视图切换（日/周/月）：周视图=本周 7 心 */
 #vDay,#vWeek{display:none} /* v22fb4：不再作为弹性子项被压扁——日/周/月三视图整体整页上下滚动（#cal overflow），模块按自然高度铺排 */
@@ -602,7 +602,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
 /* 备忘卡=cal-memo.png 切图（红绶带/「备忘事项」标题/虚线烘焙；日期叠绶带，自绘行纸片盖烘焙行区→不限量） */
 .memo{flex:none;height:30.3%;min-height:0;margin:0 18px 8px;position:relative;left:-1px;display:flex;flex-direction:column; /* v22d2b：右移3px（原 -4px，用户微调）；备忘板固定高（=月视图实测 30.3%），三视图同款不压扁 */
-  background:url(assets/ui/cal-memo.png) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+  background:url(assets/ui/cal-memo.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 .memo .mhead{display:contents}
 .memo .mdate{position:absolute;left:50%;top:12.5%;transform:translate(-50%,-50%);white-space:nowrap;font-size:15px;font-weight:900; /* v22cal3：与红绶带垂直居中（绶带中心=图高12.5%；三视图实测同低6.8px——用户反馈2026-09-16） */
   color:#fff3dc;letter-spacing:.5px;text-shadow:0 1px 1px rgba(80,15,8,.7);z-index:2}
@@ -706,19 +706,19 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 </div>
 <header class="hud-top">
   <div class="avatar-stack" id="avatarStack" title="彻子 Lv12">
-    <img class="av-badge" src="assets/ui/avatar-badge.png" alt="彻子的头像"> <!-- v43：成品图整块替换 -->
+    <img class="av-badge" src="assets/ui/avatar-badge.webp" alt="彻子的头像"> <!-- v43：成品图整块替换 -->
   </div>
 </header>
 <nav class="menu-right" aria-label="功能菜单">
-  <button class="side-btn" id="mAlbum" aria-label="相册"><img class="icon-img" src="icon/相册.png" alt="" aria-hidden="true"></button>
-  <button class="side-btn" id="mCalendar" aria-label="日历"><img class="icon-img" src="icon/日历.png" alt="" aria-hidden="true"></button>
-  <button class="side-btn" id="mDiary" aria-label="日记本"><img class="icon-img" src="icon/日记.png" alt="" aria-hidden="true"></button>
-  <button class="side-btn is-settings" id="mSettings" aria-label="设置"><img class="icon-img" src="icon/设置.png" alt="" aria-hidden="true"></button>
+  <button class="side-btn" id="mAlbum" aria-label="相册"><img class="icon-img" src="icon/相册.webp" alt="" aria-hidden="true"></button>
+  <button class="side-btn" id="mCalendar" aria-label="日历"><img class="icon-img" src="icon/日历.webp" alt="" aria-hidden="true"></button>
+  <button class="side-btn" id="mDiary" aria-label="日记本"><img class="icon-img" src="icon/日记.webp" alt="" aria-hidden="true"></button>
+  <button class="side-btn is-settings" id="mSettings" aria-label="设置"><img class="icon-img" src="icon/设置.webp" alt="" aria-hidden="true"></button>
 </nav>
 <div class="dock" role="toolbar" aria-label="主操作">
-  <button class="dock-btn" id="dDecor" aria-label="装修模式开关"><img class="icon-img" src="icon/装修.png" alt="装修" aria-hidden="true"></button>
-  <button class="dock-btn" id="dDress" aria-label="换装"><img class="icon-img" src="icon/换装.png" alt="换装" aria-hidden="true"></button>
-  <button class="dock-btn" id="dShot" aria-label="拍照"><img class="icon-img" src="icon/拍照.png" alt="拍照" aria-hidden="true"></button>
+  <button class="dock-btn" id="dDecor" aria-label="装修模式开关"><img class="icon-img" src="icon/装修.webp" alt="装修" aria-hidden="true"></button>
+  <button class="dock-btn" id="dDress" aria-label="换装"><img class="icon-img" src="icon/换装.webp" alt="换装" aria-hidden="true"></button>
+  <button class="dock-btn" id="dShot" aria-label="拍照"><img class="icon-img" src="icon/拍照.webp" alt="拍照" aria-hidden="true"></button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <!-- v22cfm 通用确认框：重置等操作先问一句 -->
@@ -732,16 +732,16 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <div id="dimVeil" aria-hidden="true"></div>
 <section id="book" class="st-cover" aria-label="日记手帐">
   <div class="pg pg-cover" id="pgCover" title="翻开日记">
-    <img class="cv-img" src="assets/ui/diary-cover.png" alt="小猫日记">
+    <img class="cv-img" src="assets/ui/diary-cover.webp" alt="小猫日记">
     <div class="cv-hint">· 点一下翻开 ·</div>
   </div>
   <div class="pg pg-list">
-    <button class="d-add" id="dAdd" title="写今天的日记"><img src="assets/ui/btn-diary-write.png" alt="写日记"></button>
+    <button class="d-add" id="dAdd" title="写今天的日记"><img src="assets/ui/btn-diary-write.webp" alt="写日记"></button>
     <div id="dList"></div>
     <span id="dPage">1 / 1 页</span>
     <div class="pgr">
-      <button class="pn" id="dPrev" title="上一页"><img src="assets/ui/arrow-l.png" alt="上一页"></button>
-      <button class="pn" id="dNext" title="下一页"><img src="assets/ui/arrow-r.png" alt="下一页"></button>
+      <button class="pn" id="dPrev" title="上一页"><img src="assets/ui/arrow-l.webp" alt="上一页"></button>
+      <button class="pn" id="dNext" title="下一页"><img src="assets/ui/arrow-r.webp" alt="下一页"></button>
     </div>
     <button class="sortB" id="dSort" title="切换排序">⇅ 倒序</button>
   </div>
@@ -756,7 +756,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
       <span class="wrose" aria-hidden="true">🌹</span>
       <span class="wcnt" id="wCnt">0/1000</span>
     </div>
-    <img class="wdeco" src="assets/ui/diary-write-deco.png" alt="" aria-hidden="true"> <!-- E-20260922-02：坐姿角色切图（压编辑框下沿，不挡输入） -->
+    <img class="wdeco" src="assets/ui/diary-write-deco.webp" alt="" aria-hidden="true"> <!-- E-20260922-02：坐姿角色切图（压编辑框下沿，不挡输入） -->
     <button class="wr-save" id="dSaveE"><span class="wsq" aria-hidden="true">🖋</span>保 存</button>
     <div class="ddrop" id="dropDate" aria-hidden="true"></div>
     <div class="ddrop" id="dropWx" aria-hidden="true"></div>
@@ -768,9 +768,9 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <div class="a-title">相册</div><!-- v42③：面板标题（参考日历横幅规格） -->
   <div id="aGrid"></div>
   <div class="a-pager">
-    <button class="a-arrow" id="aPrev" title="上一页"><img src="assets/ui/arrow-al.png" alt="上一页"></button>
+    <button class="a-arrow" id="aPrev" title="上一页"><img src="assets/ui/arrow-al.webp" alt="上一页"></button>
     <div id="aCount">1/2</div>
-    <button class="a-arrow" id="aNext" title="下一页"><img src="assets/ui/arrow-ar.png" alt="下一页"></button>
+    <button class="a-arrow" id="aNext" title="下一页"><img src="assets/ui/arrow-ar.webp" alt="下一页"></button>
   </div>
 </section>
 <div id="lb" aria-label="照片预览">
@@ -891,7 +891,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <div class="mhead">
       <span class="mdate" id="mDate">—</span>
       <span class="msub" id="mWx">晴</span>
-      <button class="madd" id="mAdd" title="添加备忘"><img src="assets/ui/btn-memo-add.png" alt="添加备忘"></button>
+      <button class="madd" id="mAdd" title="添加备忘"><img src="assets/ui/btn-memo-add.webp" alt="添加备忘"></button>
     </div>
     <div class="mrows" id="mRows"></div>
     <div class="mform" id="mForm"> <!-- v22cal6 v2「蜡封信笺」三钮同大；v22cal10 时间控件=方案四「横向刻度尺」（用户 2026-09-17 选定）——时刻牌+正下方展开 06:00–24:00 刻度尺拖红针 -->
@@ -960,59 +960,61 @@ var DECOR0={floor:DECOR.floor.value,wallBack:DECOR.wallBack.value,wallLeft:DECOR
 var FURNITURE=[]; /* 运行时家具实例表 */
 /* ── 家具库定义（V22：assets/2.5d 23 件；w/d=声明占格，glow=光效预设，sh=台面高几行(0=不能承托)，sm=小物(可摆到台面上)） ── */
 var FURN_DEF=[
-  {id:"f270",name:"哥特书架",  src:"assets/2.5d/f270.png",w:1,d:1,h:40,glow:null,sh:1.2},
-  {id:"f271",name:"占位家具01",src:"assets/2.5d/f271.png",w:1,d:1,h:40,glow:null},
-  {id:"f272",name:"占位家具02",src:"assets/2.5d/f272.png",w:1,d:1,h:40,glow:null},
-  {id:"f273",name:"占位家具03",src:"assets/2.5d/f273.png",w:1,d:1,h:40,glow:null},
-  {id:"f274",name:"宝石宝箱",  src:"assets/2.5d/f274.png",w:1,d:1,h:40,glow:null},
-  {id:"f275",name:"占位家具04",src:"assets/2.5d/f275.png",w:1,d:1,h:40,glow:null},
-  {id:"f276",name:"占位家具05",src:"assets/2.5d/f276.png",w:1,d:1,h:40,glow:null},
-  {id:"f277",name:"国际象棋",  src:"assets/2.5d/f277.png",w:1,d:1,h:40,glow:null,sm:1},
-  {id:"f278",name:"占位家具06",src:"assets/2.5d/f278.png",w:1,d:1,h:40,glow:null},
-  {id:"f279",name:"占位家具07",src:"assets/2.5d/f279.png",w:1,d:1,h:40,glow:null},
-  {id:"f280",name:"占位家具08",src:"assets/2.5d/f280.png",w:1,d:1,h:40,glow:null},
-  {id:"f281",name:"哥特提灯",  src:"assets/2.5d/f281.png",w:1,d:1,h:40,glow:{c:"#ffd27a",s:1.5,i:0.95,b:1,p:1},wall:"back"},
-  {id:"f282",name:"占位家具09",src:"assets/2.5d/f282.png",w:1,d:1,h:40,glow:null},
-  {id:"f283",name:"占位家具10",src:"assets/2.5d/f283.png",w:1,d:1,h:40,glow:null},
-  {id:"f284",name:"占位家具11",src:"assets/2.5d/f284.png",w:1,d:1,h:40,glow:null},
-  {id:"f285",name:"黄铜挂历",  src:"assets/2.5d/f285.png",w:1,d:1,h:40,glow:null,wall:"back"},
-  {id:"f286",name:"占位家具12",src:"assets/2.5d/f286.png",w:1,d:1,h:40,glow:null},
-  {id:"f287",name:"占位家具13",src:"assets/2.5d/f287.png",w:1,d:1,h:40,glow:null},
-  {id:"f288",name:"红黑地球仪",src:"assets/2.5d/f288.png",w:1,d:1,h:40,glow:null,sm:1},
-  {id:"f289",name:"占位家具14",src:"assets/2.5d/f289.png",w:1,d:1,h:40,glow:null},
-  {id:"f290",name:"占位家具15",src:"assets/2.5d/f290.png",w:1,d:1,h:40,glow:null},
-  {id:"f291",name:"占位家具16",src:"assets/2.5d/f291.png",w:1,d:1,h:40,glow:null},
-  {id:"f292",name:"玫瑰茶几",  src:"assets/2.5d/f292.png",w:1,d:1,h:40,glow:null,sh:1},
+  {id:"f270",name:"哥特书架",  src:"assets/2.5d/f270.webp",w:1,d:1,h:40,glow:null,sh:1.2},
+  {id:"f271",name:"占位家具01",src:"assets/2.5d/f271.webp",w:1,d:1,h:40,glow:null},
+  {id:"f272",name:"占位家具02",src:"assets/2.5d/f272.webp",w:1,d:1,h:40,glow:null},
+  {id:"f273",name:"占位家具03",src:"assets/2.5d/f273.webp",w:1,d:1,h:40,glow:null},
+  {id:"f274",name:"宝石宝箱",  src:"assets/2.5d/f274.webp",w:1,d:1,h:40,glow:null},
+  {id:"f275",name:"占位家具04",src:"assets/2.5d/f275.webp",w:1,d:1,h:40,glow:null},
+  {id:"f276",name:"占位家具05",src:"assets/2.5d/f276.webp",w:1,d:1,h:40,glow:null},
+  {id:"f277",name:"国际象棋",  src:"assets/2.5d/f277.webp",w:1,d:1,h:40,glow:null,sm:1},
+  {id:"f278",name:"占位家具06",src:"assets/2.5d/f278.webp",w:1,d:1,h:40,glow:null},
+  {id:"f279",name:"占位家具07",src:"assets/2.5d/f279.webp",w:1,d:1,h:40,glow:null},
+  {id:"f280",name:"占位家具08",src:"assets/2.5d/f280.webp",w:1,d:1,h:40,glow:null},
+  {id:"f281",name:"哥特提灯",  src:"assets/2.5d/f281.webp",w:1,d:1,h:40,glow:{c:"#ffd27a",s:1.5,i:0.95,b:1,p:1},wall:"back"},
+  {id:"f282",name:"占位家具09",src:"assets/2.5d/f282.webp",w:1,d:1,h:40,glow:null},
+  {id:"f283",name:"占位家具10",src:"assets/2.5d/f283.webp",w:1,d:1,h:40,glow:null},
+  {id:"f284",name:"占位家具11",src:"assets/2.5d/f284.webp",w:1,d:1,h:40,glow:null},
+  {id:"f285",name:"黄铜挂历",  src:"assets/2.5d/f285.webp",w:1,d:1,h:40,glow:null,wall:"back"},
+  {id:"f286",name:"占位家具12",src:"assets/2.5d/f286.webp",w:1,d:1,h:40,glow:null},
+  {id:"f287",name:"占位家具13",src:"assets/2.5d/f287.webp",w:1,d:1,h:40,glow:null},
+  {id:"f288",name:"红黑地球仪",src:"assets/2.5d/f288.webp",w:1,d:1,h:40,glow:null,sm:1},
+  {id:"f289",name:"占位家具14",src:"assets/2.5d/f289.webp",w:1,d:1,h:40,glow:null},
+  {id:"f290",name:"占位家具15",src:"assets/2.5d/f290.webp",w:1,d:1,h:40,glow:null},
+  {id:"f291",name:"占位家具16",src:"assets/2.5d/f291.webp",w:1,d:1,h:40,glow:null},
+  {id:"f292",name:"玫瑰茶几",  src:"assets/2.5d/f292.webp",w:1,d:1,h:40,glow:null,sh:1},
   /* ── 家具包 maoor-shelf-pack.json（2026-09-13 导出，f293-f311，图已缩到长边 1024）── */
-  {id:"f293",name:"壁灯",src:"assets/2.5d/f293.png",w:1,d:1,h:40,scale:0.6,glow:null,wall:"back",flip:"1",ox:-0.26,oy:0.06},
-  {id:"f294",name:"壁炉",src:"assets/2.5d/f294.png",w:1,d:1,h:40,scale:0.923,glow:null},
-  {id:"f295",name:"圆桌",src:"assets/2.5d/f295.png",w:1,d:1,h:40,scale:0.997,glow:null,sh:0.75,oy:-0.04},
-  {id:"f296",name:"相框",src:"assets/2.5d/f296.png",w:2,d:2,h:40,scale:1.08,glow:null,wall:"back",flip:"1",oy:0.1},
-  {id:"f297",name:"留声机",src:"assets/2.5d/f297.png",w:0.5,d:0.5,h:40,scale:0.998,glow:null,sm:1,sh:1,ox:0.08,oy:-0.04},
-  {id:"f298",name:"香水瓶",src:"assets/2.5d/f298.png",w:0.25,d:0.25,h:40,scale:0.3,glow:null,sm:1,oy:-0.1},
-  {id:"f299",name:"长桌",src:"assets/2.5d/f299.png",w:3,d:1,h:40,scale:1.01,glow:null,sh:0.7,ox:0.0045,oy:-0.0342}, /* v41：scale 与包对齐（E04 双轨） */
-  {id:"f300",name:"电视",src:"assets/2.5d/f300.png",w:2,d:1,h:40,scale:0.794,glow:null,ox:0.1,oy:-0.08},
-  {id:"f301",name:"单人沙发",src:"assets/2.5d/f301.png",w:1,d:1,h:40,scale:1.065,glow:null,sh:0.55,ox:0.0452,oy:-0.0347},
-  {id:"f302",name:"时钟",src:"assets/2.5d/f302.png",w:0.75,d:0.75,h:40,scale:0.926,glow:null,wall:"back"},
-  {id:"f303",name:"衣架",src:"assets/2.5d/f303.png",w:1,d:2,h:40,scale:0.674,glow:null,ox:0.0323,oy:-0.0721},
-  {id:"f304",name:"书架",src:"assets/2.5d/f304.png",w:0.75,d:2,h:40,glow:null,ox:0.02},
-  {id:"f305",name:"单人床",src:"assets/2.5d/f305.png",w:2,d:2,h:40,scale:0.954,glow:null,sh:0.55,ox:0.03,oy:-0.04}, /* v41：scale 与包对齐（E04 双轨） */
-  {id:"f306",name:"玫瑰盆栽",src:"assets/2.5d/f306.png",w:0.25,d:0.25,h:40,scale:1.36,glow:null,sm:1,oy:-0.08},
-  {id:"f307",name:"小相框",src:"assets/2.5d/f307.png",w:0.25,d:0.25,h:40,scale:0.926,glow:null,sm:1},
-  {id:"f308",name:"窗户",src:"assets/2.5d/f308.png",w:2,d:3,h:40,glow:null,wall:"back",oy:0.04},
-  {id:"f309",name:"小提琴",src:"assets/2.5d/f309.png",w:0.5,d:0.5,h:40,scale:0.792,glow:null,sm:1},
-  {id:"f310",name:"红酒瓶",src:"assets/2.5d/f310.png",w:0.25,d:0.25,h:40,scale:0.926,glow:null,sm:1},
-  {id:"f311",name:"书籍",src:"assets/2.5d/f311.png",w:0.25,d:0.25,h:40,scale:1.164,glow:null,sm:1},
-  {id:"f312",name:"棋盘桌",src:"assets/2.5d/f312.png",w:1,d:1,h:40,glow:null},
-  {id:"f313",name:"落地灯",src:"assets/2.5d/f313.png",w:0.5,d:0.5,h:40,scale:0.857,glow:null,sm:1},
-  {id:"f314",name:"床边柜",src:"assets/2.5d/f314.png",w:1,d:1,h:40,scale:0.794,glow:null,oy:-0.04,sh:1.05}, /* v47：sh 1.3→1.05 与包对齐（老板工作台 10-01 同步调整） */
-  {id:"f315",name:"宝石",src:"assets/2.5d/f315.png",w:1,d:1,h:40,scale:0.926,glow:null,wall:"back"},
-  {id:"f316",name:"摆件",src:"assets/2.5d/f316.png",w:0.75,d:0.75,h:40,scale:0.691,glow:null,sm:1,ox:-0.1,oy:-0.18},
-  {id:"f317",name:"新家具",src:"assets/2.5d/f317.png",w:1,d:1,h:40,scale:1,glow:null},
-  {id:"f318",name:"新家具",src:"assets/2.5d/f318.png",w:1,d:1,h:40,scale:1,glow:null},
-  {id:"f319",name:"鸦鸦公仔（趴）",src:"assets/2.5d/f319.png",w:1,d:1,h:40,scale:0.916,glow:null,sm:1}, /* v47：scale 0.916+sm 小物与包对齐（老板工作台 10-01 同步调整；v41 老板已改名） */
-  {id:"f320",name:"鸦鸦公仔",src:"assets/2.5d/f320.png",w:0.75,d:0.75,h:40,scale:0.926,glow:null,sm:1}, /* v47：sm 小物与包对齐 */
-  {id:"f321",name:"欧式拱顶窗",src:"assets/2.5d/f321.png",w:3.25,d:0.5,h:40,scale:1.027,glow:null,ox:0.0241,oy:-0.0313,ovr:1.9108}, /* v47：scale/ox/oy/ovr 与包对齐（老板工作台 10-01 同步调整；v41 老板资产库新增） */
+  {id:"f293",name:"壁灯",src:"assets/2.5d/f293.webp",w:1,d:1,h:40,scale:0.6,glow:null,wall:"back",flip:"1",ox:-0.26,oy:0.06},
+  {id:"f294",name:"壁炉",src:"assets/2.5d/f294.webp",w:1,d:1,h:40,scale:0.923,glow:null},
+  {id:"f295",name:"圆桌",src:"assets/2.5d/f295.webp",w:1,d:1,h:40,scale:0.997,glow:null,sh:0.75,oy:-0.04},
+  {id:"f296",name:"相框",src:"assets/2.5d/f296.webp",w:2,d:2,h:40,scale:1.08,glow:null,wall:"back",flip:"1",oy:0.1},
+  {id:"f297",name:"留声机",src:"assets/2.5d/f297.webp",w:0.5,d:0.5,h:40,scale:0.998,glow:null,sm:1,sh:1,ox:0.08,oy:-0.04},
+  {id:"f298",name:"香水瓶",src:"assets/2.5d/f298.webp",w:0.25,d:0.25,h:40,scale:0.3,glow:null,sm:1,oy:-0.1},
+  {id:"f299",name:"长桌",src:"assets/2.5d/f299.webp",w:3,d:1,h:40,scale:1.01,glow:null,sh:0.7,ox:0.0045,oy:-0.0342}, /* v41：scale 与包对齐（E04 双轨） */
+  {id:"f300",name:"电视",src:"assets/2.5d/f300.webp",w:2,d:1,h:40,scale:0.794,glow:null,ox:0.1,oy:-0.08},
+  {id:"f301",name:"单人沙发",src:"assets/2.5d/f301.webp",w:1,d:1,h:40,scale:1.065,glow:null,sh:0.55,ox:0.0452,oy:-0.0347},
+  {id:"f302",name:"时钟",src:"assets/2.5d/f302.webp",w:0.75,d:0.75,h:40,scale:0.926,glow:null,wall:"back"},
+  {id:"f303",name:"衣架",src:"assets/2.5d/f303.webp",w:1,d:2,h:40,scale:0.674,glow:null,ox:0.0323,oy:-0.0721},
+  {id:"f304",name:"书架",src:"assets/2.5d/f304.webp",w:0.75,d:2,h:40,glow:null,ox:0.02},
+  {id:"f305",name:"单人床",src:"assets/2.5d/f305.webp",w:2,d:2,h:40,scale:0.954,glow:null,sh:0.55,ox:0.03,oy:-0.04}, /* v41：scale 与包对齐（E04 双轨） */
+  {id:"f306",name:"玫瑰盆栽",src:"assets/2.5d/f306.webp",w:0.25,d:0.25,h:40,scale:1.36,glow:null,sm:1,oy:-0.08},
+  {id:"f307",name:"小相框",src:"assets/2.5d/f307.webp",w:0.25,d:0.25,h:40,scale:0.926,glow:null,sm:1},
+  {id:"f308",name:"窗户",src:"assets/2.5d/f308.webp",w:2,d:3,h:40,glow:null,wall:"back",oy:0.04},
+  {id:"f309",name:"小提琴",src:"assets/2.5d/f309.webp",w:0.5,d:0.5,h:40,scale:0.792,glow:null,sm:1},
+  {id:"f310",name:"红酒瓶",src:"assets/2.5d/f310.webp",w:0.25,d:0.25,h:40,scale:0.926,glow:null,sm:1},
+  {id:"f311",name:"书籍",src:"assets/2.5d/f311.webp",w:0.25,d:0.25,h:40,scale:1.164,glow:null,sm:1},
+  {id:"f312",name:"棋盘桌",src:"assets/2.5d/f312.webp",w:1,d:1,h:40,glow:null},
+  {id:"f313",name:"落地灯",src:"assets/2.5d/f313.webp",w:0.5,d:0.5,h:40,scale:0.857,glow:null,sm:1},
+  {id:"f314",name:"床边柜",src:"assets/2.5d/f314.webp",w:1,d:1,h:40,scale:0.794,glow:null,oy:-0.04,sh:1.05}, /* v47：sh 1.3→1.05 与包对齐（老板工作台 10-01 同步调整） */
+  {id:"f315",name:"宝石",src:"assets/2.5d/f315.webp",w:1,d:1,h:40,scale:0.926,glow:null,wall:"back"},
+  {id:"f316",name:"摆件",src:"assets/2.5d/f316.webp",w:0.75,d:0.75,h:40,scale:0.691,glow:null,sm:1,ox:-0.1,oy:-0.18},
+  {id:"f317",name:"新家具",src:"assets/2.5d/f317.webp",w:1,d:1,h:40,scale:1,glow:null},
+  {id:"f318",name:"新家具",src:"assets/2.5d/f318.webp",w:1,d:1,h:40,scale:1,glow:null},
+  {id:"f319",name:"鸦鸦公仔（趴）",src:"assets/2.5d/f319.webp",w:1,d:1,h:40,scale:0.916,glow:null,sm:1}, /* v47：scale 0.916+sm 小物与包对齐（老板工作台 10-01 同步调整；v41 老板已改名） */
+  {id:"f320",name:"鸦鸦公仔",src:"assets/2.5d/f320.webp",w:0.75,d:0.75,h:40,scale:0.926,glow:null,sm:1}, /* v47：sm 小物与包对齐 */
+  {id:"f321",name:"欧式拱顶窗",src:"assets/2.5d/f321.webp",w:3.25,d:0.5,h:40,scale:1.027,glow:null,ox:0.0241,oy:-0.0313,ovr:1.9108}, /* v47：scale/ox/oy/ovr 与包对齐（老板工作台 10-01 同步调整；v41 老板资产库新增） */
+   {id:"f322",name:"方形地毯",src:"assets/2.5d/f322.webp",w:3.25,d:3.25,h:40,glow:null,flat:1,ovr:0.8104}, /* v56：内嵌补行（老板工作台 10-03 同步新增） */
+   {id:"f323",name:"圆形地毯",src:"assets/2.5d/f323.webp",w:3.25,d:3.25,h:40,glow:null,flat:1,ovr:0.4411}, /* v56：内嵌补行（老板工作台 10-03 同步新增） */
 ];
 var DEF_MAP={};(function(){var i;for(i=0;i<FURN_DEF.length;i++)DEF_MAP[FURN_DEF[i].id]=FURN_DEF[i];})();
 var PACKTEX={}; /* v35roof：包带贴图四槽 {floor,wall,roof,border}——工作台资产库同步出来的贴图（装修页出贴图卡） */
@@ -1195,6 +1197,10 @@ function patternOf(key){
   if(!e||e.type!=="img")return null;
   return PTN[key+"|"+e.value]||null;
 }
+/* v56webp：旧存档/包里写的仍是 .png/.jpg 路径——加载层统一归一 .webp，失败回退原路径 */
+function awSrc(u){if(typeof u!=="string")return u;return u.replace(/^(assets\/[^\s"'?]+)\.(?:png|jpe?g)$/i,"$1.webp");}
+function awLoad(im,u){if(typeof u!=="string"){im.src=u;return;}var w=awSrc(u);if(w!==u)im.setAttribute("data-awo",u);im.src=w;}
+function awFb(im){var o=im.getAttribute("data-awo"),s=im.getAttribute("src")||"";if(o&&!im.getAttribute("data-awfb")&&/\.webp(\?|$)/.test(s)){im.setAttribute("data-awfb","1");im.src=o;return true;}return false;}
 function loadPattern(key){
   var e=DECOR[key];
   if(!e||e.type!=="img")return;
@@ -1207,8 +1213,8 @@ function loadPattern(key){
     PTN[ck]={p:ctx.createPattern(src,"repeat"),w:im.naturalWidth||im.width||64,h:im.naturalHeight||im.height||32,im:src}; /* im=绘制源（roof/border=sealTex 处理后的 canvas）：地板「整张覆盖」画法用（v33tex·B2，与工作台 v34floor 同口径） */
     delete LOADING[ck];resize();render();
   };
-  im.onerror=function(){delete LOADING[ck];resize();render();};
-  im.src=e.value;
+  im.onerror=function(){if(awFb(im))return;delete LOADING[ck];resize();render();};
+  awLoad(im,e.value);
 }
 /* ── 绘制 ── */
 function spanOfSrc(src){ /* v47span：该贴图 src 是否长条模式（使用中墙纸槽或 extra 墙纸卡，随包） */
@@ -1317,8 +1323,8 @@ function furnImg(it){
       }catch(err){}
       FIMG[ck]=e;render();
     };
-    im.onerror=function(){delete FIMG[ck];}; /* v22fix：不再永久标 "err"（一次失败断一次图），下帧重新尝试加载 */
-    im.src=it.img;
+    im.onerror=function(){if(awFb(im))return;delete FIMG[ck];}; /* v22fix：不再永久标 "err"（一次失败断一次图），下帧重新尝试加载 */
+    awLoad(im,it.img);
   }
   var v=FIMG[ck];
   return (v&&v!=="err")?v:null;
@@ -1871,8 +1877,8 @@ function charImg(name){ /* 角色帧缓存：不做逐帧裁边——24 帧共�
     CIMG[name]=null;
     var im=new Image();
     im.onload=function(){CIMG[name]={img:im,w:im.naturalWidth||420,h:im.naturalHeight||554};render();};
-    im.onerror=function(){CIMG[name]="err";};
-    im.src="assets/character/"+name+".png";
+    im.onerror=function(){if(awFb(im))return;CIMG[name]="err";};
+    awLoad(im,"assets/character/"+name+".png");
   }
   var v=CIMG[name];
   if(v&&v!=="err"){CHAR_LASTIMG=v;return v;} /* v22framefix：合法帧顺手记成兜底帧 */
@@ -2787,7 +2793,7 @@ function aRender(){
       b.className="pcard";b.setAttribute("data-i",i);
       b.setAttribute("role","button");b.setAttribute("tabindex","0");
       b.innerHTML='<span class="pfr"><img class="pph" src="'+p.src+'" alt="'+p.t+'">'
-        +'<img class="pfr-img" src="assets/ui/photo-frame.png" alt=""></span>'
+        +'<img class="pfr-img" src="assets/ui/photo-frame.webp" alt=""></span>'
         +'<span class="pcap">'+p.t+'</span>'
         +'<span class="pops"><button type="button" class="pop-del" title="删除这张照片">🗑</button><button type="button" class="pop-ren" title="改标题">✏️</button><button type="button" class="pop-dl" title="保存到手机/电脑相册">💾</button></span>';
       b.addEventListener("click",function(){aOpenLb(i)});
@@ -3158,7 +3164,7 @@ $("plClose").addEventListener("click",closePolaroid); /* 取消：不入册（v3
 plWrapEl.addEventListener("click",function(e){if(e.target===plWrapEl)closePolaroid();});
 function plSaveNow(){ /* v31shot3：拍立得确定入册的唯一入口（存入相册钮 / 2s 无操作自动入册共用） */
   var p=pendingPhoto;if(!p)return;
-  PHOTOS.unshift({d:p.date,t:p.mood,src:p.src||"assets/bg-new.jpg",shot:!!p.src});
+  PHOTOS.unshift({d:p.date,t:p.mood,src:p.src||"assets/bg-new.webp",shot:!!p.src});
   A_PAGE=0;aRender();
   photosPersist();
   closePolaroid();
@@ -3260,10 +3266,10 @@ function albumUploadPick(){ /* v44⑤：相册加号=选手机图→长边 1280 
   pGetAll(function(stored){
     var list=(stored&&Object.prototype.toString.call(stored)==="[object Array]"&&stored.length)?stored:null;
     if(list){
-      list.slice().reverse().forEach(function(p){if(p&&p.d&&p.t)PHOTOS.unshift({d:p.d,t:p.t,src:p.src||"assets/bg-new.jpg",shot:!!p.src,up:p.up?1:0})});
+      list.slice().reverse().forEach(function(p){if(p&&p.d&&p.t)PHOTOS.unshift({d:p.d,t:p.t,src:p.src||"assets/bg-new.webp",shot:!!p.src,up:p.up?1:0})});
       if(migrated)try{localStorage.removeItem(PKEY)}catch(e2){} /* IDB 为准，旧档删掉防下次混淆 */
     }else if(migrated){
-      migrated.reverse().forEach(function(p){if(p&&p.d&&p.t)PHOTOS.unshift({d:p.d,t:p.t,src:p.src||"assets/bg-new.jpg",shot:!!p.src,up:p.up?1:0})});
+      migrated.reverse().forEach(function(p){if(p&&p.d&&p.t)PHOTOS.unshift({d:p.d,t:p.t,src:p.src||"assets/bg-new.webp",shot:!!p.src,up:p.up?1:0})});
       photosPersist(); /* 迁移：写进 IDB 并删旧档（回退环境会幂等写回旧档，无害） */
     }
     try{aRender()}catch(e3){} /* IDB 是异步的：恢复完刷新相册网格/页码（jsdom 同步立即执行，渲染空网格无副作用） */
@@ -3419,7 +3425,7 @@ function makeFurnCard(id){ /* 家具卡：点击=真实放进房间 */
   var def=DEF_MAP[id];if(!def)return null;
   var card=document.createElement("div");card.className="card";
   var img=document.createElement("div");img.className="cimg";
-  var im=document.createElement("img");im.src=def.src;im.alt=def.name;img.appendChild(im);
+  var im=document.createElement("img");awLoad(im,def.src);im.alt=def.name;im.onerror=function(){if(awFb(im))return;im.style.opacity=.4};img.appendChild(im);
   var nm=document.createElement("div");nm.className="cname";nm.textContent=def.name;nm.title=def.name;
   card.appendChild(img);card.appendChild(nm);
   card.addEventListener("click",function(){
@@ -3457,9 +3463,9 @@ function makeSwCard(sw,isWall){ /* 墙面/地板配色卡；「custom」卡=方�
 function makeTexCard(slot,kind){ /* v35roof：kind="wall"|"floor"|"roof"|"border"（v33tex·B2 原为 isWall 布尔）——包带来的贴图卡，点卡即换；v37：启用中金边高亮、roof/border 启停改布局几何→resize */
   var card=document.createElement("div");card.className="card";
   var swd=document.createElement("div");swd.className="swatch";
-  var im=document.createElement("img");im.src=slot.src;im.alt=slot.name||"贴图";
+  var im=document.createElement("img");awLoad(im,slot.src);im.alt=slot.name||"贴图";
   im.style.cssText="width:100%;height:100%;object-fit:cover";
-  im.onerror=function(){card.style.opacity=.4;card.title="贴图文件缺失";};
+  im.onerror=function(){if(awFb(im))return;card.style.opacity=.4;card.title="贴图文件缺失";};
   swd.appendChild(im);
   var nm=document.createElement("div");nm.className="cname";nm.textContent=slot.name||"贴图";nm.title=nm.textContent;
   card.appendChild(swd);card.appendChild(nm);

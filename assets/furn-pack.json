@@ -1,7 +1,7 @@
 {
  "app": "maoor-furn-pack",
  "ver": 2,
- "date": "2026-10-01",
+ "date": "2026-10-03",
  "assets": [
   {
    "fid": "f305",
@@ -506,6 +506,50 @@
    "ovr": 1.9108,
    "wall": false,
    "src": "assets/2.5d/f321.png"
+  },
+  {
+   "fid": "f322",
+   "name": "方形地毯",
+   "cat": "氛围",
+   "w": 3.25,
+   "d": 3.25,
+   "h": 40,
+   "scale": null,
+   "ox": null,
+   "oy": null,
+   "flip": null,
+   "vh": 1,
+   "sm": 0,
+   "sh": 0,
+   "sw": null,
+   "sd": null,
+   "flat": 1,
+   "glow": null,
+   "ovr": 0.8104,
+   "wall": false,
+   "src": "assets/2.5d/f322.png"
+  },
+  {
+   "fid": "f323",
+   "name": "圆形地毯",
+   "cat": "氛围",
+   "w": 3.25,
+   "d": 3.25,
+   "h": 40,
+   "scale": null,
+   "ox": null,
+   "oy": null,
+   "flip": null,
+   "vh": 1,
+   "sm": 0,
+   "sh": 0,
+   "sw": null,
+   "sd": null,
+   "flat": 1,
+   "glow": null,
+   "ovr": 0.4411,
+   "wall": false,
+   "src": "assets/2.5d/f323.png"
   }
  ],
  "layout": [
@@ -520,7 +564,7 @@
   {
    "fid": "f301",
    "gx": 1.75,
-   "gy": 5,
+   "gy": 4.75,
    "flip": null,
    "ox": 0.0452,
    "oy": -0.0347
@@ -638,7 +682,7 @@
   },
   {
    "fid": "f315",
-   "wall": "back",
+   "wall": "left",
    "u": 0,
    "v": 1,
    "flip": null
@@ -677,14 +721,14 @@
   },
   {
    "fid": "f320",
-   "gx": 2,
-   "gy": 1,
+   "gx": 0,
+   "gy": 4.5,
    "flip": null
   },
   {
    "fid": "f321",
-   "gx": 2.75,
-   "gy": 0,
+   "gx": 0,
+   "gy": 4,
    "flip": null,
    "ox": 0.0241,
    "oy": -0.0313
@@ -731,19 +775,27 @@
     "f308",
     "f315",
     "f313",
-    "f321"
+    "f321",
+    "f322",
+    "f323"
    ]
   }
  },
  "tex": {
   "floor": {
-   "id": "a34",
-   "name": "红棕色地板",
+   "id": "a43",
+   "name": "典雅地板2",
    "src": "assets/tex/floor.png"
   },
+  "wall": {
+   "id": "a39",
+   "name": "玫瑰墙纸2",
+   "src": "assets/tex/wall.png",
+   "span": 1
+  },
   "roof": {
-   "id": "a25",
-   "name": "玫瑰古堡",
+   "id": "a44",
+   "name": "绿野仙踪屋顶",
    "src": "assets/tex/roof.png",
    "adj": {
     "s": 1.1,
@@ -752,8 +804,8 @@
    }
   },
   "border": {
-   "id": "a29",
-   "name": "玫瑰花坛",
+   "id": "a45",
+   "name": "绿野仙踪花圃",
    "src": "assets/tex/border.png",
    "adj": {
     "s": 1.1,
@@ -763,16 +815,53 @@
   },
   "extra": [
    {
+    "kind": "roof",
+    "id": "a42",
+    "name": "玫瑰古堡",
+    "src": "assets/tex/tex-a42.png",
+    "span": 0
+   },
+   {
+    "kind": "floor",
+    "id": "a40",
+    "name": "典雅地板",
+    "src": "assets/tex/tex-a40.png",
+    "span": 0
+   },
+   {
+    "kind": "wall",
+    "id": "a38",
+    "name": "玫瑰墙纸",
+    "src": "assets/tex/tex-a38.png",
+    "span": 1
+   },
+   {
+    "kind": "floor",
+    "id": "a34",
+    "name": "红棕色地板",
+    "src": "assets/tex/tex-a34.png",
+    "span": 0
+   },
+   {
     "kind": "wall",
     "id": "a33",
     "name": "红木墙纸",
-    "src": "assets/tex/tex-a33.png"
+    "src": "assets/tex/tex-a33.png",
+    "span": 0
    },
    {
     "kind": "floor",
     "id": "a32",
     "name": "浅棕色地板",
-    "src": "assets/tex/tex-a32.png"
+    "src": "assets/tex/tex-a32.png",
+    "span": 0
+   },
+   {
+    "kind": "border",
+    "id": "a29",
+    "name": "玫瑰花坛",
+    "src": "assets/tex/tex-a29.png",
+    "span": 0
    }
   ]
  }

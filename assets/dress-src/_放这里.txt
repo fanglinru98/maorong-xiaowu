@@ -1,0 +1,19 @@
+【换装真素材 · 投放目录】dress-pipeline.mjs 的输入目录
+
+用法
+  1. 把画好的透明底 PNG 直接丢进本目录（文件名随意，但建议带品类词，见下）。
+  2. 回到项目根目录执行：  node dress-pipeline.mjs
+  3. 产物在 assets/dress/（suit01.png / top01.png / bot01.png / coat01.png / acc01.png ...）
+     补丁在 dress-wardrobe-patch.json（人工合入 毛茸小屋V22demo.html 的 WARDROBE 表）
+
+文件名带品类词可自动归类（不区分大小写），认不出会兜底成「配饰」并告警：
+  套装 suit  ：suit / 套装 / 连衣裙 / onesie / dress
+  上衣 top   ：top / 上衣 / 衬衫 / 毛衣 / tee / shirt
+  下装 bottom：bottom / bot / 下装 / 裤 / 裙 / pants / skirt
+  外套 coat  ：coat / 外套 / 大衣 / 斗篷 / jacket
+  配饰 acc   ：acc / 配饰 / 帽 / 眼镜 / 领结 / 背包 / hat / bag
+  → 也可以整批强制指定：node dress-pipeline.mjs --cat top
+
+同名品类内按文件名自然排序编号（a2 在 a10 前面）；坏图/空图会跳过且不占号。
+目标像素高（出图后可调，改 dress-pipeline.mjs 顶部 CFG.targetH）：
+  套装 420 / 上衣 200 / 下装 160 / 外套 240 / 配饰 80
