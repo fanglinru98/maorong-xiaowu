@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>彻子小屋</title>
 <!-- PWA 全屏支持（V21 同款方案）：加到主屏幕后全屏运行 -->
-<meta name="theme-color" content="#4a3624"> <!-- v62①：状态栏色与游戏顶边(body渐变顶)同色（#922723 红是 manifest background_color，只管系统闪屏；此 meta 管浏览器/状态栏） -->
+<meta name="theme-color" content="#1c1c1c"> <!-- v65：状态栏碳黑（老板拍板「直接改成碳黑色不需要再改变」；#922723 是 manifest background_color，只管系统闪屏，另案）） -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1594,7 +1594,7 @@ var glowOn=false,glowTimer=0,glowLast=0;
 function glowTick(){
   if(!glowOn)return;
   var t=Date.now();
-  if(t-glowLast>=40){glowLast=t;render();}
+  if(t-glowLast>=100){glowLast=t;render();} /* v65：呼吸重绘 25fps→10fps（老板「点卡片/缩放有延迟」——光效呼吸每 40ms 全画布重绘一次是手机端最大 CPU 来源大主，降频肉眼几乎无感） */
   glowTimer=requestAnimationFrame(glowTick);
 }
 function glowStop(){ glowOn=false;if(glowTimer)cancelAnimationFrame(glowTimer);glowTimer=0; }
@@ -2585,7 +2585,7 @@ function applyBg(){ /* v38bgfix：bg 键值→游戏画面（.screen）背景；
   $("screen").style.background=(e&&e.value)?e.value:"";
   document.body.style.background="";
   var mv=document.querySelector('meta[name="theme-color"]'); /* v63②：状态栏色跟随装修背景色 */
-  if(mv){var bv=(e&&e.value)?e.value:"";var mh=bv.match(/#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|hsla?\([^)]*\)/);mv.setAttribute("content",mh?mh[0]:"#4a3624");}
+  if(mv){var bv=(e&&e.value)?e.value:"";var mh=bv.match(/#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|hsla?\([^)]*\)/);mv.setAttribute("content",mh?mh[0]:"#1c1c1c");}
 }
 function setDecor(key,patch){
   var e=DECOR[key];
@@ -3705,7 +3705,7 @@ function bootShow(){ /* 进度条走满：摆满 100% → 淡出 → 进游戏 *
   if(f)f.style.clipPath="inset(0 0% 0 0)"; /* v63④：填满 */
   if(b)b.style.left="calc(100% - 7%)";
   if(t)t.textContent="100%";
-  var wait=Math.max(0,2040-(Date.now()-BOOT_T0)); /* v61boot：最短展示 2.5s = 2040 保持 + 460 淡出 */
+  var wait=Math.max(0,3000-(Date.now()-BOOT_T0)); /* v65：最短展示 3.46s = 3000 保持 + 460 淡出（老板报「闪屏长加载页短」不稳——保底拉到 3s 盖住系统闪屏的时长波动，保证加载页每次完整露脸） */
   if(BOOT_DELAY>0){ /* v61boot：先保持到最短时长再淡出，淡出结束才进游戏（原版一上来就 gone，加载页 1.4s 就没了） */
     setTimeout(function(){if(el)el.classList.add("gone");setTimeout(startGame,BOOT_DELAY);},wait);
     return;
