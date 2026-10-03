@@ -207,7 +207,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #bootRow{position:absolute;left:50%;bottom:4.7%;transform:translateX(-50%);width:76%;z-index:2;min-height:5%} /* v57fix：高度不再只靠 aspect-ratio（Chrome88/Safari15 才支持；不支持时容器高 0 → 进度条+小熊全不可见，只剩背景外壳）；改为由 #bootBar 切图自身撑高，min-height 仅极端兜底 */
 #bootBar{position:relative;display:block;width:100%;height:auto;z-index:3} /* 文档流撑高 = 全浏览器一致 */
 #bootFillWrap{position:absolute;left:4.6%;right:4.6%;top:17%;bottom:17%;overflow:hidden;z-index:2}
-#bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;transform:translateX(-100%)}
+#bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;clip-path:inset(0 100% 0 0)} /* v63④：进度条=从左往右越来越长直到填满（clip 揭示法，老板指令），不再是整条平移 */
 #bootBear{position:absolute;left:-7%;bottom:82%;width:15.5%;z-index:1;container-type:inline-size;transition:left .25s ease-out}
 #bootBear img{width:100%;height:auto;display:block}
 #bootPct{position:absolute;left:36%;top:7%;width:62%;height:44%;display:flex;align-items:center;justify-content:center;
@@ -2584,6 +2584,8 @@ function applyBg(){ /* v38bgfix：bg 键值→游戏画面（.screen）背景；
   var e=DECOR.bg;
   $("screen").style.background=(e&&e.value)?e.value:"";
   document.body.style.background="";
+  var mv=document.querySelector('meta[name="theme-color"]'); /* v63②：状态栏色跟随装修背景色 */
+  if(mv){var bv=(e&&e.value)?e.value:"";var mh=bv.match(/#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|hsla?\([^)]*\)/);mv.setAttribute("content",mh?mh[0]:"#4a3624");}
 }
 function setDecor(key,patch){
   var e=DECOR[key];
@@ -2900,6 +2902,9 @@ var SND={bgm:null,click:null};
 function sndInit(){if(SND.bgm)return;try{SND.bgm=new Audio("assets/audio/bgm.m4a?v=48m");SND.bgm.loop=true;SND.click=new Audio("assets/audio/click.wav?v=48m");SND.bgm.volume=(typeof setSt.vol==="number"?setSt.vol:70)/100;}catch(e){}} /* v50vol：建 Audio 后即套存档音量 */ /* v48snd：BGM 源换录屏无损解封装音轨 bgm.m4a（不进 PRECACHE，首播流式）；v48mime：?v=48m 破缓存——COS 首发的 octet-stream 响应被浏览器按 max-age=86400 缓存，换参数强制重取正确 MIME */
 function sndClick(){if(!setSt.click||!SND.click)return;try{SND.click.currentTime=0;var p=SND.click.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
 function sndBgm(){if(!SND.bgm)return;try{if(setSt.bgm){var q2=SND.bgm.play();if(q2&&q2.catch)q2.catch(function(){});}else SND.bgm.pause();}catch(e){}}
+document.addEventListener("visibilitychange",function(){ /* v63③：息屏/切到别的 App＝页面隐藏即停音乐，回来且开着 BGM 就恢复 */
+  if(document.hidden){if(SND.bgm)SND.bgm.pause();}else if(setSt.bgm)sndBgm();
+});
 function sndUnlock(){sndInit();sndBgm();document.removeEventListener("pointerdown",sndUnlock);document.removeEventListener("keydown",sndUnlock);}
 document.addEventListener("pointerdown",sndUnlock);document.addEventListener("keydown",sndUnlock);
 document.addEventListener("click",function(e){if(!setSt.click)return;if(e.target&&e.target.closest&&e.target.closest("button,.card,[role='button'],[role='switch']"))sndClick();},true);
@@ -3690,14 +3695,14 @@ var BOOT_TEX=[],BOOT_N=0,BOOT_N_MAX=1,BOOT_FIN=0;
 function bootPaint(){
   var p=Math.min(100,Math.round(BOOT_N/BOOT_N_MAX*100));
   var f=$("bootFill"),b=$("bootBear"),t=$("bootPct");
-  if(f)f.style.transform="translateX("+(p-100)+"%)"; /* v57boot：高亮条左→右平移，右端圆头始终完整 */
+  if(f)f.style.clipPath="inset(0 "+(100-p)+"% 0 0)"; /* v63④：露出左边 p%，从左往右越来越长 */
   if(b)b.style.left=(p-7)+"%";                       /* 小熊跟随进度从左走到右 */
   if(t)t.textContent=p+"%";                           /* 木牌上的进度数值 */
 }
 var BOOT_T0=Date.now(),BOOT_DELAY=0; /* v61boot：最短展示 2.5s（2040 保底 + 460 淡出）——老板要求「看得到加载页」：系统闪屏过去后进度条必须露脸 */
 function bootShow(){ /* 进度条走满：摆满 100% → 淡出 → 进游戏 */
   var f=$("bootFill"),b=$("bootBear"),t=$("bootPct"),el=$("boot");
-  if(f)f.style.transform="translateX(0%)";
+  if(f)f.style.clipPath="inset(0 0% 0 0)"; /* v63④：填满 */
   if(b)b.style.left="calc(100% - 7%)";
   if(t)t.textContent="100%";
   var wait=Math.max(0,2040-(Date.now()-BOOT_T0)); /* v61boot：最短展示 2.5s = 2040 保持 + 460 淡出 */
