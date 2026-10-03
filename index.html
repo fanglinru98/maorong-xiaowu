@@ -206,7 +206,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #bootTitle{position:absolute;left:50%;top:13%;transform:translateX(-50%);width:64%;z-index:3}
 #bootRow{position:absolute;left:50%;bottom:4.7%;transform:translateX(-50%);width:76%;z-index:2;min-height:5%} /* v57fix：高度不再只靠 aspect-ratio（Chrome88/Safari15 才支持；不支持时容器高 0 → 进度条+小熊全不可见，只剩背景外壳）；改为由 #bootBar 切图自身撑高，min-height 仅极端兜底 */
 #bootBar{position:relative;display:block;width:100%;height:auto;z-index:3} /* 文档流撑高 = 全浏览器一致 */
-#bootFillWrap{position:absolute;left:4.6%;right:4.6%;top:17%;bottom:17%;overflow:hidden;z-index:2}
+#bootFillWrap{position:absolute;left:4.6%;right:4.6%;top:17%;bottom:17%;overflow:hidden;z-index:4}/* v64fix：内芯层压过外壳（bar.webp 内腔不透明 alpha254 会盖死 fill）——切图不动只调层 */
 #bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;clip-path:inset(0 100% 0 0)} /* v63④：进度条=从左往右越来越长直到填满（clip 揭示法，老板指令），不再是整条平移 */
 #bootBear{position:absolute;left:-7%;bottom:82%;width:15.5%;z-index:1;container-type:inline-size;transition:left .25s ease-out}
 #bootBear img{width:100%;height:auto;display:block}
