@@ -3693,14 +3693,14 @@ function bootPaint(){
   if(b)b.style.left=(p-7)+"%";                       /* 小熊跟随进度从左走到右 */
   if(t)t.textContent=p+"%";                           /* 木牌上的进度数值 */
 }
-var BOOT_T0=Date.now(),BOOT_DELAY=0; /* v57fix：最短展示 0.8s——二次访问（SW 已缓存、秒开）时进度条也露个脸再进游戏 */
+var BOOT_T0=Date.now(),BOOT_DELAY=0; /* v61boot：最短展示 2.5s（2040 保底 + 460 淡出）——老板要求「看得到加载页」：系统闪屏过去后进度条必须露脸 */
 function bootShow(){ /* 进度条走满：摆满 100% → 淡出 → 进游戏 */
   var f=$("bootFill"),b=$("bootBear"),t=$("bootPct"),el=$("boot");
   if(f)f.style.transform="translateX(0%)";
   if(b)b.style.left="calc(100% - 7%)";
   if(t)t.textContent="100%";
   if(el)el.classList.add("gone");
-  var wait=Math.max(0,800-(Date.now()-BOOT_T0));
+  var wait=Math.max(0,2040-(Date.now()-BOOT_T0));
   if(BOOT_DELAY>0){setTimeout(startGame,wait+BOOT_DELAY);return;}
   startGame(); /* 跳过场景（jsdom 测试 / file:// 双击）：同步进游戏，不拖慢 */
 }
