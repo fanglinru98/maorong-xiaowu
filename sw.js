@@ -3,63 +3,21 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v58'; /* v57fix 加载页兼容加固：进度条高度不再依赖 aspect-ratio */ /* v57boot 开机加载页并入主线 */ /* v52 四件+加载页 demo */
+const CACHE_VER = 'maoor-v59'; /* v59precache 预缓存清单瘦身只留外壳 */ /* v57fix 加载页兼容加固：进度条高度不再依赖 aspect-ratio */ /* v57boot 开机加载页并入主线 */ /* v52 四件+加载页 demo */
+/* v59precache：清单不再手写——v57 起开机加载页会把家具/角色/贴图/UI 图全部请求一遍，
+   fetch 处理器的 stale-while-revalidate 会把它们逐个存进 CACHE_VER 缓存，
+   所以「玩过一次」之后离线资源自动齐全；手写清单反而是「以后加资源必漏」的源头。
+   这里只留外壳（页面本体 + PWA 图标 + 首屏底图/立绘/点击音），保证首次打开就能全屏安装。 */
 const PRECACHE = [
   './index.html',
   './manifest.json',
+  './boss.html',
   './icon-180.png',
   './icon-192.png',
   './icon-512.png',
   './assets/bg-new.webp',
   './assets/character/stand.webp',
-  './assets/audio/click.wav', /* v47snd：点击音效进 PRECACHE（bgm.mp3 3MB 不进：省首访流量，stale-while-revalidate 自然缓存） */ /* v46：旧 dress-bg.png 出 PRECACHE（换装层已改 assets/ui/dress-* 五件套） */
-  /* 2.5d 家具 23 张 */
-  './assets/2.5d/f270.webp','./assets/2.5d/f271.webp','./assets/2.5d/f272.webp','./assets/2.5d/f273.webp',
-  './assets/2.5d/f274.webp','./assets/2.5d/f275.webp','./assets/2.5d/f276.webp','./assets/2.5d/f277.webp',
-  './assets/2.5d/f278.webp','./assets/2.5d/f279.webp','./assets/2.5d/f280.webp','./assets/2.5d/f281.webp',
-  './assets/2.5d/f282.webp','./assets/2.5d/f283.webp','./assets/2.5d/f284.webp','./assets/2.5d/f285.webp',
-  './assets/2.5d/f286.webp','./assets/2.5d/f287.webp','./assets/2.5d/f288.webp','./assets/2.5d/f289.webp',
-  './assets/2.5d/f290.webp','./assets/2.5d/f291.webp','./assets/2.5d/f292.webp',
-  /* 2.5d 家具 v22pack 新增 19 张（f293-f311，工作台家具包上架） */
-  './assets/2.5d/f293.webp','./assets/2.5d/f294.webp','./assets/2.5d/f295.webp','./assets/2.5d/f296.webp',
-  './assets/2.5d/f297.webp','./assets/2.5d/f298.webp','./assets/2.5d/f299.webp','./assets/2.5d/f300.webp',
-  './assets/2.5d/f301.webp','./assets/2.5d/f302.webp','./assets/2.5d/f303.webp','./assets/2.5d/f304.webp',
-  './assets/2.5d/f305.webp','./assets/2.5d/f306.webp','./assets/2.5d/f307.webp','./assets/2.5d/f308.webp',
-  './assets/2.5d/f309.webp','./assets/2.5d/f310.webp','./assets/2.5d/f311.webp', /* v22audit：补尾逗号（原缺逗号=整份 sw 语法错误，SW 从未注册） */
-  './assets/2.5d/f312.webp','./assets/2.5d/f313.webp','./assets/2.5d/f314.webp', /* v27：工作台 09-23 同步新增两件家具 */
-  './assets/2.5d/f315.webp','./assets/2.5d/f316.webp', /* v28：工作台 09-24 同步新增两件（宝石/摆件） */
-  './assets/2.5d/f317.webp','./assets/2.5d/f318.webp', /* v36：09-29 新家具×2（同图两件，老板库里命名「新家具」） */
-'./assets/2.5d/f319.webp','./assets/2.5d/f320.webp','./assets/2.5d/f321.webp', /* v46fix：v41 插入时带入字面 \n 致整份 sw 语法错误（SW 从未注册），修复 */ /* v36：09-29 家具包同步（鸦鸦公仔×2；f295-f316 同名换图随包更新） */
-  './boss.html', /* v31gate：老板版跳板（?boss=1 全解锁入口） */
-  './assets/tex/floor.webp',
-'./assets/tex/wall.webp',
-'./assets/tex/roof.webp','./assets/tex/border.webp', /* v35roof：屋顶/屋外装饰贴图（工作台同步覆盖写） */
-  './assets/tex/tex-a32.webp','./assets/tex/tex-a33.webp', /* v47：extra 贴图首次写盘（浅棕色地板/红木墙纸，老板 10-01 同步） */
-  /* 家具表（工作台「⬆ 同步到正式版」写出的那份，双击 file:// 打开也要能读） */
-  './assets/furn-pack.js','./assets/furn-pack.json',
-  /* HUD 图标 8 张 */
-  './icon/头像框.webp','./icon/相册.webp','./icon/日历.webp','./icon/日记.webp',
-  './icon/设置.webp','./icon/装修.webp','./icon/换装.webp','./icon/拍照.webp',
-  /* UI 切图（日记/相册/日历/装修底板） */
-  './assets/ui/deco-panel.webp','./assets/ui/cal-panel.webp',
-  './assets/ui/dress-scene.webp','./assets/ui/dress-panel.webp','./assets/ui/dress-title.webp','./assets/ui/dress-back.webp','./assets/ui/dress-save.webp', /* v46：换装占位页切图五件套 */
-  './assets/ui/diary-cover.webp','./assets/ui/diary-page.webp','./assets/ui/diary-card.webp','./assets/ui/btn-diary-write.webp',
-  './assets/ui/diary-write-board.webp','./assets/ui/diary-write-editor.webp','./assets/ui/diary-write-deco.webp','./assets/ui/diary-write-save.webp', /* E-20260922-02 写日记页新美术 4 张 */
-  './assets/ui/album-panel.webp','./assets/ui/album-add.webp','./assets/ui/photo-frame.webp',
-  './assets/ui/arrow-l.webp','./assets/ui/arrow-r.webp','./assets/ui/arrow-al.webp','./assets/ui/arrow-ar.webp',
-  './assets/ui/avatar-badge.webp', /* v43：头像成品图整块（frame/face 退役） */
-  './assets/ui/heart-gold.webp', /* v42⑥：日历选中日金爱心 */
-  './assets/ui/boot2-title.webp','./assets/ui/boot2-bar.webp','./assets/ui/boot2-fill.webp','./assets/ui/boot2-bear.webp','./assets/ui/boot2-bg.jpg', /* v57boot：开机加载页切图五件套（标题/外框/高亮条/小熊/背景） */
-  /* UI 切图 v6：日历三模块/页签/备忘钮 */
-  './assets/ui/btn-memo-add.webp',
-  './assets/ui/cal-memo.webp',
-  './assets/ui/cal-month.webp',
-  './assets/ui/cal-tab-day.webp',
-  './assets/ui/cal-tab-day-on.webp',
-  './assets/ui/cal-tab-week.webp',
-  './assets/ui/cal-tab-week-on.webp',
-  './assets/ui/cal-tab-month.webp',
-  './assets/ui/cal-tab-month-on.webp'
+  './assets/audio/click.wav'
 ];
 
 /* 安装：预缓存核心文件（单个文件 404 也不影响整体安装） */
