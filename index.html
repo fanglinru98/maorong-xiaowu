@@ -3699,10 +3699,13 @@ function bootShow(){ /* 进度条走满：摆满 100% → 淡出 → 进游戏 *
   if(f)f.style.transform="translateX(0%)";
   if(b)b.style.left="calc(100% - 7%)";
   if(t)t.textContent="100%";
+  var wait=Math.max(0,2040-(Date.now()-BOOT_T0)); /* v61boot：最短展示 2.5s = 2040 保持 + 460 淡出 */
+  if(BOOT_DELAY>0){ /* v61boot：先保持到最短时长再淡出，淡出结束才进游戏（原版一上来就 gone，加载页 1.4s 就没了） */
+    setTimeout(function(){if(el)el.classList.add("gone");setTimeout(startGame,BOOT_DELAY);},wait);
+    return;
+  }
   if(el)el.classList.add("gone");
-  var wait=Math.max(0,2040-(Date.now()-BOOT_T0));
-  if(BOOT_DELAY>0){setTimeout(startGame,wait+BOOT_DELAY);return;}
-  startGame(); /* 跳过场景（jsdom 测试 / file:// 双击）：同步进游戏，不拖慢 */
+  startGame(); /* 45s 兜底：立即进游戏，不拖慢 */
 }
 function bootFinish(delay){
   if(BOOT_FIN)return;BOOT_FIN=1;
