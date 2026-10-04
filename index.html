@@ -463,7 +463,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* 页签三钮（日/周/月，图一示意）：暗棕卡图标在上文字在下；选中=金描边+猩红底+白字+底部小金尖（「日历」横幅已烧死在底框图里，旧 .banner 退役） */
 .ctabs{display:flex;justify-content:center;gap:8px;padding:calc(33% + 6px) 16px 6px;position:relative;left:0} /* v22d2b：整行右移5px（用户）；横幅间隙≈12px */
 /* 页签三钮=切图版（文字与图标已烧死在切图里，HTML 空心 <i> 贴图；选中=金描边猩红底 -on 图） */
-.ctab{flex:1;max-width:76px; /* v83cal：三视图按钮缩小（84→76，老板指令「按钮变小点」给备忘卡腾位） */border:none;background:none;padding:0;position:relative;transition:transform .15s}
+.ctab{flex:1;max-width:70px; /* v86cal：三视图按钮再缩（76→70，老板「都缩小一点他们」） */ /* v83cal：三视图按钮缩小（84→76，老板指令「按钮变小点」给备忘卡腾位） */border:none;background:none;padding:0;position:relative;transition:transform .15s}
 .ctab i{display:block;width:100%;aspect-ratio:400/393;font-size:0;line-height:0;
   background:url(assets/ui/cal-tab-month.webp) center/100% 100% no-repeat;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
 .ctab[data-v="day"] i{background-image:url(assets/ui/cal-tab-day.webp)}
@@ -4005,6 +4005,18 @@ function calRender(){
       b.addEventListener("click",function(){selKey=key;calRender();renderMemo();});
       g.appendChild(b);
     })(d);
+  }
+  var rows=Math.ceil((lead+dim)/7),vm=$("vMonth"),gr=$("cGrid"); /* v86cal：按月动态裁底板——cal-month 切图烘焙 6 排凹槽心，少行月（如 10 月 5 排）底排空凹槽露出来=老板指出的「最后一行空白爱心」；裁掉空排后月历自然变矮，备忘卡上方不再重叠 */
+  if(rows<6){
+    var rh=[93,91.5,87.5,83.25,82,82.5],sum=0;for(var ri=0;ri<rows;ri++)sum+=rh[ri];
+    var vh=186+sum+34; /* 186=格区顶（匾+星期行），34=底板余量；r 行版面板高按真实凹槽锚点推算，前 r 行像素级校准不动 */
+    vm.style.aspectRatio="700/"+vh;
+    vm.style.backgroundSize="100% auto";vm.style.backgroundPosition="top"; /* 顶对齐裁掉底部空凹槽排 */
+    gr.style.top=(186/vh*100)+"%";gr.style.bottom=(34/vh*100)+"%";
+    gr.style.gridTemplateRows=rh.slice(0,rows).join("fr ")+"fr";
+  }else{
+    vm.style.aspectRatio="";vm.style.backgroundSize="";vm.style.backgroundPosition="";
+    gr.style.top="";gr.style.bottom="";gr.style.gridTemplateRows=""; /* 6 行月恢复 CSS 原值 */
   }
 }
 /* 备忘卡：v22cal10 按视图域取数——月视图=月域 EVM[月键]（标题「X月备忘」）；日视图=日域 EV[selKey]；周视图无备忘板 */
