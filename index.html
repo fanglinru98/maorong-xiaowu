@@ -462,7 +462,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* 页签三钮（日/周/月，图一示意）：暗棕卡图标在上文字在下；选中=金描边+猩红底+白字+底部小金尖（「日历」横幅已烧死在底框图里，旧 .banner 退役） */
 .ctabs{display:flex;justify-content:center;gap:8px;padding:calc(33% + 6px) 16px 6px;position:relative;left:0} /* v22d2b：整行右移5px（用户）；横幅间隙≈12px */
 /* 页签三钮=切图版（文字与图标已烧死在切图里，HTML 空心 <i> 贴图；选中=金描边猩红底 -on 图） */
-.ctab{flex:1;max-width:84px;border:none;background:none;padding:0;position:relative;transition:transform .15s}
+.ctab{flex:1;max-width:76px; /* v83cal：三视图按钮缩小（84→76，老板指令「按钮变小点」给备忘卡腾位） */border:none;background:none;padding:0;position:relative;transition:transform .15s}
 .ctab i{display:block;width:100%;aspect-ratio:400/393;font-size:0;line-height:0;
   background:url(assets/ui/cal-tab-month.webp) center/100% 100% no-repeat;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
 .ctab[data-v="day"] i{background-image:url(assets/ui/cal-tab-day.webp)}
@@ -473,7 +473,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .ctab:active{transform:scale(.94)}
 /* 心形月历：心形=clip-path，发光用父级 filter（clip 内会被裁） */
 /* 月视图底板=cal-month.png 切图（红金匾+星期行+6×7 空心格烘焙；格上只叠 ev/today/sel 与数字） */
-#vMonth{margin:8px 14px 6px;position:relative;left:0;aspect-ratio:700/740; /* v22d2b：左移3px（原 3px，用户微调回到0）；底板烘焙凹槽与格层同步动，心不错位 */
+#vMonth{margin:6px 18px 4px; /* v83cal：月历小一点点（两侧 margin 14→18，等比缩小不错位） */position:relative;left:0;aspect-ratio:700/740; /* v22d2b：左移3px（原 3px，用户微调回到0）；底板烘焙凹槽与格层同步动，心不错位 */
   background:url(assets/ui/cal-month.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 #calMonth{position:absolute;left:50%;top:8.2%;transform:translate(-50%,-50%);font-style:normal;
   font-size:15px;font-weight:900;color:#f9ecd2;letter-spacing:2px;text-shadow:0 1px 1px rgba(80,15,8,.7)}
@@ -628,7 +628,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .clegend .lg-ev i{background:#a03a2c}
 .clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
 /* 备忘卡=cal-memo.png 切图（红绶带/「备忘事项」标题/虚线烘焙；日期叠绶带，自绘行纸片盖烘焙行区→不限量） */
-.memo{position:absolute;left:17px;right:18px;bottom:-5%;height:30.3%;min-height:0;margin:0;display:flex;flex-direction:column; /* v69：备忘卡底框探出面板底框 31px（老板指令「再往下没有展示出的部分改成手指下滑露出」，#cal 的 overflow-y:auto 已存在→absolute 子元素溢出计入滚动区，下滑即可露出卡底框；bottom:2% 钉底版=v67，探出后 memo top≈558 仍低于月历格底 492 防重叠；日/周视图各自覆写本规则不受影响 */
+.memo{position:absolute;left:17px;right:18px;bottom:2%;height:30.3%; /* v83cal：备忘卡收进面板内（原 bottom:-5% 探出=v69 设计，老板现要求收回；按钮/月历已腾位，收进后不压图例与月历） */min-height:0;margin:0;display:flex;flex-direction:column; /* v69：备忘卡底框探出面板底框 31px（老板指令「再往下没有展示出的部分改成手指下滑露出」，#cal 的 overflow-y:auto 已存在→absolute 子元素溢出计入滚动区，下滑即可露出卡底框；bottom:2% 钉底版=v67，探出后 memo top≈558 仍低于月历格底 492 防重叠；日/周视图各自覆写本规则不受影响 */
   background:url(assets/ui/cal-memo.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 .memo .mhead{display:contents}
 .memo .mdate{position:absolute;left:50%;top:12.5%;transform:translate(-50%,-50%);white-space:nowrap;font-size:15px;font-weight:900; /* v22cal3：与红绶带垂直居中（绶带中心=图高12.5%；三视图实测同低6.8px——用户反馈2026-09-16） */
