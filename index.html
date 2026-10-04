@@ -345,12 +345,12 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .pfr{position:relative;display:block;width:100%;aspect-ratio:666/619}
 .pph{position:absolute;left:13%;top:14%;width:74%;height:71%;object-fit:cover;display:block}
 .pfr-img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.pimg{display:block;width:100%;height:auto;flex:1 1 auto;min-height:0;max-height:min(80vh,690px);overflow:hidden;border-radius:3px;background:#efe4c8} /* v62②：改卡内弹性自适应（vh/dvh/浏览器地址栏口径差异下都不会把卡片顶出屏幕；真机 手机端图二=84vh 固定高+底部字>视口溢出） */
-.pimg img{width:100%;height:100%;object-fit:contain;display:block} /* v52③：全屏显示不裁切 */
+.pimg{display:block;width:100%;aspect-ratio:11/16;flex:none;overflow:hidden;border-radius:3px;background:#efe4c8} /* v67三修：灯箱照片区锁 11:16（老板红框实测≈660×960 竖版），卡高随比例收敛不再顶满全屏；高度=卡宽×16/11 随比例走，不写死像素 */
+.pimg img{width:100%;height:100%;object-fit:cover;display:block} /* v67三修：11:16 区域 cover 填满不露底（老板红框口径，允许少量裁边） */
 .pdate{font-size:10.5px;color:#8a7052;margin:5px 2px 0}
 .pcap{font-size:11.5px;font-weight:800;color:#6d3a2a;text-align:center;letter-spacing:1px;margin-top:4px;
   max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pcard.newphoto{width:100%;aspect-ratio:669/718;align-self:start;
+.pcard.newphoto{width:86%;aspect-ratio:669/718;align-self:start;justify-self:center;margin-top:2px; /* v67三修：加号卡=网格独立项且略小于照片卡（不占照片卡的位置格） */
   background:url(assets/ui/album-add.webp) center/100% 100% no-repeat}
 .a-pager{display:flex;align-items:center;justify-content:center;gap:30px;padding:8px 0 2px}
 .a-arrow{display:grid;place-items:center;padding:4px;transition:transform .12s}
@@ -625,7 +625,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .clegend .lg-ev i{background:#a03a2c}
 .clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
 /* 备忘卡=cal-memo.png 切图（红绶带/「备忘事项」标题/虚线烘焙；日期叠绶带，自绘行纸片盖烘焙行区→不限量） */
-.memo{flex:none;height:30.3%;min-height:0;margin:0 18px 8px;position:relative;left:-1px;display:flex;flex-direction:column; /* v22d2b：右移3px（原 -4px，用户微调）；备忘板固定高（=月视图实测 30.3%），三视图同款不压扁 */
+.memo{position:absolute;left:17px;right:18px;bottom:2%;height:30.3%;min-height:0;margin:0;display:flex;flex-direction:column; /* v67三修：月视图备忘板钉底=底边收在面板底框内侧（老板红框；旧流式布局被月历内容顶出面板 32px），高随面板 30.3% 百分比自适应不写死像素；日/周视图各自覆写本规则不受影响 */
   background:url(assets/ui/cal-memo.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 .memo .mhead{display:contents}
 .memo .mdate{position:absolute;left:50%;top:12.5%;transform:translate(-50%,-50%);white-space:nowrap;font-size:15px;font-weight:900; /* v22cal3：与红绶带垂直居中（绶带中心=图高12.5%；三视图实测同低6.8px——用户反馈2026-09-16） */
@@ -634,6 +634,11 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .memo .mrows{position:absolute;left:7%;right:7%;top:42%;bottom:3.5%;overflow-y:auto;margin:0; /* v22cal：藏掉右侧白灰滚动轴（用户目检） */
   scrollbar-width:none;background:#fbe4cb;border-radius:9px;padding:4px 6% 10px;box-shadow:0 1px 4px rgba(120,70,40,.12)}
 .memo .mrows::-webkit-scrollbar{width:0;height:0;display:none}
+/* v67三修：月视图备忘列表=区内手指滑动（overflow-y:auto 非裁图），露出金细轴（#sheet 三件套原样）；id 权重压过上面的隐藏规则，日/周视图不受影响；「+ 添加备忘」absolute 钉在滚动区上方不随滚 */
+#cal:not(.v-day):not(.v-week) .mrows{scrollbar-width:thin;scrollbar-color:#dcb87e #f8eed6}
+#cal:not(.v-day):not(.v-week) .mrows::-webkit-scrollbar{width:14px}
+#cal:not(.v-day):not(.v-week) .mrows::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:99px}
+#cal:not(.v-day):not(.v-week) .mrows::-webkit-scrollbar-thumb{background:#dcb87e;border:2px solid #f8eed6;border-radius:99px}
 .mrow{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:7px 2px;border-bottom:1px dashed #c9a887;font-size:12px;color:#4a3826}
 .mrow:last-child{border-bottom:none}
 .mrow .cb{width:20px;height:20px;border:2px solid #c9a887;border-radius:6px;background:#fff3dd;flex:none;
@@ -4475,17 +4480,19 @@ resize();
 /* PWA：注册根目录 Service Worker（本地 file:// 双击打开时自动跳过，不影响游玩）。
    v33swfix：updateViaCache:"none"=SW 脚本本身永不走 HTTP 缓存——否则 sw.js 被浏览器缓存拖住，
    新版 SW（带「只缓存成功响应」修复）迟迟装不上，旧 SW 里的毒缓存（404 也被缓存过）会一直吐坏资源。 */
-if("serviceWorker" in navigator && location.protocol==="https:"){ /* v66upd：新版 SW 等待时弹更新弹窗（两按钮必点一个；立即更新=SKIP_WAITING→controllerchange→刷新） */
+if("serviceWorker" in navigator && location.protocol==="https:"){ /* v66upd：新版 SW 等待时弹更新弹窗；v67三修：弹窗后绝不自动重载——只有玩家点「立即更新」(SW_CHOSE=2) 才在 controllerchange 时刷新 */
   navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(reg){
-    var asked=false;
+    var SW_CHOSE=0,SW_ASKED=null; /* v67三修：硬闸 0=未选 1=点了「先不更新」（本会话不再弹，冷启动重置） 2=点了「立即更新」（新 SW 接管后刷新）；SW_ASKED=已弹过的 waiting 司机（判重） */
     function swAsk(){
-      var w=reg.waiting;if(!w||asked)return;asked=true;
+      var w=reg.waiting;
+      if(!w||SW_CHOSE)return; /* 已做过选择：本会话不再弹（下次冷启动会话可再弹） */
+      if(SW_ASKED===w)return;SW_ASKED=w; /* 同一个 waiting 司机只提示一次 */
       var m=document.getElementById("swModal");
-      if(m)m.classList.add("show");
+      if(m)m.classList.add("show"); /* 全屏暗罩 z70 盖全部 HUD（≤z61）：弹窗期点弹窗外/点 HUD 都不落游戏动作；暗罩无关闭路径，「先不更新」照常可点 */
       var n=document.getElementById("swNow");
-      if(n)n.onclick=function(){ w.postMessage("SKIP_WAITING"); };
+      if(n)n.onclick=function(){ SW_CHOSE=2;if(m)m.classList.remove("show");w.postMessage("SKIP_WAITING"); };
       var lt=document.getElementById("swLater");
-      if(lt)lt.onclick=function(){ if(m)m.classList.remove("show"); };
+      if(lt)lt.onclick=function(){ SW_CHOSE=1;if(m)m.classList.remove("show"); };
     }
     reg.addEventListener("updatefound",function(){
       var w=reg.installing;
@@ -4493,7 +4500,7 @@ if("serviceWorker" in navigator && location.protocol==="https:"){ /* v66upd：�
     });
     if(reg.waiting)swAsk();
     navigator.serviceWorker.addEventListener("controllerchange",function(){
-      if(asked)location.reload(); /* 弹过窗才自动刷，日常 SW 自换不 reboot 页面 */
+      if(SW_CHOSE===2)location.reload(); /* v67三修硬闸：全文唯一自动 reload 路径=玩家点了「立即更新」；新 SW 静默接管不刷页面，自然生效 */
     });
   }).catch(function(){});
 }
