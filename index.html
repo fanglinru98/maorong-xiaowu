@@ -25,7 +25,7 @@ body{background:#3a2a1b;color:var(--ink);overflow:hidden; /* v70fix：渐变改�
   display:flex;align-items:center;justify-content:center;
   font:15px/1.6 var(--font-display)}
 /* ═══ 游戏界面壳（期1.5 批1）：390×844 · HUD 原位（照正式版 V21） ═══ */
-.screen{position:relative;width:min(390px,100vw);height:min(844px,100vh);height:min(844px,100dvh);overflow:hidden; /* v44①：dvh 动态视口高（iOS 地址栏收展跟随），旧浏览器自动用上行 vh */
+.screen{position:relative;width:390px;height:844px;overflow:hidden; /* v73fix：壳固定设计值 390×844，缩放全权交 fit()——原 min(390,100vw)/min(844,100dvh) 会让壳 CSS 跟视口缩、fit 再按 844 缩一次=双重缩小（Safari 网页版框偏+四周空、老板红框 16:24 实测根因） */
   background:#3a2a1b;box-shadow:0 12px 48px rgba(0,0,0,.5)}
 /* ── 顶部 HUD：头像组合（金框+头像+Lv+进度条，UI 升级批：图一样式，屋名/心情文字按用户要求移除） ── */
 .hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
@@ -40,7 +40,7 @@ body{background:#3a2a1b;color:var(--ink);overflow:hidden; /* v70fix：渐变改�
 .side-btn:active{transform:scale(.92)}
 .side-btn .icon-img{width:64px;height:64px;object-fit:contain;object-position:center;pointer-events:none}
 /* ── 底部工具条（V21 原位；装修模式/底边栏展开时下沉隐藏） ── */
-.dock{position:absolute;left:50%;bottom:calc(17px + env(safe-area-inset-bottom));transform:translateX(-50%);
+.dock{position:absolute;left:50%;bottom:env(safe-area-inset-bottom);transform:translateX(-50%); /* v73fix：去掉 17px 附加距——老板指令「tab 栏应该在最底下」，贴到安全区上缘（小白条不压按钮） */
   z-index:10;display:flex;gap:13px;background:none;border:none;padding:0;transition:bottom .28s cubic-bezier(.32,.72,.28,1)}
 .dock-btn{position:relative;width:74px;height:64px;border-radius:16px;display:grid;place-items:center;
   background:none;border:none;transition:transform .15s ease,filter .15s ease}
