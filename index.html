@@ -479,6 +479,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 /* 月视图底板=cal-month.png 切图（红金匾+星期行+6×7 空心格烘焙；格上只叠 ev/today/sel 与数字） */
 #vMonth{margin:6px 18px 4px; /* v83cal：月历小一点点（两侧 margin 14→18，等比缩小不错位） */position:relative;left:0;aspect-ratio:700/740;overflow:hidden;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))} /* v88cal：aspect-ratio 由 calRender 按行数动态改（裁 vmClip 底部空凹槽排） */
 #vmClip{position:absolute;left:0;top:0;width:100%;aspect-ratio:700/740;background:url(assets/ui/cal-month.webp) center/100% 100% no-repeat} /* v88cal：底图层固定原比例原校准（calMonth/cGrid 百分比全部相对它=与 v87 前语义一致），下溢由 #vMonth 裁 */
+#vmFoot{position:absolute;left:0;bottom:0;width:100%;height:5.17%;display:none;background:url(assets/ui/cal-month.webp) center bottom/100% auto no-repeat} /* v92cal：显示切图底部装饰框段（y706~740），盖住少行月露出的第 6 排凹槽；行数<6 时由 calRender 显示 */
 #calMonth{position:absolute;left:50%;top:8.2%;transform:translate(-50%,-50%);font-style:normal;
   font-size:15px;font-weight:900;color:#f9ecd2;letter-spacing:2px;text-shadow:0 1px 1px rgba(80,15,8,.7)}
 .crow{display:grid;grid-template-columns:repeat(7,1fr)}
@@ -921,7 +922,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   <div id="vMonth"><div id="vmClip">
     <b id="calMonth" aria-hidden="true">10月</b>
     <div class="crow" id="cGrid"></div>
-  </div></div> /* v88cal：vmClip=完整底图层（原比例原校准），#vMonth 按行数裁切——v86 的双百分比链在 iOS 漂移=爱心数字错位根因，分层后零漂移 */
+  </div><div id="vmFoot"></div></div> /* v92cal：底框贴片=切图 y706~740 段上移盖住空凹槽排，底框完整回归 */ /* v88cal：vmClip=完整底图层（原比例原校准），#vMonth 按行数裁切——v86 的双百分比链在 iOS 漂移=爱心数字错位根因，分层后零漂移 */
   <div id="vWeek">
     <div class="wrow" id="wGrid"></div>
   </div>
@@ -4005,9 +4006,10 @@ function calRender(){
   var rows=Math.ceil((lead+dim)/7),vm=$("vMonth"); /* v88cal：按行数裁 vmClip 底部空凹槽排（底图/格子分层后零漂移）；rh=6 行不等高轨道，186=格区顶，34=底板余量 */
   if(rows<6){
     var rh=[93,91.5,87.5,83.25,82,82.5],sum=0;for(var ri=0;ri<rows;ri++)sum+=rh[ri];
-    var wpx=vm.getBoundingClientRect().width||210; /* v91cal：高度直设 px，弃 aspect-ratio inline（iOS PWA 上疑似不生效=老板真机仍见空行；px 直设零特性依赖） */
-    vm.style.height=Math.round(wpx*(186+sum+2)/700)+"px";
-  }else{vm.style.height="";} /* 6 行月恢复 CSS aspect 原值 */
+    var wpx=vm.getBoundingClientRect().width||210; /* v91cal：高度直设 px（iOS PWA 上 aspect-ratio inline 疑似不生效；px 直设零特性依赖） */
+    vm.style.height=Math.round(wpx*657.25/700)+"px"; /* v92cal：657.25=格区顶186+5排高437.25+底框区34——底框段由 vmFoot 贴片显示 */
+    $("vmFoot").style.display=rows<6?"block":"none";
+  }else{vm.style.height="";$("vmFoot").style.display="none";} /* 6 行月恢复 CSS 原值（vmClip 自带完整底框） */
 }
 /* 备忘卡：v22cal10 按视图域取数——月视图=月域 EVM[月键]（标题「X月备忘」）；日视图=日域 EV[selKey]；周视图无备忘板 */
 function memoRows(){return calView==="month"?(EVM[mkKey()]||[]):(EV[selKey]||[])}
