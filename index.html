@@ -209,6 +209,16 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #bootFillWrap{position:absolute;left:4.6%;right:4.6%;top:17%;bottom:17%;overflow:hidden;z-index:4}/* v64fix：内芯层压过外壳（bar.webp 内腔不透明 alpha254 会盖死 fill）——切图不动只调层 */
 #bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;clip-path:inset(0 100% 0 0)} /* v63④：进度条=从左往右越来越长直到填满（clip 揭示法，老板指令），不再是整条平移 */
 #bootBear{position:absolute;left:-7%;bottom:82%;width:15.5%;z-index:1;container-type:inline-size;transition:left .25s ease-out}
+/* v66upd：更新弹窗（SW 新版等待时弹；点暗罩不关、两按钮必须点一个） */
+#swModal{display:none;position:fixed;inset:0;z-index:70;background:rgba(20,12,5,.6);place-items:center}
+#swModal.show{display:grid}
+.swm{background:#fffdf6;border:2px solid #d9b56a;border-radius:14px;padding:20px 16px 16px;width:82%;max-width:330px;text-align:center}
+.swm .t{font-size:17px;font-weight:bold;color:#5a4632}
+.swm .s{font-size:12px;color:#a08a6a;margin:9px 0 14px;line-height:1.7}
+.swm .btns{display:flex;gap:10px;justify-content:center}
+.swm button{flex:1;padding:10px 0;border:none;border-radius:99px;font-size:14px;font-weight:bold}
+.swm #swLater{background:#f5e6d3;color:#5a4632}
+.swm #swNow{background:#a03a2c;color:#fffdf6;box-shadow:0 2px 6px rgba(122,32,22,.35)}
 #bootBear img{width:100%;height:auto;display:block}
 #bootPct{position:absolute;left:36%;top:7%;width:62%;height:44%;display:flex;align-items:center;justify-content:center;
   font-weight:800;font-size:9px;font-size:20cqw;letter-spacing:-.02em;color:#6b4423; /* v57fix：老浏览器无 cqw 单位时用 9px（@390 屏实测 20cqw=9.19px） */text-shadow:0 1px 0 rgba(255,255,255,.55)}
@@ -1236,7 +1246,7 @@ function loadPattern(key){
   im.onload=function(){
     var src=(key==="roof"||key==="border")?sealTex(im):im; /* v38seal：屋顶/屋外整图贴画做透明缝衬底（V谷缝不透深墙）；floor/wall 平铺图案保持原样 */
     PTN[ck]={p:ctx.createPattern(src,"repeat"),w:im.naturalWidth||im.width||64,h:im.naturalHeight||im.height||32,im:src}; /* im=绘制源（roof/border=sealTex 处理后的 canvas）：地板「整张覆盖」画法用（v33tex·B2，与工作台 v34floor 同口径） */
-    delete LOADING[ck];resize();render();
+    delete LOADING[ck];SHOT_VALID=false;resize();render(); /* v66 失效点8：地板/墙/屋顶/屋外贴图到位重拍 */
   };
   im.onerror=function(){if(awFb(im))return;delete LOADING[ck];resize();render();};
   awLoad(im,e.value);
@@ -1308,13 +1318,14 @@ function drawFloor(){
   ctx.fillStyle=cutFR;ctx.fill();ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
   roundedQuad(px(N,N),py(N,N),px(0,N),py(0,N),px(0,N),py(0,N)+T,px(N,N),py(N,N)+T,5*S);
   ctx.fillStyle=cutFL;ctx.fill();ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
-  if(DECOR.grid&&decoMode&&gridFade>0){ /* 地板网格仅装修模式显示；随 gridFade 与底边栏同步渐显渐隐 */
-    var i,j;
-    ctx.beginPath();
-    for(i=1;i<N;i++){ctx.moveTo(px(i,0),py(i,0));ctx.lineTo(px(i,N),py(i,N));}
-    for(j=1;j<N;j++){ctx.moveTo(px(0,j),py(0,j));ctx.lineTo(px(N,j),py(N,j));}
-    ctx.strokeStyle="rgba(90,80,68,"+(0.14*gridFade).toFixed(3)+")";ctx.lineWidth=1;ctx.stroke();
-  }
+}
+function drawFloorGrid(){ /* v66：地板网格（原 drawFloor 内联段整段迁出=动态层）：仅装修模式显示，随 gridFade 与底边栏同步渐显渐隐 */
+  if(!(DECOR.grid&&decoMode&&gridFade>0))return;
+  var N=ROOM.n,i,j;
+  ctx.beginPath();
+  for(i=1;i<N;i++){ctx.moveTo(px(i,0),py(i,0));ctx.lineTo(px(i,N),py(i,N));}
+  for(j=1;j<N;j++){ctx.moveTo(px(0,j),py(0,j));ctx.lineTo(px(N,j),py(N,j));}
+  ctx.strokeStyle="rgba(90,80,68,"+(0.14*gridFade).toFixed(3)+")";ctx.lineWidth=1;ctx.stroke();
 }
 function drawIsoTex(key,anchorY){ /* v35roof：屋顶/屋外装饰=整图等比铺贴（不 clip，塔尖/花沿出界自然露出）；图像宽=地板菱形宽，与工作台同口径；：大小/位移读包内 adj（老板在工作台调好→同步→游戏同款） */
   var pt=patternOf(key),N=ROOM.n;
@@ -1347,7 +1358,7 @@ function furnImg(it){
         }
         if(x1>=0&&y1>=0){e.tx=x0;e.ty=y0;e.tw=x1-x0+1;e.th=y1-y0+1;}
       }catch(err){}
-      FIMG[ck]=e;render();
+      FIMG[ck]=e;SHOT_VALID=false;render(); /* v66 失效点7：新家具图到位重拍 */
     };
     im.onerror=function(){if(typeof bootMark==="function")bootMark(im.getAttribute("src"));if(awFb(im))return;delete FIMG[ck];}; /* v22fix：不再永久标 "err"（一次失败断一次图），下帧重新尝试加载 */ /* v59：失败也要计数，否则卡到 45s 兜底 */
     awLoad(im,it.img);
@@ -1388,6 +1399,7 @@ function foldFoot(it){ /* v22q2：滚轮「大小」跨过 ¼ 档 → 把缩放�
     var h=hostOf(it); /* 放大到台面接不住 → 落回地面，不留悬空的件 */
     if(!h||!shelfCellFits(h,it,h.gx+(it.su||0),h.gy+(it.sv||0)))shelfDrop(it);
   }
+  SHOT_VALID=false; /* v66 失效点13：it.w/it.d 真被折叠改变才走到这里（回退 false 不打） */
   return true;
 }
 var _shCv=null;
@@ -1605,7 +1617,7 @@ function glowStart(){ /* 由 render() 末尾调用：有呼吸灯才启动循环
   else if(!need&&glowOn)glowStop();
 }
 document.addEventListener("visibilitychange",function(){ if(document.hidden)glowStop();else glowStart(); });
-function drawItem(it){
+function drawItem(it){ /* v66：只画本体——选中框迁 drawSelBox、光晕迁 drawItemGlow（均动态层每帧另画；快照烘焙同走本函数） */
   if(it.wall){ /* ═══ 墙件（期1.5 批2）：贴墙渲染，底边中心=墙面锚点 ═══ */
     var wa=wallAnchor(it),cy=wa[1]-it.v*ROOM.cw*S; /* 墙件层高=一格（与地面格子同宽，格子正方形） */
     var fw=furnImg(it);
@@ -1628,11 +1640,6 @@ function drawItem(it){
     }else{ /* 图片未加载兜底：墙面小色块 */
       ctx.fillStyle=it.color;ctx.fillRect(wx-20,wy-40,40,40); /* v22fix：兜底块锚到真图同款内容盒锚点，加载期也点得中 */
       ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.strokeRect(wx-20,wy-40,40,40);
-    }
-    var gwl=glowOf(it); /* v22glow：墙灯的光晕，圆心略高于灯具底边（灯罩位置），lighter 提亮 */
-    if(gwl){
-      var gwsz=(fw&&fw.img)?wdw:ww, gwh2=(fw&&fw.img)?wdh:ww;
-      glowHalo(wx,wy-gwh2*0.42,Math.max(26,gwsz*0.95*(gwl.s||1.6)),gwl,it);
     }
     if(it.sel){ /* E-20260920-05②：墙饰选中框不再随 item 画（会被后画的地面家具盖住）——统一由 render() 尾部顶层补画 */
       return;
@@ -1684,24 +1691,51 @@ function drawItem(it){
     face(x2,y2,x3,y3,x3,y3-h,x2,y2-h,shade(it.color,0.94));
     face(x1,y1-h,x2,y2-h,x3,y3-h,x4,y4-h,shade(it.color,1.08),7*S);
   }
-  if(it.sel){ /* 选中：足迹虚线框（v22flip：翻转时按镜像后的形状画——图转了框也跟着转，占格判定不变） */
-    ctx.setLineDash([6,4]);
-    /* v22dash2：虚线框回归占格锚点——去掉 dOF 跟图平移（书架虚线框不对齐格子的根因）。
-      框永远画在真实占格上；家具贴墙/落地的观感由家具包逐件校准的 ox/oy 保证（本体落在占格内，框与本体基本重合） */
-    if(it.flip&&!it.rot){ /* 画面镜像（资产flip）时框跟图镜像；v22rot 转向件的框=转向后占格菱形（x1..x4 已按新占格画） */
-      var fcx=(x1+x3)/2;
-      quad(2*fcx-x1,y1,2*fcx-x2,y2,2*fcx-x3,y3,2*fcx-x4,y4);
-    }else quad(x1,y1,x2,y2,x3,y3,x4,y4);
-    ctx.strokeStyle="#3a352f";ctx.lineWidth=2*LWS;ctx.stroke();
-    ctx.setLineDash([]);
+}
+function drawSelBox(it){ /* v66：选中足迹虚线框（原 drawItem 内联段整段迁出=动态层，render() 尾部顶层画，与墙饰 drawWallSelBox 同层） */
+  var GX=effGX(it),GY=effGY(it),LIFT=liftOf(it),gw=effW(it),gd=effD(it); /* v22shelf/v22rot：与 drawItem 同一套足迹几何 */
+  var x1=px(GX,GY),        y1=py(GX,GY),
+      x2=px(GX+gw,GY),     y2=py(GX+gw,GY),
+      x3=px(GX+gw,GY+gd),  y3=py(GX+gw,GY+gd)-LIFT,
+      x4=px(GX,GY+gd),     y4=py(GX,GY+gd)-LIFT;
+  y1-=LIFT;y2-=LIFT;
+  ctx.setLineDash([6,4]);
+  /* v22dash2：虚线框回归占格锚点——框永远画在真实占格上；观感由家具包逐件校准的 ox/oy 保证（原口径不动） */
+  if(it.flip&&!it.rot){ /* 画面镜像（资产flip）时框跟图镜像；v22rot 转向件的框=转向后占格菱形 */
+    var fcx=(x1+x3)/2;
+    quad(2*fcx-x1,y1,2*fcx-x2,y2,2*fcx-x3,y3,2*fcx-x4,y4);
+  }else quad(x1,y1,x2,y2,x3,y3,x4,y4);
+  ctx.strokeStyle="#3a352f";ctx.lineWidth=2*LWS;ctx.stroke();
+  ctx.setLineDash([]);
+}
+function drawItemGlow(it){ /* v66：呼吸光晕=动态层（原 drawItem 内联两段光晕整段迁出，几何与 drawItem 逐字同源；glowAmt 带呼吸相位每帧刷新） */
+  if(it.wall){ /* 墙灯：圆心略高于灯具底边（灯罩位置），lighter 提亮 */
+    var gwl=glowOf(it);
+    if(!gwl)return;
+    var fw=furnImg(it),wa=wallAnchor(it),cy=wa[1]-it.v*ROOM.cw*S;
+    var ww=Math.max(minPx(),ROOM.cw*it.w*S*0.92*it.scale);
+    var wdw=ww*((fw&&fw.img)?(fw.tw/fw.w):1), wdh=wdw*((fw&&fw.img)?(fw.th/fw.tw):1);
+    var wx=wa[0]+oxOf(it)*wdw, wy=cy+oyOf(it)*wdh; /* v22sync：资产库的微调 */
+    var gwsz=(fw&&fw.img)?wdw:ww, gwh2=(fw&&fw.img)?wdh:ww;
+    glowHalo(wx,wy-gwh2*0.42,Math.max(26,gwsz*0.95*(gwl.s||1.6)),gwl,it);
+    return;
   }
-  var gfl=glowOf(it); /* v22glow：地灯/台灯的光晕（画在自身之上，lighter 提亮自身与周围地面） */
-  if(gfl){
-    var gimg=!!(fi&&fi.img);
-    var gcx=gimg?ax:(x1+x3)/2, gcy=gimg?(ay-dh*0.42):((y1+y3)/2-ROOM.cw*S*0.35);
-    var gsz=gimg?dw:Math.max(40,ROOM.cw*(it.w+it.d)*S*0.92*it.scale);
-    glowHalo(gcx,gcy,Math.max(26,gsz*0.95*(gfl.s||1.6)),gfl,it);
+  var gfl=glowOf(it); /* 地灯/台灯的光晕（画在自身之上，lighter 提亮自身与周围地面） */
+  if(!gfl)return;
+  var GX=effGX(it),GY=effGY(it),LIFT=liftOf(it),gw=effW(it),gd=effD(it);
+  var x1=px(GX,GY),y1=py(GX,GY),x3=px(GX+gw,GY+gd),y3=py(GX+gw,GY+gd)-LIFT;
+  y1-=LIFT;
+  var fi=furnImg(it),ax,ay,dw,dh;
+  if(fi&&fi.img&&!it.flat){ /* 真图模式：内容盒锚点与 drawItem 同源（含 ox/oy 微调） */
+    var mx=px(GX+gw/2,GY+gd/2);
+    dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w);dh=dw*fi.th/fi.tw;
+    var ho=hugOff(it);
+    ax=mx+ho[0]+oxOf(it)*dw;ay=y3+ho[1]+oyOf(it)*dh;
   }
+  var gimg=!!(fi&&fi.img);
+  var gcx=gimg?ax:(x1+x3)/2, gcy=gimg?(ay-dh*0.42):((y1+y3)/2-ROOM.cw*S*0.35);
+  var gsz=gimg?dw:Math.max(40,ROOM.cw*(it.w+it.d)*S*0.92*it.scale);
+  glowHalo(gcx,gcy,Math.max(26,gsz*0.95*(gfl.s||1.6)),gfl,it);
 }
 function drawWallGrid(){ /* 墙面格子：装修模式显示——竖线每格 1 条、横线每格 1 条（格子=正方形 cw×cw 与地面格子同宽；墙高变高=行数变多而非格子变长） */
   if(!decoMode||gridFade<=0)return;
@@ -1776,7 +1810,7 @@ function footBlocked(it,gx,gy){ /* v22block：落位碰撞检查——目标足�
   var i,o,ox,oy,ow,od;
   for(i=0;i<FURNITURE.length;i++){
     o=FURNITURE[i];
-    if(o===it||o.wall||hostOf(o))continue;
+    if(o===it||o.wall||hostOf(o)||o.flat||it.flat)continue; /* v66flat：地毯双向不参与碰撞（与 v53 预演页口径一致） */
     ox=effGX(o);oy=effGY(o);ow=effW(o);od=effD(o); /* v22rot：碰撞按转向后占格 */
     if(gx<ox+ow-1e-6&&ox<gx+effW(it)-1e-6&&gy<oy+od-1e-6&&oy<gy+effD(it)-1e-6)return true;
   }
@@ -2003,30 +2037,56 @@ function charStop(){
   if(charRAF){ if(charHasRAF()&&typeof cancelAnimationFrame==="function")cancelAnimationFrame(charRAF); else clearTimeout(charRAF); }
   charRAF=0;if(charTmr)clearTimeout(charTmr);charTmr=0;
 }
+/* ═══ v66 静态层位图快照 ═══
+   地板/双墙/墙角补面/家具整幅烘焙进离屏 SHOT，render() 每帧只贴快照再画动态层
+   （角色/光斑/光晕/网格渐显/选中框/屋顶/修整 UI）。凡改静止画面的入口先把 SHOT_VALID=false（任务书 §4.3 失效点）。 */
+var SHOT=null,SHOT_W=0,SHOT_H=0,SHOT_VALID=false,SHOT_S=2; /* v66：静态层位图快照（SHOT_S=超采样倍率，resize() 里与主画布 k 同源对齐） */
+function snapshotStatic(){ /* v66：把地板+墙+墙格线+家具整幅画进离屏快照；任何会改静止画面的操作先把 SHOT_VALID 置 false */
+  if(!ctx)return;
+  if(!SHOT)SHOT=document.createElement("canvas");
+  var sx=SHOT.getContext&&SHOT.getContext("2d");
+  if(!sx)return;
+  if(SHOT.width!==Math.round(W*SHOT_S)||SHOT.height!==Math.round(Hc*SHOT_S)||SHOT_W!==W||SHOT_H!==Hc){
+    SHOT.width=Math.round(W*SHOT_S);SHOT.height=Math.round(Hc*SHOT_S);SHOT_W=W;SHOT_H=Hc;
+  }
+  var saved=ctx;ctx=sx; /* 既有绘制函数全部吃全局 ctx：烘焙期间整体切到快照画布，finally 还原 */
+  try{
+    sx.save();sx.setTransform(SHOT_S,0,0,SHOT_S,0,0);
+    sx.lineJoin="round";sx.lineCap="round";
+    sx.clearRect(0,0,W,Hc);
+    drawWall("wallLeft",0,0,0,ROOM.n);
+    drawWall("wallBack",0,0,ROOM.n,0);
+    /* 墙角斜接补面（两墙顶带在 P(0,0) 上方的缺口）——原 render() 静态段原样抄搬 */
+    var hh=ROOM.wallH*S,ws=ROOM.wallT*S;
+    var wbH=(DECOR.wallBack&&DECOR.wallBack.fb)||"#f5e6d3";
+    roundedQuad(OX,OY-hh,OX+ROOM.cw*ws,OY-hh-ROOM.ch*ws,OX,OY-hh-2*ROOM.ch*ws,OX-ROOM.cw*ws,OY-hh-ROOM.ch*ws,4*S);
+    ctx.fillStyle=shade(wbH,1.04);ctx.fill();
+    ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
+    drawFloor();
+    var sfs=sortFurniture();
+    for(var si=0;si<sfs.length;si++)drawItem(sfs[si]); /* v66：家具本体整体烘焙（含深度排序；选中框/光晕/光斑=动态层不进快照） */
+    sx.restore();
+  }finally{ ctx=saved; }
+}
 function render(){
   var k=cv.width/Math.max(1,W);
   ctx.setTransform(k,0,0,k,0,0);
   ctx.lineJoin="round";ctx.lineCap="round";
   ctx.clearRect(0,0,W,Hc);
-  drawWall("wallLeft",0,0,0,ROOM.n);
-  drawWall("wallBack",0,0,ROOM.n,0);
-  /* 墙角斜接补面（两墙顶带在 P(0,0) 上方的缺口） */
-  var hh=ROOM.wallH*S,ws=ROOM.wallT*S;
-  var wbH=(DECOR.wallBack&&DECOR.wallBack.fb)||"#f5e6d3";
-  roundedQuad(OX,OY-hh,OX+ROOM.cw*ws,OY-hh-ROOM.ch*ws,OX,OY-hh-2*ROOM.ch*ws,OX-ROOM.cw*ws,OY-hh-ROOM.ch*ws,4*S);
-  ctx.fillStyle=shade(wbH,1.04);ctx.fill();
-  ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.8*LWS;ctx.stroke();
-  drawFloor();
+  if(!SHOT_VALID)snapshotStatic(); /* v66：静态层失效才重拍快照 */
+  if(SHOT)ctx.drawImage(SHOT,0,0,W,Hc); /* v66：一贴替代原「地板+墙+墙角补面+54 件家具」逐层重画 */
+  drawFloorGrid(); /* v66：地板网格=动态层（gridFade 渐显渐隐），原 drawFloor 内联段迁出 */
   for(var sp=0;sp<FURNITURE.length;sp++)drawGlowSpot(FURNITURE[sp]); /* v22glow：地面光斑画在地板之上、家具之下 */
   drawWallGrid();
-  var fs=sortFurniture(),i,chDone=false,chD=CHAR.gx+CHAR.gy; /* v22char：角色按深度插进家具之间（站在家具后面会被挡住） */
-  for(i=0;i<fs.length;i++){
-    if(!chDone&&charVisible()&&chD<depKey(fs[i])-0.6){drawChar();chDone=true;} /* v22depthfix：加 0.6 格偏置——只有明显在后方才被家具挡；走大件侧面时深度差在临界值反复翻转=闪烁/穿模，偏置后不再翻 */
-    drawItem(fs[i]);
+  var i;
+  if(charVisible()){ /* v66：家具已进快照；角色按 v22depthfix 原口径插层=画完角色把深度在前方的件补画一遍，遮挡与旧逐件重绘一致 */
+    var fs=sortFurniture(),chD=CHAR.gx+CHAR.gy;
+    drawChar();
+    for(i=0;i<fs.length;i++)if(chD<depKey(fs[i])-0.6)drawItem(fs[i]); /* v22depthfix：0.6 偏置原口径 */
   }
-  if(!chDone&&charVisible())drawChar();
+  for(i=0;i<FURNITURE.length;i++)drawItemGlow(FURNITURE[i]); /* v66：光晕=动态层 */
   drawBorder();drawRoof(); /* ：屋顶/屋外放最顶层（老板指定「放在所有物件的最顶层」），后于家具/角色画=不被压住 */
-  if(SEL&&SEL.wall)drawWallSelBox(SEL); /* E-20260920-05②：选中墙饰的虚线框画在全部家具之上（不被地面家具遮；y 排序渲染不动） */
+  if(SEL&&SEL.wall)drawWallSelBox(SEL);else if(SEL)drawSelBox(SEL); /* E-20260920-05②：选中框顶层补画——墙饰=原逻辑；地面件 v66 从 drawItem 迁出（drawSelBox） */
   drawShelfHint(); /* v22shelf：拖到台面上时高亮落点那一格 */
   drawCalib(); /* v22q：校准模式下画出高度线与 ¼ 格预览 */
   glowStart(); /* v22glow：有呼吸灯则维持重绘循环，否则自动停 */
@@ -2147,6 +2207,7 @@ function resize(){
   var dpr=window.devicePixelRatio||1;
   var k=(FITK||1)*VZMAX*Math.min(dpr,2); /* 方案A 适配：壳被等比放大时渲染分辨率同步乘 k 防发虚 */
   k=Math.min(k,4096/W,4096/Hc);
+  SHOT_S=k;SHOT_VALID=false; /* v66 失效点6：快照倍率与主画布超采样同源对齐（§4.4 防糊）；画布几何变了快照必须重拍 */
   cv.width=Math.max(1,Math.round(W*k));
   cv.height=Math.max(1,Math.round(Hc*k));
   var sW=(W-36)/(ROOM.cw*2*ROOM.n),sH=(Hc-36)/(ROOM.ch*2*ROOM.n+ROOM.wallH),sFit=1e9,fw=ROOM.cw*2*ROOM.n,roofU=0; /* v37fit3：房间贴底+屋顶向上精确留白（与工作台同口径） */
@@ -2305,7 +2366,7 @@ function adjFoot(dim,delta){ /* 声明占格：改 w/d 后图片自动缩放占�
   }
   autoSmall(SEL); /* v22q：缩到 ≤0.5 格自动当小物，可直接摆到台面上 */
   SEL.foot=1; /* v22sync·A：玩家手动改过占格 → 打标记，之后的家具表同步不再覆盖这件 */
-  updateSelChip();saveSoon();render();
+  updateSelChip();saveSoon();SHOT_VALID=false;render(); /* v66 失效点5：占格/尺寸变化 */
 }
 function contentBox(it){ /* v22fab：与 drawItem/img、itemAt 同锚点的内容盒（浮动三钮定位用）；墙件走墙面锚 */
   var fi=furnImg(it);
@@ -2342,7 +2403,7 @@ function removeSelected(){
     }
     FURNITURE.splice(i,1);
   }
-  SEL=null;updateSelChip();saveSoon();render();
+  SEL=null;updateSelChip();saveSoon();SHOT_VALID=false;render(); /* v66 失效点3：删除家具（数组删除的唯一点；连带 shelfDrop 落小物一并覆盖） */
 }
 function addFurniture(defId,gx,gy){ /* V22：按家具库定义生成实例（存档只存 def 引用）；墙件（def.wall）默认右墙中层居中 */
   var def=DEF_MAP[defId];
@@ -2362,6 +2423,7 @@ function addFurniture(defId,gx,gy){ /* V22：按家具库定义生成实例（�
   }
   FURNITURE.push(it);
   saveSoon();
+  SHOT_VALID=false; /* v66 失效点2：加家具 */
   render();
   return it;
 }
@@ -2401,6 +2463,7 @@ function doPtrMove(e){
   if(calD){ /* v22q 台面校准：指针高度 → 台面高（行），0.05 档 */
     var cp=sceneXY(e);
     calD.it.sh=calibSh(calD.base,cp[1]);
+    SHOT_VALID=false; /* v66 失效点4：校准拖动改台面高=台上小物抬升变=静态画面变 */
     render();return;
   }
   if(!drag)return;
@@ -2416,6 +2479,7 @@ function doPtrMove(e){
     var du=(drag.uc0!=null)?uc-drag.uc0:0,dv=(drag.vc0!=null)?v-drag.vc0:0; /* v22lag：增量=手指位移；两墙公式对称，切墙后增量依然自洽 */
     it.u=Math.max(0,Math.min(ROOM.n-it.w,q(qs((drag.u0||0)+du,wst)))); /* v22q：小挂件同样按 ¼ 格吸附；v22lag：拖起点+增量 */
     it.v=wallFreeV(it,Math.max(0,Math.min(rows-wallRowsOf(it),q(qs((drag.v0||0)+dv,wst))))); /* v21：占了别人已占的行就自动跳到最近空行 */
+    SHOT_VALID=false; /* v66 失效点14：墙件挪动/换墙（it.wall=/it.u=/it.v= 写点）=静态画面变 */
     render();positionFab();positionGlowRow();return;
   }
   /* 屏幕位移→世界位移→等距格子位移（逆变换），吸附格子并钳制在房间内（v22q：缩小到 ≤1 格自动按 ¼ 格吸附） */
@@ -2430,6 +2494,7 @@ function doPtrMove(e){
     it.gx=ngx;it.gy=ngy;
     drag.cell=null;
   }
+  SHOT_VALID=false; /* v66 失效点4/12：拖动改位+shelfPut 上台面=静态画面变，拖动过程逐帧重拍（每帧 render 本就全画） */
   render();positionFab();
   positionGlowRow();
 }
@@ -2461,7 +2526,7 @@ window.addEventListener("pointerup",function(e){
       toast("这里摆不下（会压到别的家具），已弹回原位");
     }
   }
-  drag=null;saveSoon();render();
+  drag=null;saveSoon();SHOT_VALID=false;render(); /* v66 失效点4：落定重拍（覆盖重叠弹回 t.gx/t.gy 改位路径） */
 });
 window.addEventListener("pointercancel",function(){
   if(calD){calD=null;render();return;} /* v22fix：触摸被系统手势接管时同样收尾，否则 calD/drag 悬挂 → 无按键 mousemove 跟着光标漂移 */
@@ -2483,7 +2548,7 @@ function copySelected(){ /* v22copy：复制选中件（占格/大小%/翻转/�
     var fcp=footFree(it,it.gx,it.gy);
     if(fcp){it.gx=fcp[0];it.gy=fcp[1];}
   }
-  select(it);saveSoon();render();positionFab();
+  select(it);saveSoon();SHOT_VALID=false;render();positionFab(); /* v66 失效点5/12：复制件 w/d/flip/ox/oy/rot 在 addFurniture 之后改写+shelfPut 落位 */
   toast("已复制一件");
 }
 $("fabDel").addEventListener("click",removeSelected);
@@ -2491,7 +2556,7 @@ $("fabDel").addEventListener("click",removeSelected);
 $("fabCopy").addEventListener("click",copySelected);
 $("fabFlip").addEventListener("click",function(){
   if(!SEL)return;
-  if(SEL.wall){SEL.flip=SEL.flip?"":"1";updateSelChip();saveSoon();render();return;} /* 墙件照旧＝纯画面镜像 */
+  if(SEL.wall){SEL.flip=SEL.flip?"":"1";updateSelChip();saveSoon();SHOT_VALID=false;render();return;} /* 墙件照旧＝纯画面镜像（v66 失效点5：翻转） */
   /* v22rot：地面件＝真90°转向（占格宽深互换）。宿主转向时台面上的小物跟随（su/sv 互换），放不下就近找格/落回地面 */
   if(hostOf(SEL)){toast("台面上的小物不用转向");return;}
   var i,o,follow=[];
@@ -2510,7 +2575,7 @@ $("fabFlip").addEventListener("click",function(){
     if(fp){SEL.gx=fp[0];SEL.gy=fp[1];}
     else{SEL.rot=SEL.rot?"":"1";toast("转过去放不下，已转回来");}
   }
-  updateSelChip();saveSoon();render();positionFab();positionGlowRow();
+  updateSelChip();saveSoon();SHOT_VALID=false;render();positionFab();positionGlowRow(); /* v66 失效点5：转向（rot/w/d 互换+台上小物跟随 shelfDrop） */
 });
 /* v22sync（C）：小物 / 台面 / 台面高± / 校准 的接线已整体撤掉（用户要求正式版不再露这些开关）。
    数据字段 sm/sh/on/su/sv 与 shelfPut/shelfDrop 的台上放置逻辑全部保留：台面关系照旧生效、照旧存档。 */
@@ -2594,6 +2659,7 @@ function setDecor(key,patch){
   if(key==="bg")applyBg(); /* v38bgfix：背景实时写游戏画面（预设/自定义/清空回默认共用） */
   if(e.type==="img")loadPattern(key);
   saveSoon();
+  SHOT_VALID=false; /* v66 失效点1：换地板/双墙/屋顶/屋外/背景色 */
   render();
 }
 window.addEventListener("resize",resize);
@@ -2615,6 +2681,7 @@ function setDecoMode(on){
   if(!decoMode)select(null);
   applyView(); /* v22fab：进出装修立即重钳平移（进=放宽可上拖，出=自动归位） */
   if(decoMode)charStop();else charStart(); /* v22char：装修时角色直接消失，退出装修（保存）后自动回来 */
+  SHOT_VALID=false; /* v66 失效点10：装修模式开关（网格显隐口径切换，防御性重拍） */
   render();
   saveSoon();
 }
@@ -3640,6 +3707,7 @@ function restoreState(){
       if(it.on&&!shelfCellFits(hostOf(it),it,effGX(it),effGY(it)))it.on=null; /* 台面缩小/承托件改了占格 → 放不下就回地面 */
     }
     /* v22sync·C（用户拍板 2026-09-13）：旧存档不再自动套家具表尺寸——表里的默认尺寸只对之后新摆的件生效（addFurniture 摆下时已带 def 的 scale/w/d）。既保住玩家原布局，也不会在打开时自动改尺寸挪位。 */
+    SHOT_VALID=false; /* v66 失效点9：读档（addFurniture 后还改 w/d/scale/flip/ox/oy/wall 等） */
     render();
   }catch(err){}
 }
@@ -3660,6 +3728,7 @@ function seedFurniture(){ /* v22seed：新玩家（无存档/空存档）的初�
     it.scale=s.scale||1;it.ox=s.ox||0;it.oy=s.oy||0;
     if(s.sh)it.sh=s.sh;
   }
+  SHOT_VALID=false; /* v66 失效点9：种子家具（addFurniture 后还改 w/d/scale/ox/oy/sh） */
   render();
 }
 mergePack(window.__MAOOR_PACK); /* v22sync：先把工作台同步过来的家具表并进来，再读存档/铺底边栏 */
@@ -4406,9 +4475,30 @@ resize();
 /* PWA：注册根目录 Service Worker（本地 file:// 双击打开时自动跳过，不影响游玩）。
    v33swfix：updateViaCache:"none"=SW 脚本本身永不走 HTTP 缓存——否则 sw.js 被浏览器缓存拖住，
    新版 SW（带「只缓存成功响应」修复）迟迟装不上，旧 SW 里的毒缓存（404 也被缓存过）会一直吐坏资源。 */
-if("serviceWorker" in navigator && location.protocol==="https:"){
-  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(function(){});
+if("serviceWorker" in navigator && location.protocol==="https:"){ /* v66upd：新版 SW 等待时弹更新弹窗（两按钮必点一个；立即更新=SKIP_WAITING→controllerchange→刷新） */
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(reg){
+    var asked=false;
+    function swAsk(){
+      var w=reg.waiting;if(!w||asked)return;asked=true;
+      var m=document.getElementById("swModal");
+      if(m)m.classList.add("show");
+      var n=document.getElementById("swNow");
+      if(n)n.onclick=function(){ w.postMessage("SKIP_WAITING"); };
+      var lt=document.getElementById("swLater");
+      if(lt)lt.onclick=function(){ if(m)m.classList.remove("show"); };
+    }
+    reg.addEventListener("updatefound",function(){
+      var w=reg.installing;
+      if(w)w.addEventListener("statechange",function(){ if(reg.waiting)swAsk(); });
+    });
+    if(reg.waiting)swAsk();
+    navigator.serviceWorker.addEventListener("controllerchange",function(){
+      if(asked)location.reload(); /* 弹过窗才自动刷，日常 SW 自换不 reboot 页面 */
+    });
+  }).catch(function(){});
 }
 </script>
+<!-- v66upd：更新提示弹窗（壳子静态；逻辑在 SW 注册段） -->
+<div id="swModal"><div class="swm"><div class="t">🔔 彻子小屋有新版本啦</div><div class="s">为了让你的小屋保持最新，需要刷新一次页面。<br>正在自动保存，不会丢失任何进度。</div><div class="btns"><button id="swLater" role="button">先不更新</button><button id="swNow" role="button">立即更新</button></div></div></div>
 </body>
 </html>
