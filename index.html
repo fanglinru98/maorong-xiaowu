@@ -435,8 +435,9 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 @keyframes flashGo{0%{opacity:.9}100%{opacity:0}}
 .pcard{cursor:pointer} /* v30album：卡改 div 后补手型（button 自带，div 没有） */
 .pops{position:absolute;top:4px;right:4px;display:flex;gap:3px;z-index:3} /* v30album：照片卡三小钮 */
-.pops button{background:rgba(58,45,26,.72);color:#fff3da;border:none;border-radius:8px;padding:2px 6px;font-size:11px;line-height:1.5;cursor:pointer;font-family:inherit}
-.pops button:hover{background:#a03a2c}
+.pops button{background:none;border:none;border-radius:8px;padding:0;line-height:0;cursor:pointer} /* v85pop：emoji 换老板三徽章切图（删除/重命名/保存），底图自带 */
+.pops button img{display:block;width:20px;height:20px;pointer-events:none} /* v85pop：与原 emoji 钮同高 20px（老板要求原大小） */
+.pops button:hover{transform:scale(1.1)} /* v85pop：hover 放大反馈替代原变色 */
 .pedt{width:88%;font:inherit;font-size:11px;border:1px solid #c9a86a;border-radius:6px;padding:1px 4px;background:#fffdf6;color:#5a4632}
 #plWrap{position:absolute;inset:0;z-index:46;background:rgba(36,26,17,.5);opacity:0;pointer-events:none;transition:opacity .2s ease;display:grid;place-items:center}
 #plWrap.show{opacity:1;pointer-events:auto}
@@ -2903,7 +2904,7 @@ function aRender(){
       b.innerHTML='<span class="pfr"><img class="pph" src="'+p.src+'" alt="'+p.t+'">'
         +'<img class="pfr-img" src="assets/ui/photo-frame.webp" alt=""></span>'
         +'<span class="pcap">'+p.t+'</span>'
-        +'<span class="pops"><button type="button" class="pop-del" title="删除这张照片">🗑</button><button type="button" class="pop-ren" title="改标题">✏️</button><button type="button" class="pop-dl" title="保存到手机/电脑相册">💾</button></span>';
+        +'<span class="pops"><button type="button" class="pop-del" title="删除这张照片"><img src="assets/ui/pop-del.webp" alt=""></button><button type="button" class="pop-ren" title="改标题"><img src="assets/ui/pop-ren.webp" alt=""></button><button type="button" class="pop-dl" title="保存到手机/电脑相册"><img src="assets/ui/pop-dl.webp" alt=""></button></span>';
       b.addEventListener("click",function(){aOpenLb(i)});
       b.addEventListener("keydown",function(ev){if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();aOpenLb(i)}});
       b.querySelector(".pop-del").addEventListener("click",function(ev){ /* v30album：删除 */
