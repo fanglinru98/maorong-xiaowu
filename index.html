@@ -20,8 +20,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer} /* v22bar2b：全局按钮重置（照装修底边栏demo 第22行），去 UA 灰底黑边 */
 html,body{height:100%}
-html{background:#332416} /* v44①：长屏 cover 下 html 兜底色（刘海区/橡皮筋过滚动不露白） */
-body{background:linear-gradient(#4a3624,#332416);color:var(--ink);overflow:hidden;
+html{background:#3a2a1b} /* v70fix：兜底色统一=壳色（原 #332416 比壳 #3a2a1b 深→iPhone Air PWA 底部露深色带，老板真机截图确认） */
+body{background:#3a2a1b;color:var(--ink);overflow:hidden; /* v70fix：渐变改壳同色纯色——壳外露边（大屏 letterbox/小屏留边）与画面融为一体；老板审美口径=平面纯色 */
   display:flex;align-items:center;justify-content:center;
   font:15px/1.6 var(--font-display)}
 /* ═══ 游戏界面壳（期1.5 批1）：390×844 · HUD 原位（照正式版 V21） ═══ */
@@ -4471,14 +4471,16 @@ var FITK=1;
   function fit(){
     var vw=window.innerWidth,vh=window.innerHeight;
     if(window.visualViewport){vw=window.visualViewport.width||vw;vh=window.visualViewport.height||vh;} /* v68fix：iOS 主屏 PWA 用 visualViewport（状态栏/地址栏口径更准；安卓/桌面与 innerWidth/Height 相同不受影响） */
-    var W2=Math.min(390,vw),H2=Math.min(844,vh);
-    var nk=Math.min(vw/W2,vh/H2);
+    var nk=Math.min(vw/390,vh/844); /* v70fix：标准 contain——窄屏(<390)整机缩小不再裁边（原截断式 W2/H2：小屏不缩放直接裁掉两侧），宽屏等比放大，配底色统一露边不可见 */
     FITK=nk;
     sc.style.transform=(nk===1)?"":"scale("+nk+")";
     if(tutOn&&tutCur)tutShow(tutCur); /* 引导进行中窗口/旋转变化：按新缩放重定位聚光灯（函数声明提升可前调） */
     resize();
   }
   window.addEventListener("resize",fit);
+  if(window.visualViewport&&window.visualViewport.addEventListener)window.visualViewport.addEventListener("resize",fit); /* v70fix：visualViewport 变化直连重算（iOS PWA 满屏口径/键盘收展不总触发 window.resize） */
+  window.addEventListener("load",function(){setTimeout(fit,350);}); /* v70fix：iOS PWA 启动瞬间视口口径未稳（iPhone Air 首次 fit 拿旧值→壳 390×844 原大没放大），load 后补算 */
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)setTimeout(fit,120);}); /* v70fix：切回前台补算 */
   fit();
 })();
 /* ── 启动 ── */
