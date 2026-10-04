@@ -2221,10 +2221,10 @@ function resize(){
   SHOT_S=k;SHOT_VALID=false; /* v66 失效点6：快照倍率与主画布超采样同源对齐（§4.4 防糊）；画布几何变了快照必须重拍 */
   cv.width=Math.max(1,Math.round(W*k));
   cv.height=Math.max(1,Math.round(Hc*k));
-  var sW=(W-36)/(ROOM.cw*2*ROOM.n),sH=(Hc-36)/(ROOM.ch*2*ROOM.n+ROOM.wallH),sFit=1e9,fw=ROOM.cw*2*ROOM.n,roofU=0; /* v37fit3：房间贴底+屋顶向上精确留白（与工作台同口径） */
+  var sW=(W-8)/(ROOM.cw*2*ROOM.n),sH=(Hc-24)/(ROOM.ch*2*ROOM.n+ROOM.wallH),sFit=1e9,fw=ROOM.cw*2*ROOM.n,roofU=0; /* v75fill：横向 pad 36→8、纵向 36→24——房间场景撑满屏（老板满屏诉求），格数/存档/交互不变纯渲染放大 */ /* v37fit3：房间贴底+屋顶向上精确留白（与工作台同口径） */
   var pr=patternOf("roof"),as1=(PACKTEX.roof&&PACKTEX.roof.adj&&typeof PACKTEX.roof.adj.s==="number")?PACKTEX.roof.adj.s:1;
   if(pr&&pr.im&&pr.im.complete&&pr.w)roofU=fw*as1*(pr.h/pr.w);
-  var topPad=88,botPad=92,avail=Math.max(120,Hc-topPad-botPad);
+  var topPad=56,botPad=16,avail=Math.max(120,Hc-topPad-botPad); /* v75fill：顶部 88→56（HUD 浮层可压墙顶）、底部 92→16（dock 已贴底）——场景垂直撑满 */
   if(roofU>0)sFit=avail/(ROOM.wallH+ROOM.ch*2*ROOM.n+Math.max(0,roofU-ROOM.wallH)); /* v37roofit：分母墙高只算一次（原 2*wallH 重复=塔尖上方多一格墙高空白+画面压小）；屋顶不足墙高时只补 0 */
   S=Math.min(sW,sH,sFit);
   var topBlock=Math.max(ROOM.wallH,roofU)*S; /* v39②/v40fix：内容顶块=墙高与屋顶图高取大再乘 S（roofU 是 S=1 口径的内容高，直接混进屏幕像素=OY 被推到画布外→有屋顶启用时整屏黑屏）；roofU=0 或不足墙高时=wallH*S 恒等 */
