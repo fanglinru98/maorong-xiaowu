@@ -627,13 +627,13 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .trticks{display:flex;justify-content:space-between;font-size:8px;color:#c4a98a;margin-top:2px}
 /* v22cal6：旧 #mTxt 独占行与 28px 圆钮样式已并入上方 v2「蜡封信笺」表单块 */
 /* v22cal6：爪印彩蛋整段移除（用户 2026-09-17：月视图格子上的 🐾 与周视图星期名后的 🐾 同属一个彩蛋，一并撤） */
-.clegend{position:absolute;left:0;right:0;bottom:calc(6% + 30.3% + 10px);display:flex;justify-content:center;gap:12px;padding:3px 0 1px;font-size:9px;color:#c9a55c} /* v88cal：图例改绝对定位锚在备忘卡上方 10px（v88 分层后流内图例与 absolute 备忘卡冲突 53px 重叠——两套定位脱钩恒定不撞） */
+.clegend{position:absolute;left:0;right:0;top:51.7%;display:flex;justify-content:center;gap:12px;padding:3px 0 1px;font-size:9px;color:#c9a55c} /* v93cal：图例贴月历底框下方（top 由 calRender 按实际高度动态设；51.7%=5 行版静态兜底），不再锚备忘卡 */
 .clegend i{font-style:normal;display:inline-block;width:12px;height:11px;vertical-align:-1px;margin-right:4px;
   clip-path:path("M6,11 C6,11 .5,7 .5,3.8 A2.9,2.9 0 0 1 6,2.7 A2.9,2.9 0 0 1 11.5,3.8 C11.5,7 6,11 6,11 Z")}
 .clegend .lg-ev i{background:#a03a2c}
 .clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
 /* 备忘卡=cal-memo.png 切图（红绶带/「备忘事项」标题/虚线烘焙；日期叠绶带，自绘行纸片盖烘焙行区→不限量） */
-.memo{position:absolute;left:17px;right:18px;bottom:6%;height:30.3%; /* v84cal：2% 时卡底距面板矩形仅 14px<装饰底框花纹厚 ~19px（cal-panel 切图量得）→ 真机仍压花纹线（老板反馈）；抬到 6% 余量 42px 稳入内腔，memo 顶距图例底仍有余量 */min-height:0;margin:0;display:flex;flex-direction:column; /* v69：备忘卡底框探出面板底框 31px（老板指令「再往下没有展示出的部分改成手指下滑露出」，#cal 的 overflow-y:auto 已存在→absolute 子元素溢出计入滚动区，下滑即可露出卡底框；bottom:2% 钉底版=v67，探出后 memo top≈558 仍低于月历格底 492 防重叠；日/周视图各自覆写本规则不受影响 */
+.memo{position:absolute;left:17px;right:18px;bottom:6%;height:36%; /* v93cal：30.3→36%，图例上移腾出的空间给备忘卡（老板：刚好显示三条备忘录） */min-height:0;margin:0;display:flex;flex-direction:column; /* v69：备忘卡底框探出面板底框 31px（老板指令「再往下没有展示出的部分改成手指下滑露出」，#cal 的 overflow-y:auto 已存在→absolute 子元素溢出计入滚动区，下滑即可露出卡底框；bottom:2% 钉底版=v67，探出后 memo top≈558 仍低于月历格底 492 防重叠；日/周视图各自覆写本规则不受影响 */
   background:url(assets/ui/cal-memo.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 .memo .mhead{display:contents}
 .memo .mdate{position:absolute;left:50%;top:12.5%;transform:translate(-50%,-50%);white-space:nowrap;font-size:15px;font-weight:900; /* v22cal3：与红绶带垂直居中（绶带中心=图高12.5%；三视图实测同低6.8px——用户反馈2026-09-16） */
@@ -4009,7 +4009,8 @@ function calRender(){
     var wpx=vm.getBoundingClientRect().width||210; /* v91cal：高度直设 px（iOS PWA 上 aspect-ratio inline 疑似不生效；px 直设零特性依赖） */
     vm.style.height=Math.round(wpx*657.25/700)+"px"; /* v92cal：657.25=格区顶186+5排高437.25+底框区34——底框段由 vmFoot 贴片显示 */
     $("vmFoot").style.display=rows<6?"block":"none";
-  }else{vm.style.height="";$("vmFoot").style.display="none";} /* 6 行月恢复 CSS 原值（vmClip 自带完整底框） */
+    var lg=document.querySelector(".clegend");lg.style.top= /* v93fix：clegend 是 class 非 id，$("clegend") 返回 null（jsdom 实测 calRender 崩+静默中断渲染链） */(document.querySelector(".ctabs").offsetHeight+6+vm.offsetHeight+4)+"px"; /* v93cal：图例贴月历底框下方 4px */
+  }else{vm.style.height="";$("vmFoot").style.display="none";var lg2=document.querySelector(".clegend");lg2.style.top=(document.querySelector(".ctabs").offsetHeight+6+vm.offsetHeight+4)+"px";} /* 6 行月恢复 CSS 原值（vmClip 自带完整底框），图例同样贴月历 */
 }
 /* 备忘卡：v22cal10 按视图域取数——月视图=月域 EVM[月键]（标题「X月备忘」）；日视图=日域 EV[selKey]；周视图无备忘板 */
 function memoRows(){return calView==="month"?(EVM[mkKey()]||[]):(EV[selKey]||[])}
