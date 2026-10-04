@@ -4482,7 +4482,7 @@ var FITK=1;
     FITK=nk;
     sc.style.transform=(nk===1)?"":"scale("+nk+")";
     var cvs=document.getElementById("roomIso"); /* v77fit：场景画布独立 cover 缩放（≤壳+6%）——老板双机实测左右细边+「双击变全屏」启示：视觉再放大一点边就没了；场景层铺满、UI 锚定壳不动、命中/引导框基于画布 rect 自适应 */
-    if(cvs){var cs=Math.max(nk,Math.min(Math.max(vw/390,vh/844),nk*1.06));cvs.style.transformOrigin="50% 50%";cvs.style.transform=(cs===1)?"":"scale("+cs+")";}
+    if(cvs){var cov=Math.max(vw/390,vh/844);var cs=(vw<=500)?cov:Math.max(nk,Math.min(cov,nk*1.12));cvs.style.transformOrigin="50% 50%";cvs.style.transform=(cs===1)?"":"scale("+cs+")";} /* v78fit：手机(vw≤500)取消钳制全 cover（小米屏比例使 v77 的 1.06 上限恰好钳死宽度→左右窄边），电脑保留 1.12 钳防场景巨裁 */
     if(tutOn&&tutCur)tutShow(tutCur); /* 引导进行中窗口/旋转变化：按新缩放重定位聚光灯（函数声明提升可前调） */
     resize();
   }
