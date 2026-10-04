@@ -374,6 +374,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #sheet.show{transform:translateY(0)}
 .sheet-grip{width:40px;height:4px;border-radius:2px;background:#d8c3a5;margin:0 auto 12px}
 #sheet h2{font-size:18px;color:#5a4632;margin:0 0 6px}
+.ver-tag{float:right;font-size:11px;font-weight:700;letter-spacing:.5px;color:#a58a63;opacity:.9} /* v71ver：版本号小字（设置标题右侧，不抢焦点） */
 .set-row{display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px solid #ead9ae}
   #rowImport{position:relative} /* v52②：恢复存档覆盖层定位基准 */
   #fileRestore{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:2} /* v52②：真实铺满整行，直点即弹（iOS/微信不再依赖程序性 click） */
@@ -824,7 +825,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- 设置面板（批6.5：V21 同款底部抽屉，点 HUD「设置」滑入，暗罩复用 #dimVeil） -->
 <div id="sheet" aria-hidden="true" role="dialog" aria-label="设置">
   <div class="sheet-grip" aria-hidden="true"></div>
-  <h2>设置</h2>
+  <h2>设置<span id="verTag" class="ver-tag"></span></h2> <!-- v71ver：版本号显示（老板指令：一眼辨真机在跑哪版） -->
   <!-- v53⑥：全屏显示置顶（老板指令） -->
   <div class="set-row set-row-act" id="rowFs" role="button" tabindex="0" aria-label="全屏显示">
     <span><span class="lab">⛶ 全屏显示</span><span class="sub">隐藏所有图标，点右上角 ✕ 返回</span></span>
@@ -4419,6 +4420,12 @@ tutVeil.addEventListener("pointerdown",function(){if(tutOn&&tutFin===0)tutNext()
 tutSkip.addEventListener("click",function(e){e.stopPropagation();tutFinish();});
 /* v22tut2：第 3 步只介绍换装功能（不点进去），原「点换装→点小猫」真互动收尾按用户要求取消，三处接线一并撤销 */
 $("rowTutorial").addEventListener("click",function(){closeSettings();setTimeout(tutStart,380);});
+/* v71ver：设置面板版本号——线上 fetch sw.js 读 CACHE_VER 自动同步（发版零维护）；file:// fetch 受限回退写死值 */
+(function(){
+  var el=$("verTag");if(!el)return;
+  var fb="v70";
+  try{fetch("./sw.js",{cache:"no-store"}).then(function(r){return r.ok?r.text():Promise.reject(0)}).then(function(t){var m=t.match(/CACHE_VER\s*=\s*'([^']+)'/);el.textContent=m?m[1].replace("maoor-",""):fb;}).catch(function(){el.textContent=fb;});}catch(e){el.textContent=fb;}
+})();
 /* ═══ v51pwa：保存到桌面（老板指令）═══
    平台规矩：网页无权自装桌面——安卓 Chrome 类捕获 beforeinstallprompt 后可按钮唤起系统安装框；
    iOS Safari 禁唤起只能教学（分享→添加到主屏幕，head 已有 apple-mobile-web-app-capable 三件套，装后全屏）；
