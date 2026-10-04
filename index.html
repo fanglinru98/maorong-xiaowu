@@ -336,7 +336,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   padding:16% 5.9% 7.5%;display:flex;flex-direction:column}
 #album.open{transform:translateX(0)}
   .a-title{position:absolute;top:3.8%;left:0;right:0;text-align:center;font-size:19px;font-weight:900;color:#7c2a20;letter-spacing:5px;text-shadow:0 1px 0 rgba(255,244,222,.8);z-index:2;pointer-events:none} /* v42③：相册标题（字号真机校） */
-#aGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 12px; /* v82fix：1fr 会被卡内 nowrap 长标题的 min-content 撑宽（老板实测「彻子的小窝，越看越喜欢」把左列撑宽→照片卡大小不一），minmax(0,1fr) 钳死严格等分，标题已有 ellipsis 兜底 */
+#aGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px 10px; /* v88alb：3 列×2 行=一页 6 张，卡片随列数变小 */ /* v82fix：1fr 会被卡内 nowrap 长标题的 min-content 撑宽（老板实测「彻子的小窝，越看越喜欢」把左列撑宽→照片卡大小不一），minmax(0,1fr) 钳死严格等分，标题已有 ellipsis 兜底 */
   align-content:start;padding:2px 2px 10px}
 #aGrid::-webkit-scrollbar{width:14px}
 #aGrid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:8px}
@@ -474,8 +474,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .ctab:active{transform:scale(.94)}
 /* 心形月历：心形=clip-path，发光用父级 filter（clip 内会被裁） */
 /* 月视图底板=cal-month.png 切图（红金匾+星期行+6×7 空心格烘焙；格上只叠 ev/today/sel 与数字） */
-#vMonth{margin:6px 18px 4px; /* v83cal：月历小一点点（两侧 margin 14→18，等比缩小不错位） */position:relative;left:0;aspect-ratio:700/740; /* v22d2b：左移3px（原 3px，用户微调回到0）；底板烘焙凹槽与格层同步动，心不错位 */
-  background:url(assets/ui/cal-month.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+#vMonth{margin:6px 18px 4px; /* v83cal：月历小一点点（两侧 margin 14→18，等比缩小不错位） */position:relative;left:0;aspect-ratio:700/740;overflow:hidden;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))} /* v88cal：aspect-ratio 由 calRender 按行数动态改（裁 vmClip 底部空凹槽排） */
+#vmClip{position:absolute;left:0;top:0;width:100%;aspect-ratio:700/740;background:url(assets/ui/cal-month.webp) center/100% 100% no-repeat} /* v88cal：底图层固定原比例原校准（calMonth/cGrid 百分比全部相对它=与 v87 前语义一致），下溢由 #vMonth 裁 */
 #calMonth{position:absolute;left:50%;top:8.2%;transform:translate(-50%,-50%);font-style:normal;
   font-size:15px;font-weight:900;color:#f9ecd2;letter-spacing:2px;text-shadow:0 1px 1px rgba(80,15,8,.7)}
 .crow{display:grid;grid-template-columns:repeat(7,1fr)}
@@ -623,7 +623,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .trticks{display:flex;justify-content:space-between;font-size:8px;color:#c4a98a;margin-top:2px}
 /* v22cal6：旧 #mTxt 独占行与 28px 圆钮样式已并入上方 v2「蜡封信笺」表单块 */
 /* v22cal6：爪印彩蛋整段移除（用户 2026-09-17：月视图格子上的 🐾 与周视图星期名后的 🐾 同属一个彩蛋，一并撤） */
-.clegend{display:flex;justify-content:center;gap:12px;padding:3px 0 1px;font-size:9px;color:#c9a55c} /* v22cal3：压图例高度 */
+.clegend{position:absolute;left:0;right:0;bottom:calc(6% + 30.3% + 10px);display:flex;justify-content:center;gap:12px;padding:3px 0 1px;font-size:9px;color:#c9a55c} /* v88cal：图例改绝对定位锚在备忘卡上方 10px（v88 分层后流内图例与 absolute 备忘卡冲突 53px 重叠——两套定位脱钩恒定不撞） */
 .clegend i{font-style:normal;display:inline-block;width:12px;height:11px;vertical-align:-1px;margin-right:4px;
   clip-path:path("M6,11 C6,11 .5,7 .5,3.8 A2.9,2.9 0 0 1 6,2.7 A2.9,2.9 0 0 1 11.5,3.8 C11.5,7 6,11 6,11 Z")}
 .clegend .lg-ev i{background:#a03a2c}
@@ -915,10 +915,10 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <button class="ctab" data-v="week" aria-label="周视图"><i></i></button>
     <button class="ctab on" data-v="month" aria-label="月视图"><i></i></button>
   </nav>
-  <div id="vMonth">
+  <div id="vMonth"><div id="vmClip">
     <b id="calMonth" aria-hidden="true">10月</b>
     <div class="crow" id="cGrid"></div>
-  </div>
+  </div></div> /* v88cal：vmClip=完整底图层（原比例原校准），#vMonth 按行数裁切——v86 的双百分比链在 iOS 漂移=爱心数字错位根因，分层后零漂移 */
   <div id="vWeek">
     <div class="wrow" id="wGrid"></div>
   </div>
@@ -2882,19 +2882,12 @@ veilEl.addEventListener("click",function(){closeDiary();closeAlbum();closeSettin
 /* ═══ 相册（批6：照相册页demo 移植，左滑入+真翻页+灯箱+点外关闭） ═══ */
 var albumEl=$("album");
 var PHOTOS=[]; /* v30clr：预设照片下线；v44⑤方案B：玩家照片（拍照+上传）存 IDB maoor-photos（旧档 maoor-v22-photos-v1 自动迁移），无 5 张帽，刷新自动回来 */
-var A_PER=8,A_PAGE=0;
-function aPageCount(){return Math.ceil((PHOTOS.length+1)/A_PER)}
+var A_PER=6,A_PAGE=0; /* v88alb：一页 6 张（3 列×2 行），加号退役（老板指令：上传入口无用） */
+function aPageCount(){return Math.max(1,Math.ceil(PHOTOS.length/A_PER))} /* v88alb：空相册保底 1/1 */
 function aRender(){
   var g=$("aGrid");g.innerHTML="";
-  if(A_PAGE===0){ /* v44⑤：首格=加号→从手机相册选图上传（旧「开发中」占位退役；拍照仍走底部 dock 拍照钮） */
-    var np=document.createElement("button");
-    np.className="pcard newphoto";np.id="npCard";
-    np.setAttribute("aria-label","上传照片"); /* 添加照片卡整图做底，＋号烧在图里 */
-    np.addEventListener("click",albumUploadPick);
-    g.appendChild(np);
-  }
-  var first=A_PAGE===0?0:A_PER-1;
-  var end=Math.min(PHOTOS.length,first+(A_PAGE===0?A_PER-1:A_PER));
+  var first=A_PAGE*A_PER; /* v88alb：加号卡退役（老板指令），每页固定 A_PER 张 */
+  var end=Math.min(PHOTOS.length,first+A_PER);
   for(var i=first;i<end;i++){
     (function(i){
       var p=PHOTOS[i];
@@ -4006,18 +3999,11 @@ function calRender(){
       g.appendChild(b);
     })(d);
   }
-  var rows=Math.ceil((lead+dim)/7),vm=$("vMonth"),gr=$("cGrid"); /* v86cal：按月动态裁底板——cal-month 切图烘焙 6 排凹槽心，少行月（如 10 月 5 排）底排空凹槽露出来=老板指出的「最后一行空白爱心」；裁掉空排后月历自然变矮，备忘卡上方不再重叠 */
+  var rows=Math.ceil((lead+dim)/7),vm=$("vMonth"); /* v88cal：按行数裁 vmClip 底部空凹槽排（底图/格子分层后零漂移）；rh=6 行不等高轨道，186=格区顶，34=底板余量 */
   if(rows<6){
     var rh=[93,91.5,87.5,83.25,82,82.5],sum=0;for(var ri=0;ri<rows;ri++)sum+=rh[ri];
-    var vh=186+sum+34; /* 186=格区顶（匾+星期行），34=底板余量；r 行版面板高按真实凹槽锚点推算，前 r 行像素级校准不动 */
-    vm.style.aspectRatio="700/"+vh;
-    vm.style.backgroundSize="100% auto";vm.style.backgroundPosition="top"; /* 顶对齐裁掉底部空凹槽排 */
-    gr.style.top=(186/vh*100)+"%";gr.style.bottom=(34/vh*100)+"%";
-    gr.style.gridTemplateRows=rh.slice(0,rows).join("fr ")+"fr";
-  }else{
-    vm.style.aspectRatio="";vm.style.backgroundSize="";vm.style.backgroundPosition="";
-    gr.style.top="";gr.style.bottom="";gr.style.gridTemplateRows=""; /* 6 行月恢复 CSS 原值 */
-  }
+    vm.style.aspectRatio="700/"+(186+sum+34);
+  }else{vm.style.aspectRatio="";} /* 6 行月恢复 CSS 原值 */
 }
 /* 备忘卡：v22cal10 按视图域取数——月视图=月域 EVM[月键]（标题「X月备忘」）；日视图=日域 EV[selKey]；周视图无备忘板 */
 function memoRows(){return calView==="month"?(EVM[mkKey()]||[]):(EV[selKey]||[])}
