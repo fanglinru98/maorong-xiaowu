@@ -4481,6 +4481,8 @@ var FITK=1;
     var nk=Math.min(vw/390,vh/844); /* v70fix：标准 contain——窄屏(<390)整机缩小不再裁边（原截断式 W2/H2：小屏不缩放直接裁掉两侧），宽屏等比放大，配底色统一露边不可见 */
     FITK=nk;
     sc.style.transform=(nk===1)?"":"scale("+nk+")";
+    var cvs=document.getElementById("roomIso"); /* v77fit：场景画布独立 cover 缩放（≤壳+6%）——老板双机实测左右细边+「双击变全屏」启示：视觉再放大一点边就没了；场景层铺满、UI 锚定壳不动、命中/引导框基于画布 rect 自适应 */
+    if(cvs){var cs=Math.max(nk,Math.min(Math.max(vw/390,vh/844),nk*1.06));cvs.style.transformOrigin="50% 50%";cvs.style.transform=(cs===1)?"":"scale("+cs+")";}
     if(tutOn&&tutCur)tutShow(tutCur); /* 引导进行中窗口/旋转变化：按新缩放重定位聚光灯（函数声明提升可前调） */
     resize();
   }
