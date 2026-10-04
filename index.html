@@ -4464,8 +4464,8 @@ window.__roomHooks.pwaState=function(){return{evt:!!PWA_EVT,inPwa:pwaIn()};};
 var TUT_LOOP=false; /* v22tut2：验收完毕，恢复"只弹一次"（无 maoor-v22-tutorial-v1 标记才自动弹） */
 (function(){
   if(/jsdom/i.test(navigator.userAgent))return; /* 自动化测试不自动弹，由测试钩子手动驱动 */
-  if(TUT_LOOP){setTimeout(tutStart,600);return}
-  try{if(!localStorage.getItem(TUTKEY))setTimeout(tutStart,600)}catch(e){}
+  if(TUT_LOOP){setTimeout(tutStart,3200);return} /* v72fix：600→3200——启动瞬态（boot 加载页期间）定位引导框偏移（老板真机 diag 实锤：0.6s 触发框偏/4.5s 触发框准）；boot 最短 2.5s 挡着，玩家无感 */
+  try{if(!localStorage.getItem(TUTKEY))setTimeout(tutStart,3200)}catch(e){} /* v72fix：同上 */
 })();
 window.__roomHooks.tutState=function(){return{on:tutOn,fin:tutFin,step:tutI,total:TUT_STEPS.length}};
 window.__roomHooks.tutStart=tutStart;
@@ -4477,7 +4477,7 @@ var FITK=1;
   var sc=document.querySelector(".screen");
   function fit(){
     var vw=window.innerWidth,vh=window.innerHeight;
-    if(window.visualViewport){vw=window.visualViewport.width||vw;vh=window.visualViewport.height||vh;} /* v68fix：iOS 主屏 PWA 用 visualViewport（状态栏/地址栏口径更准；安卓/桌面与 innerWidth/Height 相同不受影响） */
+    if(window.visualViewport){vw=Math.max(vw,window.visualViewport.width||0);vh=Math.max(vh,window.visualViewport.height||0);} /* v72fix：iOS 26 PWA 的 dvh/visualViewport 排除了安全区 68px（老板真机实测 912 屏只报 844）→ 取两者较大值拿全屏口径，壳才能铺满；v68 原逻辑=直接用 visualViewport（旧 iOS 口径下正确、iOS 26 反而缩水） */
     var nk=Math.min(vw/390,vh/844); /* v70fix：标准 contain——窄屏(<390)整机缩小不再裁边（原截断式 W2/H2：小屏不缩放直接裁掉两侧），宽屏等比放大，配底色统一露边不可见 */
     FITK=nk;
     sc.style.transform=(nk===1)?"":"scale("+nk+")";
