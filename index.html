@@ -134,6 +134,9 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #fab{display:none;position:absolute;align-items:center;gap:7px;transform:translateX(-50%);z-index:6}
 #fab button{width:34px;height:34px;border:1.5px solid var(--gold-deep);background:#fffdf4;border-radius:50%;
   color:var(--ink2);font-size:15px;cursor:pointer;line-height:1;box-shadow:0 2px 8px rgba(58,40,24,.25);padding:0}
+#fab button.fabb{border:none;background:none} /* v89fab：徽章自带金边红底，去掉米白圆底 */
+#fab button.fabb img{display:block;width:34px;height:34px;pointer-events:none} /* v89fab：与原钮同尺寸 34px */
+#fab button.fabb:active{transform:scale(.9)}
 #fab button:active{transform:scale(.9)}
 /* v22sync（C）：#fabRow（占格 / 小物 / 台面 / 高 / 校准 那条）按用户要求整体撤掉，样式一并删——占格与台面逻辑本身保留在数据与钩子里 */
 /* ── 光效面板（v22glow：灯具发光/呼吸/地面光斑，浮在家具上方，与占格条同一挂点） ── */
@@ -336,7 +339,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   padding:16% 5.9% 7.5%;display:flex;flex-direction:column}
 #album.open{transform:translateX(0)}
   .a-title{position:absolute;top:3.8%;left:0;right:0;text-align:center;font-size:19px;font-weight:900;color:#7c2a20;letter-spacing:5px;text-shadow:0 1px 0 rgba(255,244,222,.8);z-index:2;pointer-events:none} /* v42③：相册标题（字号真机校） */
-#aGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px 10px; /* v88alb：3 列×2 行=一页 6 张，卡片随列数变小 */ /* v82fix：1fr 会被卡内 nowrap 长标题的 min-content 撑宽（老板实测「彻子的小窝，越看越喜欢」把左列撑宽→照片卡大小不一），minmax(0,1fr) 钳死严格等分，标题已有 ellipsis 兜底 */
+#aGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 12px; /* v88alb：2 列×3 行=一页 6 张（老板拍板一行 2 张），卡片放大铺满 */ /* v82fix：1fr 会被卡内 nowrap 长标题的 min-content 撑宽（老板实测「彻子的小窝，越看越喜欢」把左列撑宽→照片卡大小不一），minmax(0,1fr) 钳死严格等分，标题已有 ellipsis 兜底 */
   align-content:start;padding:2px 2px 10px}
 #aGrid::-webkit-scrollbar{width:14px}
 #aGrid::-webkit-scrollbar-track{background:#f8eed6;border:1px solid #e3cda0;border-radius:8px}
@@ -718,7 +721,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- ═══ 等距房间引擎（V22 装修 demo 底座） ═══ -->
 <div id="stage">
   <div id="scene"><canvas id="roomIso"></canvas>
-    <div id="fab"><button id="fabFlip" title="水平镜像（左右翻转）">⇋</button><button id="fabCopy" title="复制一件（落在原格旁边的空位/台面空格）">⧉</button><button id="fabGlow" title="光效（只给灯用：哥特提灯 / 壁灯 / 落地灯 / 宝石）">✨</button><button id="fabDel" title="删除选中家具">🗑</button></div>
+    <div id="fab"><button id="fabFlip" class="fabb" title="水平镜像（左右翻转）"><img src="assets/ui/fab-flip.webp" alt=""></button><button id="fabCopy" class="fabb" title="复制一件（落在原格旁边的空位/台面空格）"><img src="assets/ui/fab-copy.webp" alt=""></button><button id="fabGlow" title="光效（只给灯用：哥特提灯 / 壁灯 / 落地灯 / 宝石）">✨</button><button id="fabDel" title="删除选中家具" class="fabb"><img src="assets/ui/fab-del.webp" alt=""></button></div> <!-- v89fab：三钮换老板徽章切图（转向/复制/删除），光效钮保持原样待切图 -->
     <div id="glowRow">
       <button id="glOn" title="开/关这盏灯的光效">光效开</button>
       <button id="glBr" title="呼吸感（明暗缓慢起伏）">呼吸</button>
