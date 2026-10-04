@@ -40,7 +40,7 @@ body{background:#3a2a1b;color:var(--ink);overflow:hidden; /* v70fix：渐变改�
 .side-btn:active{transform:scale(.92)}
 .side-btn .icon-img{width:64px;height:64px;object-fit:contain;object-position:center;pointer-events:none}
 /* ── 底部工具条（V21 原位；装修模式/底边栏展开时下沉隐藏） ── */
-.dock{position:absolute;left:50%;bottom:env(safe-area-inset-bottom);transform:translateX(-50%); /* v73fix：去掉 17px 附加距——老板指令「tab 栏应该在最底下」，贴到安全区上缘（小白条不压按钮） */
+.dock{position:absolute;left:50%;bottom:0;transform:translateX(-50%); /* v74fix：老板拍板方法2——dock 贴死屏底（小白条轻压按钮下缘可接受），彻底消灭底部暗带 */
   z-index:10;display:flex;gap:13px;background:none;border:none;padding:0;transition:bottom .28s cubic-bezier(.32,.72,.28,1)}
 .dock-btn{position:relative;width:74px;height:64px;border-radius:16px;display:grid;place-items:center;
   background:none;border:none;transition:transform .15s ease,filter .15s ease}
