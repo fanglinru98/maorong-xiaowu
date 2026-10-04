@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="color-scheme" content="light"> <!-- v76dark：声明页面仅浅色，拒绝手机系统/浏览器的强制深色反色（老板深色模式实测 UI 被染深） -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>彻子小屋</title>
 <!-- PWA 全屏支持（V21 同款方案）：加到主屏幕后全屏运行 -->
@@ -12,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="彻子小屋">
 <style>
-:root{--ink:#2f2b28;--muted:#8d877f;--line:#e5e1da;--bg:#f5f3ef;--panel:#fbfaf8;--accent:#3a352f;
+:root{color-scheme:light only; /* v76dark：CSS 侧同声明（双保险拒绝强制深色） */--ink:#2f2b28;--muted:#8d877f;--line:#e5e1da;--bg:#f5f3ef;--panel:#fbfaf8;--accent:#3a352f;
   --gold:#d9b56a;--gold-deep:#c9a55c;--gold-line:#ead9ae;--panel2:#f8f0d8;--ink2:#5a4632;
   --hudline:#e8dcc2;--wood-deep:#5a4632;--ink-soft:#7a6248;--coin:#c9861f;--barH:min(36.1%,304px); /* v22bar2：竖版大卡两行网格（照用户图二），面板高度回调到与装修底边栏demo 一致 */
   --shadow-1:0 2px 8px rgba(74,54,40,.14);--shadow-2:0 8px 24px rgba(58,40,24,.22);
@@ -4482,7 +4483,7 @@ var FITK=1;
     FITK=nk;
     sc.style.transform=(nk===1)?"":"scale("+nk+")";
     var cvs=document.getElementById("roomIso"); /* v77fit：场景画布独立 cover 缩放（≤壳+6%）——老板双机实测左右细边+「双击变全屏」启示：视觉再放大一点边就没了；场景层铺满、UI 锚定壳不动、命中/引导框基于画布 rect 自适应 */
-    if(cvs){var cov=Math.max(vw/390,vh/844);var cs=(vw<=500)?cov:Math.max(nk,Math.min(cov,nk*1.12));cvs.style.transformOrigin="50% 50%";cvs.style.transform=(cs===1)?"":"scale("+cs+")";} /* v78fit：手机(vw≤500)取消钳制全 cover（小米屏比例使 v77 的 1.06 上限恰好钳死宽度→左右窄边），电脑保留 1.12 钳防场景巨裁 */
+    if(cvs){var cov=Math.max(vw/(390*FITK),vh/(844*FITK));var cs=(vw<=500)?cov:Math.max(1,Math.min(cov,1.12));cvs.style.transformOrigin="50% 50%";cvs.style.transform=(cs===1)?"":"scale("+cs+")";} /* v79fit：cover 比例补除壳缩放 FITK（v78 漏除→壳缩 0.948 时画布差一口气盖不满视口=老板米金壁纸截图实锤的左右黑边）；电脑钳改绝对 1.12 并保底 1（防 canvas 缩水回归） */
     if(tutOn&&tutCur)tutShow(tutCur); /* 引导进行中窗口/旋转变化：按新缩放重定位聚光灯（函数声明提升可前调） */
     resize();
   }
