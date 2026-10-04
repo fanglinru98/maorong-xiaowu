@@ -26,7 +26,7 @@ body{background:#241509;color:var(--ink);overflow:hidden; /* v70fix：渐变改�
   display:flex;align-items:center;justify-content:center;
   font:15px/1.6 var(--font-display)}
 /* ═══ 游戏界面壳（期1.5 批1）：390×844 · HUD 原位（照正式版 V21） ═══ */
-.screen{position:relative;width:390px;height:844px;overflow:hidden; /* v73fix：壳固定设计值 390×844，缩放全权交 fit()——原 min(390,100vw)/min(844,100dvh) 会让壳 CSS 跟视口缩、fit 再按 844 缩一次=双重缩小（Safari 网页版框偏+四周空、老板红框 16:24 实测根因） */
+.screen{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden; /* v80full：壳=整块视口（全屏架构）——v70~v79 十轮补丁的根因=「固定小窗+整体缩放」架构本身在比例不合的屏幕上必然留边；拆掉小窗后没有边可留，任何机型自动满屏。UI 本就是贴边定位、场景公式按 W/Hc 自适应、存档/格位/交互全不变 */
   background:#241509;box-shadow:0 12px 48px rgba(0,0,0,.5)}
 /* ── 顶部 HUD：头像组合（金框+头像+Lv+进度条，UI 升级批：图一样式，屋名/心情文字按用户要求移除） ── */
 .hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
@@ -4477,14 +4477,8 @@ var FITK=1;
 (function(){
   var sc=document.querySelector(".screen");
   function fit(){
-    var vw=window.innerWidth,vh=window.innerHeight;
-    if(window.visualViewport){vw=Math.max(vw,window.visualViewport.width||0);vh=Math.max(vh,window.visualViewport.height||0);} /* v72fix：iOS 26 PWA 的 dvh/visualViewport 排除了安全区 68px（老板真机实测 912 屏只报 844）→ 取两者较大值拿全屏口径，壳才能铺满；v68 原逻辑=直接用 visualViewport（旧 iOS 口径下正确、iOS 26 反而缩水） */
-    var nk=Math.min(vw/390,vh/844); /* v70fix：标准 contain——窄屏(<390)整机缩小不再裁边（原截断式 W2/H2：小屏不缩放直接裁掉两侧），宽屏等比放大，配底色统一露边不可见 */
-    FITK=nk;
-    sc.style.transform=(nk===1)?"":"scale("+nk+")";
-    var cvs=document.getElementById("roomIso"); /* v77fit：场景画布独立 cover 缩放（≤壳+6%）——老板双机实测左右细边+「双击变全屏」启示：视觉再放大一点边就没了；场景层铺满、UI 锚定壳不动、命中/引导框基于画布 rect 自适应 */
-    if(cvs){var cov=Math.max(vw/(390*FITK),vh/(844*FITK));var cs=(vw<=500)?cov:Math.max(1,Math.min(cov,1.12));cvs.style.transformOrigin="50% 50%";cvs.style.transform=(cs===1)?"":"scale("+cs+")";} /* v79fit：cover 比例补除壳缩放 FITK（v78 漏除→壳缩 0.948 时画布差一口气盖不满视口=老板米金壁纸截图实锤的左右黑边）；电脑钳改绝对 1.12 并保底 1（防 canvas 缩水回归） */
-    if(tutOn&&tutCur)tutShow(tutCur); /* 引导进行中窗口/旋转变化：按新缩放重定位聚光灯（函数声明提升可前调） */
+    /* v80full：全屏架构下 FITK 恒 1、scale/画布 cover 全部退役（壳=视口，画布 100% 填壳）——fit 降级为「引导重定位+场景重适配」入口，resize() 以真实视口为 W/Hc 自动画出撑满场景 */
+    if(tutOn&&tutCur)tutShow(tutCur); /* 引导进行中窗口/旋转变化：按新视口重定位聚光灯（函数声明提升可前调） */
     resize();
   }
   window.addEventListener("resize",fit);
