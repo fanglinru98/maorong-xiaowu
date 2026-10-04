@@ -3,7 +3,7 @@
  * 发版规矩：每次发布新版，把下面的 CACHE_VER 版本号 +1（如 maoor-v2 → maoor-v3），
  *          玩家下次打开会自动丢弃旧缓存、拉取新文件。详见《PWA全屏使用说明.md》第六节。
  */
-const CACHE_VER = 'maoor-v68'; /* v68：引导第一框冻结角色+fit visualViewport 校准 iOS 满屏 */ /* v67：更新弹窗硬闸+日历备忘钉底+相册卡统一/灯箱11:16（ZCode 三修） */ /* v66：静态层缓存(ZCode)+更新弹窗+地毯碰撞扁平化 */ /* v65：保底 3.46s 盖闪屏波动+状态栏碳黑+呼吸降频 10fps */ /* v64fix：加载页内芯层压过外壳（bar.webp 内腔不透明盖死 fill） */ /* v63：进度条 clip 揭示+息屏停 BGM+状态栏色随装修 */ /* v62：状态栏色 #4a3624+灯箱自适应+boot 层 out-of-composite */ /* v61：图标铺满重导 + manifest 底色改深红 #922723 + 加载页最短 2.5s */ /* v59precache 预缓存清单瘦身只留外壳 */ /* v57fix 加载页兼容加固：进度条高度不再依赖 aspect-ratio */ /* v57boot 开机加载页并入主线 */ /* v52 四件+加载页 demo */
+const CACHE_VER = 'maoor-v69'; /* v69：相册加号卡缩小+日历备忘卡探出面板（下滑露出卡底框） */ /* v68：引导第一框冻结角色+fit visualViewport 校准 iOS 满屏 */ /* v67：更新弹窗硬闸+日历备忘钉底+相册卡统一/灯箱11:16（ZCode 三修） */ /* v66：静态层缓存(ZCode)+更新弹窗+地毯碰撞扁平化 */ /* v65：保底 3.46s 盖闪屏波动+状态栏碳黑+呼吸降频 10fps */ /* v64fix：加载页内芯层压过外壳（bar.webp 内腔不透明盖死 fill） */ /* v63：进度条 clip 揭示+息屏停 BGM+状态栏色随装修 */ /* v62：状态栏色 #4a3624+灯箱自适应+boot 层 out-of-composite */ /* v61：图标铺满重导 + manifest 底色改深红 #922723 + 加载页最短 2.5s */ /* v59precache 预缓存清单瘦身只留外壳 */ /* v57fix 加载页兼容加固：进度条高度不再依赖 aspect-ratio */ /* v57boot 开机加载页并入主线 */ /* v52 四件+加载页 demo */
 /* v59precache：清单不再手写——v57 起开机加载页会把家具/角色/贴图/UI 图全部请求一遍，
    fetch 处理器的 stale-while-revalidate 会把它们逐个存进 CACHE_VER 缓存，
    所以「玩过一次」之后离线资源自动齐全；手写清单反而是「以后加资源必漏」的源头。
