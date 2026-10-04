@@ -1867,6 +1867,7 @@ function charGreet(ms){ /* v22tut2：打招呼——停下脚步、原地挥手�
   CHAR.mode="idle";CHAR.q=[];CHAR.arriveSit=false;CHAR.sit=null;
   CHAR.greetT0=t;CHAR.greetU=t+(ms||2400);
   render();
+  charStart(); /* v68fix：确保挥手动画 rAF 持续（tutStart 冻结打断走动后 rAF 可能已转 setTimeout） */
 }
 function walkReady(){ /* v31slide：走路帧图是否全部就绪——手机首开网络慢，帧没到就开步会被 charImg 兜底成「最近成功帧」→ 角色在地上滑行（平移感）。帧 err（真缺文件）视为就绪不阻塞。 */
   var d,e,v;
@@ -1878,7 +1879,7 @@ function walkReady(){ /* v31slide：走路帧图是否全部就绪——手机�
 }
 function charPlan(now){ /* 站着时的打算：房里有单人沙发就大概率过去坐，否则随机溜达一格 */
   if(!walkReady()){CHAR.next=now+500;return;} /* v31slide：走路帧没到齐先待机，500ms 后再试——宁可晚走一秒，不平移 */
-  if(tutOn){CHAR.next=now+800;return;} /* v31tut：新手引导进行中角色原地站好——走了会留下空聚光框（老板朋友实测 09-25） */
+  if(tutOn&&tutFreezeChar){CHAR.next=now+800;return;} /* v68fix：仅第一框冻结角色（原 v31tut 全引导冻结，老板要后续按钮说明步角色可走动） */
   var c0=Math.floor(CHAR.gx),r0=Math.floor(CHAR.gy),sofa=charSofa(),p,t,c,r;
   if(sofa&&Math.random()<0.45){
     var sc=Math.floor(effGX(sofa)+(sofa.w||1)/2),sr=Math.floor(effGY(sofa)+(sofa.d||1)/2);
@@ -2041,6 +2042,10 @@ function charStart(){ /* 有 rAF 走 rAF（浏览器）；没有（jsdom/老环�
 function charStop(){
   if(charRAF){ if(charHasRAF()&&typeof cancelAnimationFrame==="function")cancelAnimationFrame(charRAF); else clearTimeout(charRAF); }
   charRAF=0;if(charTmr)clearTimeout(charTmr);charTmr=0;
+}
+function charFreeze(){ /* v68fix：引导启动钉住角色——打断走动（清队列+待机+清挥手），不碰 rAF 让后续挥手/待机动画仍能推进 */
+  CHAR.q=[];CHAR.mode="idle";CHAR.arriveSit=false;CHAR.sit=null;CHAR.greetU=0;
+  render();
 }
 /* ═══ v66 静态层位图快照 ═══
    地板/双墙/墙角补面/家具整幅烘焙进离屏 SHOT，render() 每帧只贴快照再画动态层
@@ -4338,9 +4343,10 @@ var TUT_STEPS=[ /* v22tut2（用户定稿顺序）：打招呼→装修→换装
   {sel:"avatarStack",pos:"right",t:"这里是你的角色信息，能看等级和进度"},
   {full:1,t:"把游戏添加到手机桌面，就能全屏玩更沉浸哦：iPhone 点底部分享按钮→「添加到主屏幕」；安卓点右上角 ⋮ →「添加到主屏幕」"} /* v44④：全屏收尾步（老板指令：引导末步教添加到手机桌面） */
 ];
-var tutI=-1,tutOn=false,tutFin=0,tutCur=null; /* tutFin: 0=普通步 1=待点换装 2=待点小猫 */
+var tutI=-1,tutOn=false,tutFin=0,tutCur=null,tutFreezeChar=false; /* tutFin: 0=普通步 1=待点换装 2=待点小猫；tutFreezeChar=v68fix 第一框冻结角色 */
 function tutStart(){
   tutOn=true;tutI=-1;tutFin=0;
+  tutFreezeChar=true;charFreeze(); /* v68fix：引导启动即钉住角色（第一框聚光灯要框在角色身上，先别让它乱跑） */
   tutEl.classList.add("on","blocking");
   setTimeout(tutNext,450);
 }
@@ -4349,6 +4355,7 @@ function tutNext(){
   tutI++;
   if(tutI>=TUT_STEPS.length){tutFinish();return} /* v22tut2：末步之后直接收尾（原「点换装→点小猫」真互动收尾按用户要求取消） */
   tutShow(TUT_STEPS[tutI]);
+  if(tutI>0&&tutFreezeChar){tutFreezeChar=false;charStart();} /* v68fix：第一框走完（进入第二步按钮说明）解冻角色，恢复走动 */
 }
 function tutRect(el){
   var sr=tutEl.getBoundingClientRect(),r=el.getBoundingClientRect();
@@ -4463,6 +4470,7 @@ var FITK=1;
   var sc=document.querySelector(".screen");
   function fit(){
     var vw=window.innerWidth,vh=window.innerHeight;
+    if(window.visualViewport){vw=window.visualViewport.width||vw;vh=window.visualViewport.height||vh;} /* v68fix：iOS 主屏 PWA 用 visualViewport（状态栏/地址栏口径更准；安卓/桌面与 innerWidth/Height 相同不受影响） */
     var W2=Math.min(390,vw),H2=Math.min(844,vh);
     var nk=Math.min(vw/W2,vh/H2);
     FITK=nk;
