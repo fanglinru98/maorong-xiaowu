@@ -628,7 +628,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .clegend .lg-ev i{background:#a03a2c}
 .clegend .lg-td i{background:linear-gradient(#f0d9a8,#d9b56a)}
 /* 备忘卡=cal-memo.png 切图（红绶带/「备忘事项」标题/虚线烘焙；日期叠绶带，自绘行纸片盖烘焙行区→不限量） */
-.memo{position:absolute;left:17px;right:18px;bottom:2%;height:30.3%; /* v83cal：备忘卡收进面板内（原 bottom:-5% 探出=v69 设计，老板现要求收回；按钮/月历已腾位，收进后不压图例与月历） */min-height:0;margin:0;display:flex;flex-direction:column; /* v69：备忘卡底框探出面板底框 31px（老板指令「再往下没有展示出的部分改成手指下滑露出」，#cal 的 overflow-y:auto 已存在→absolute 子元素溢出计入滚动区，下滑即可露出卡底框；bottom:2% 钉底版=v67，探出后 memo top≈558 仍低于月历格底 492 防重叠；日/周视图各自覆写本规则不受影响 */
+.memo{position:absolute;left:17px;right:18px;bottom:6%;height:30.3%; /* v84cal：2% 时卡底距面板矩形仅 14px<装饰底框花纹厚 ~19px（cal-panel 切图量得）→ 真机仍压花纹线（老板反馈）；抬到 6% 余量 42px 稳入内腔，memo 顶距图例底仍有余量 */min-height:0;margin:0;display:flex;flex-direction:column; /* v69：备忘卡底框探出面板底框 31px（老板指令「再往下没有展示出的部分改成手指下滑露出」，#cal 的 overflow-y:auto 已存在→absolute 子元素溢出计入滚动区，下滑即可露出卡底框；bottom:2% 钉底版=v67，探出后 memo top≈558 仍低于月历格底 492 防重叠；日/周视图各自覆写本规则不受影响 */
   background:url(assets/ui/cal-memo.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 .memo .mhead{display:contents}
 .memo .mdate{position:absolute;left:50%;top:12.5%;transform:translate(-50%,-50%);white-space:nowrap;font-size:15px;font-weight:900; /* v22cal3：与红绶带垂直居中（绶带中心=图高12.5%；三视图实测同低6.8px——用户反馈2026-09-16） */
