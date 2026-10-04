@@ -347,7 +347,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .pcard{position:relative;background:none;box-shadow:none;display:flex;flex-direction:column;align-items:center;
   transition:transform .15s}
 .pcard:active{transform:scale(.96)}
-.pfr{position:relative;display:block;width:100%;aspect-ratio:11/16} /* v90alb：方框改竖长方形 11:16（与灯箱同口径，老板提议），3 行撑满面板消底部留白；相框切图 100% 拉伸随比例 */
+.pfr{position:relative;display:block;width:100%;aspect-ratio:8/9} /* v91alb：11:16 三行超出面板底（老板反馈），8:9 恰好 3 行撑满（卡高=列宽×9/8≈面板内容高/3） */
 .pph{position:absolute;left:13%;top:14%;width:74%;height:71%;object-fit:cover;display:block}
 .pfr-img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .pimg{display:block;width:100%;aspect-ratio:11/16;flex:none;overflow:hidden;border-radius:3px;background:#efe4c8} /* v67三修：灯箱照片区锁 11:16（老板红框实测≈660×960 竖版），卡高随比例收敛不再顶满全屏；高度=卡宽×16/11 随比例走，不写死像素 */
@@ -4005,8 +4005,9 @@ function calRender(){
   var rows=Math.ceil((lead+dim)/7),vm=$("vMonth"); /* v88cal：按行数裁 vmClip 底部空凹槽排（底图/格子分层后零漂移）；rh=6 行不等高轨道，186=格区顶，34=底板余量 */
   if(rows<6){
     var rh=[93,91.5,87.5,83.25,82,82.5],sum=0;for(var ri=0;ri<rows;ri++)sum+=rh[ri];
-    vm.style.aspectRatio="700/"+(186+sum+2); /* v90cal：余量 34→2 贴第 r 排凹槽底（v86 余量让第 6 排凹槽顶露出=老板真机仍见空爱心行） */
-  }else{vm.style.aspectRatio="";} /* 6 行月恢复 CSS 原值 */
+    var wpx=vm.getBoundingClientRect().width||210; /* v91cal：高度直设 px，弃 aspect-ratio inline（iOS PWA 上疑似不生效=老板真机仍见空行；px 直设零特性依赖） */
+    vm.style.height=Math.round(wpx*(186+sum+2)/700)+"px";
+  }else{vm.style.height="";} /* 6 行月恢复 CSS aspect 原值 */
 }
 /* 备忘卡：v22cal10 按视图域取数——月视图=月域 EVM[月键]（标题「X月备忘」）；日视图=日域 EV[selKey]；周视图无备忘板 */
 function memoRows(){return calView==="month"?(EVM[mkKey()]||[]):(EV[selKey]||[])}
@@ -4483,6 +4484,7 @@ var FITK=1;
     /* v80full：全屏架构下 FITK 恒 1、scale/画布 cover 全部退役（壳=视口，画布 100% 填壳）——fit 降级为「引导重定位+场景重适配」入口，resize() 以真实视口为 W/Hc 自动画出撑满场景 */
     if(tutOn&&tutCur)tutShow(tutCur); /* 引导进行中窗口/旋转变化：按新视口重定位聚光灯（函数声明提升可前调） */
     resize();
+    if(typeof calRender==="function")calRender(); /* v91cal：视口/旋转后日历高度 px 值需重算（vmClip 分层的 px 直设随宽度走） */
   }
   window.addEventListener("resize",fit);
   if(window.visualViewport&&window.visualViewport.addEventListener)window.visualViewport.addEventListener("resize",fit); /* v70fix：visualViewport 变化直连重算（iOS PWA 满屏口径/键盘收展不总触发 window.resize） */
