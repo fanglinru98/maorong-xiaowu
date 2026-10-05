@@ -2627,7 +2627,7 @@ function lampToggle(){
     if(on&&!L[i].glow)L[i].glow={c:"#ffd27a",s:1.4,i:0.9,b:1,p:0}; /* v22lamp：没配过光效的灯（壁灯）给一套暖黄预设，不然「亮」了也看不见 */
   }
   saveSoon();lampSync();render();
-  toast(on?"两盏灯都点亮了":"两盏灯都关了");
+  toast(on?L.length+"盏灯都点亮了":L.length+"盏灯都关了"); /* v103lamp：提示按实际灯具数量实时变化（原写死「两盏灯」，老板反馈） */
 }
 $("lampAll").addEventListener("click",lampToggle);
 $("glOn").addEventListener("click",function(){
