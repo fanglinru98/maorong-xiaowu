@@ -212,7 +212,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #bootRow{position:absolute;left:50%;bottom:4.7%;transform:translateX(-50%);width:76%;z-index:2;min-height:5%} /* v57fix：高度不再只靠 aspect-ratio（Chrome88/Safari15 才支持；不支持时容器高 0 → 进度条+小熊全不可见，只剩背景外壳）；改为由 #bootBar 切图自身撑高，min-height 仅极端兜底 */
 #bootBar{position:relative;display:block;width:100%;height:auto;z-index:3} /* 文档流撑高 = 全浏览器一致 */
 #bootFillWrap{position:absolute;left:4.6%;right:4.6%;top:17%;bottom:17%;overflow:hidden;z-index:4}/* v64fix：内芯层压过外壳（bar.webp 内腔不透明 alpha254 会盖死 fill）——切图不动只调层 */
-#bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;clip-path:inset(0 100% 0 0)} /* v63④：进度条=从左往右越来越长直到填满（clip 揭示法，老板指令），不再是整条平移 */
+#bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;clip-path:inset(0 100% 0 0);transition:clip-path .45s ease} /* v63④+v105boot：进度条加缓动过渡——缓存命中时进度连跳（5%→100%）平滑爬升不跳跃 */
 #bootBear{position:absolute;left:-7%;bottom:82%;width:15.5%;z-index:1;container-type:inline-size;transition:left .25s ease-out}
 /* v66upd：更新弹窗（SW 新版等待时弹；点暗罩不关、两按钮必须点一个） */
 #swModal{display:none;position:fixed;inset:0;z-index:70;background:rgba(20,12,5,.6);place-items:center}
@@ -2180,7 +2180,9 @@ stage.addEventListener("pointerdown",function(e){
   if(pts.size===2){vdrag=null;pinch0=pinchSnap();} /* 第二根手指落下：转捏合模式 */
   else if(pts.size===1){vdrag={id:e.pointerId,x:e.clientX,y:e.clientY,px:VPX,py:VPY,moved:false,onCv:e.target===cv,t:Date.now()};}
 });
-stage.addEventListener("pointermove",function(e){
+var spPend=null,spRAF=0;
+function spTick(){ /* v105perf：stage 级触摸合帧（与 v22lag 同款管道）——双指缩放/拖拽每帧最多处理一次，高刷屏不再排队掉帧 */
+  spRAF=0;var e=spPend;spPend=null;if(!e)return;
   if(pts.has(e.pointerId))pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pts.size>=2&&pinch0){
     var s=pinchSnap();
@@ -2191,6 +2193,12 @@ stage.addEventListener("pointermove",function(e){
     if(!vdrag.moved&&Math.hypot(dx,dy)<(decoMode?18:6))return; /* v22tap：装修模式下放宽到 18px（手指轻点的抖动也算轻点）*/
     vdrag.moved=true;VPX=vdrag.px+dx;VPY=vdrag.py+dy;applyView();
   }
+}
+stage.addEventListener("pointermove",function(e){
+  spPend=e;
+  if(spRAF)return;
+  if(typeof requestAnimationFrame==="function")spRAF=requestAnimationFrame(spTick);
+  else spTick();
 });
 var dblTap=null; /* v39②：双击复位检测状态 */
 function endPtr(e){
