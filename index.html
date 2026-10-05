@@ -3787,7 +3787,7 @@ function bootShow(){ /* 进度条走满：摆满 100% → 淡出 → 进游戏 *
   if(t)t.textContent="100%";
   var wait=Math.max(0,3000-(Date.now()-BOOT_T0)); /* v65：最短展示 3.46s = 3000 保持 + 460 淡出（老板报「闪屏长加载页短」不稳——保底拉到 3s 盖住系统闪屏的时长波动，保证加载页每次完整露脸） */
   if(BOOT_DELAY>0){ /* v61boot：先保持到最短时长再淡出，淡出结束才进游戏（原版一上来就 gone，加载页 1.4s 就没了） */
-    setTimeout(function(){if(el)el.classList.add("gone");setTimeout(startGame,BOOT_DELAY);},wait);
+    setTimeout(function(){startGame();if(el)el.classList.add("gone");},wait); /* v98boot：startGame 提前到淡出前——存档恢复+渲染完成后才掀开加载页，掀开即所见（原时序淡出结束才恢复=底下先闪初始态） */
     return;
   }
   if(el)el.classList.add("gone");
@@ -3824,6 +3824,11 @@ function bootCollect(){
           ["border",tv("border")||(PACKTEX.border&&PACKTEX.border.src)]];
   var wv=tv("wallBack")||(PACKTEX.wall&&PACKTEX.wall.src);
   if(wv)tx.push(["wallBack",wv],["wallLeft",wv]);
+  var sv=null;try{sv=JSON.parse(localStorage.getItem("maoor-v22-state-v2")||"null")}catch(e){}
+  if(sv&&typeof sv==="object"){ /* v98boot：预载玩家存档的贴图——原清单只含默认贴图，玩家装修的主题（存档贴图）进游戏要现加载几秒=老板报的「进游戏先初始样子几秒」；缓存键 key|src 与 restoreState 后完全一致，掀开即命中 */
+    var svtx=[["floor",sv.floor],["roof",sv.roof],["border",sv.border],["wallBack",sv.wallB],["wallLeft",sv.wallL]];
+    for(var si=0;si<svtx.length;si++){var svt=svtx[si][1];if(svt&&svt.indexOf&&svt.indexOf("/")>=0)tx.push([svtx[si][0],svt]);}
+  }
   var ex=PACKTEX.extra||[];
   for(i=0;i<ex.length;i++){var x=ex[i];if(!x||!x.src)continue;
     if(x.kind==="wall")tx.push(["wallBack",x.src],["wallLeft",x.src]);
