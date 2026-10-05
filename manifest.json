@@ -9,7 +9,7 @@
   "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#7a4a2e", /* v99：闪屏底色与加载页开头一致（安卓 WebAPK 闪屏→加载页无色差过渡） */
-  "theme_color": "#1c1c1c",
+  "theme_color": "#3a1a14" /* v106thm：状态栏染色=游戏顶部暗红棕（安卓系统条融入画面） */,
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
