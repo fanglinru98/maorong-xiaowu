@@ -156,7 +156,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .d-scene-bg{ /* v46：老板切图——全屏更衣室场景（红帘+角色已烧进图），cover 铺满 */
   position:absolute;inset:0;
   background:url("assets/ui/dress-scene.webp") center/cover no-repeat,#241a11}
-.d-back{position:absolute;left:12px;top:14px;z-index:30;width:52px;aspect-ratio:294/246;padding:0;
+.d-back{position:absolute;left:12px;top:calc(14px + max(env(safe-area-inset-top), 47px));z-index:30;width:52px;aspect-ratio:294/246;padding:0; /* v112dress：返回钮下移避让状态栏（iOS 26 PWA env=0，max 兜底 47px=灵动岛机型保守值，与 HUD 同口径） */
   background:url("assets/ui/dress-back.webp") center/100% 100% no-repeat;border:none;
   transition:transform .12s;cursor:pointer} /* v46：切图返回钮 */
 .d-back:active{transform:scale(.88)}
