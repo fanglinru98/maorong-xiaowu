@@ -212,7 +212,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #bootRow{position:absolute;left:50%;bottom:4.7%;transform:translateX(-50%);width:76%;z-index:2;min-height:5%} /* v57fix：高度不再只靠 aspect-ratio（Chrome88/Safari15 才支持；不支持时容器高 0 → 进度条+小熊全不可见，只剩背景外壳）；改为由 #bootBar 切图自身撑高，min-height 仅极端兜底 */
 #bootBar{position:relative;display:block;width:100%;height:auto;z-index:3} /* 文档流撑高 = 全浏览器一致 */
 #bootFillWrap{position:absolute;left:4.6%;right:4.6%;top:17%;bottom:17%;overflow:hidden;z-index:4}/* v64fix：内芯层压过外壳（bar.webp 内腔不透明 alpha254 会盖死 fill）——切图不动只调层 */
-#bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;clip-path:inset(0 100% 0 0);transition:clip-path .45s ease} /* v63④+v105boot：进度条加缓动过渡——缓存命中时进度连跳（5%→100%）平滑爬升不跳跃 */
+#bootFill{position:absolute;left:0;top:0;width:100%;height:100%;display:block;clip-path:inset(0 100% 0 0)} /* v63④；v106boot：平滑改由 rAF 补间实现（CSS transition 被连续 mark 打断=匀速直线观感，已弃） */
 #bootBear{position:absolute;left:-7%;bottom:82%;width:15.5%;z-index:1;container-type:inline-size;transition:left .25s ease-out}
 /* v66upd：更新弹窗（SW 新版等待时弹；点暗罩不关、两按钮必须点一个） */
 #swModal{display:none;position:fixed;inset:0;z-index:70;background:rgba(20,12,5,.6);place-items:center}
@@ -3781,17 +3781,34 @@ window.__applyPackSentinel();
    老板以后在工作台加家具或换贴图，无需改代码就自动进清单（不再手写固定表漏件）。 */
 var BOOT_SKIP=(location.protocol==="file:")||/jsdom/i.test(navigator.userAgent)||/[?&]boot=0/.test(location.search);
 var BOOT_TEX=[],BOOT_N=0,BOOT_N_MAX=1,BOOT_FIN=0;
-function bootPaint(){
-  var p=Math.min(100,Math.round(BOOT_N/BOOT_N_MAX*100));
+var BOOT_DISP=0,BOOT_TGT=0,BOOT_RAF=0;
+function bootEase(){ /* v106boot：进度显示值逐帧追赶真实值（快起步慢收尾的自然节奏）——mark 跳变/连发都被拆成多帧平滑爬升，替换 v105 的 CSS transition（被连续 mark 打断=匀速直线观感） */
+  BOOT_DISP+=(BOOT_TGT-BOOT_DISP)*0.09;
+  if(BOOT_TGT-BOOT_DISP<0.5){BOOT_DISP=BOOT_TGT;if(BOOT_RAF){if(typeof cancelAnimationFrame==="function")cancelAnimationFrame(BOOT_RAF);BOOT_RAF=0;}}
+  else BOOT_RAF=typeof requestAnimationFrame==="function"?requestAnimationFrame(bootEase):0;
+  var p=Math.round(BOOT_DISP);
   var f=$("bootFill"),b=$("bootBear"),t=$("bootPct");
-  if(f)f.style.clipPath="inset(0 "+(100-p)+"% 0 0)"; /* v63④：露出左边 p%，从左往右越来越长 */
-  if(b)b.style.left=(p-7)+"%";                       /* 小熊跟随进度从左走到右 */
-  if(t)t.textContent=p+"%";                           /* 木牌上的进度数值 */
+  if(f)f.style.clipPath="inset(0 "+(100-p)+"% 0 0)";
+  if(b)b.style.left=(p-7)+"%";
+  if(t)t.textContent=p+"%";
+}
+function bootPaint(){
+  if(typeof requestAnimationFrame!=="function"){ /* jsdom/老内核：无 rAF 退化为同步直跳（行为同旧版） */
+    var p0=Math.min(100,Math.round(BOOT_N/BOOT_N_MAX*100));
+    var f0=$("bootFill"),b0=$("bootBear"),t0=$("bootPct");
+    if(f0)f0.style.clipPath="inset(0 "+(100-p0)+"% 0 0)";
+    if(b0)b0.style.left=(p0-7)+"%";
+    if(t0)t0.textContent=p0+"%";
+    return;
+  }
+  BOOT_TGT=Math.min(100,Math.round(BOOT_N/BOOT_N_MAX*100));
+  if(!BOOT_RAF)BOOT_RAF=requestAnimationFrame(bootEase);
 }
 var BOOT_T0=Date.now(),BOOT_DELAY=0; /* v61boot：最短展示 2.5s（2040 保底 + 460 淡出）——老板要求「看得到加载页」：系统闪屏过去后进度条必须露脸 */
 function bootShow(){ /* 进度条走满：摆满 100% → 淡出 → 进游戏 */
   var f=$("bootFill"),b=$("bootBear"),t=$("bootPct"),el=$("boot");
-  if(f)f.style.clipPath="inset(0 0% 0 0)"; /* v63④：填满 */
+  BOOT_TGT=100;if(!BOOT_RAF&&typeof requestAnimationFrame==="function")BOOT_RAF=requestAnimationFrame(bootEase); /* v106boot：填满走补间 */
+  if(f)f.style.clipPath="inset(0 0% 0 0)";
   if(b)b.style.left="calc(100% - 7%)";
   if(t)t.textContent="100%";
   var wait=Math.max(0,3000-(Date.now()-BOOT_T0)); /* v65：最短展示 3.46s = 3000 保持 + 460 淡出（老板报「闪屏长加载页短」不稳——保底拉到 3s 盖住系统闪屏的时长波动，保证加载页每次完整露脸） */
