@@ -121,7 +121,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .qb:active{transform:scale(.9)}
 .qb-save{background:linear-gradient(#e8c883,#c9a55c);color:#3a2b12}
 .qb-reset{background:#f4ead0;color:#5a4632}
-.qb-lamp{background:#f4ead0;color:#5a4632} /* v22fb4：一键开灯=与「重置」同款米色实底（透明底看不清，用户反馈） */
+.qb-lamp{background:none;border:none;padding:0;line-height:0} /* v100lamp：文字换老板 icon（开/关两态），徽章图自带底 */
+.qb-lamp img{display:block;height:30px;width:auto;pointer-events:none} /* v100lamp：与其他 qb 同高 30px */
 /* 墙面/地板自定义调色（方案B）：内嵌色相+深浅双滑条，批15 改面板内悬浮条 */
 .cslid{display:none;position:absolute;left:6%;right:8%;bottom:2.5%;z-index:5;padding:8px 10px 6px;
   border:1px solid #d2b98c;border-radius:10px;background:rgba(253,243,223,.96);flex-direction:column;gap:6px;
@@ -737,7 +738,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 </div><!-- /stage -->
 <!-- 面板外右上三圆钮（装修面板展开时出现） -->
 <div id="quickBtns">
-  <button class="qb qb-lamp" id="lampAll" title="所有灯一起开/关（哥特提灯 · 壁灯 · 落地灯 · 宝石）">一键开灯</button><!-- v22lamp：灯的总开关，放「保存」左边 -->
+  <button class="qb qb-lamp" id="lampAll" title="所有灯一起开/关（哥特提灯 · 壁灯 · 落地灯 · 宝石）"><img src="assets/ui/lamp-off.webp" alt="一键开关灯"></button><!-- v22lamp+v100：灯的总开关换老板 icon（lampSync 按灯态切 开/关 图） -->
   <button class="qb qb-save" title="保存布局">保存</button>
   <button class="qb qb-reset" title="重置布局">重置</button>
 </div>
@@ -2617,7 +2618,7 @@ $("fabGlow").addEventListener("click",function(){
 /* ── v22lamp：两盏灯的总开关（「一键开灯」，放「保存」左边）── */
 function lampList(){ return FURNITURE.filter(function(o){return !!LAMP_IDS[o.def];}); }
 function lampAnyOn(){ var L=lampList(),i; for(i=0;i<L.length;i++)if(L[i].lamp)return true; return false; }
-function lampSync(){ var b=$("lampAll"); if(b)b.textContent=lampAnyOn()?"一键关灯":"一键开灯"; }
+function lampSync(){ var b=$("lampAll"); if(b)b.innerHTML=lampAnyOn()?'<img src="assets/ui/lamp-on.webp" alt="一键关灯">':'<img src="assets/ui/lamp-off.webp" alt="一键开灯">'; } /* v100lamp：灯态切 icon（开灯的时候显示开的 icon、关灯显示关的 icon，老板原话） */
 function lampToggle(){
   var L=lampList(),on=!lampAnyOn(),i;
   if(!L.length){toast("房间里还没有灯（哥特提灯 / 壁灯）");return;}
