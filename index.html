@@ -27,7 +27,7 @@ body{background:#241509;color:var(--ink);overflow:hidden; /* v70fix：渐变改�
   display:flex;align-items:center;justify-content:center;
   font:15px/1.6 var(--font-display)}
 /* ═══ 游戏界面壳（期1.5 批1）：390×844 · HUD 原位（照正式版 V21） ═══ */
-.screen{position:relative;width:100vw;height:100vh;height:100dvh;height:100lvh;overflow:hidden; /* v108full：壳高 lvh 优先（含安全区的整屏高，消 iOS 底部留白——老板拍板试用）；dvh/vh 为不支持 lvh 的内核兜底。已知风险：键盘弹出时 lvh 恒定不缩，备忘录输入的避让待真机验证 */
+.screen{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden; /* v109full：撤 lvh 回 dvh（iOS 26 PWA 的 env(safe-area-inset-top) 报 0=系统报告缺陷，lvh 铺满后顶部 HUD 被状态栏遮且无法可靠避让——老板真机实测，权衡后保顶部弃消留白） */
   background:#241509;box-shadow:0 12px 48px rgba(0,0,0,.5)}
 /* ── 顶部 HUD：头像组合（金框+头像+Lv+进度条，UI 升级批：图一样式，屋名/心情文字按用户要求移除） ── */
 .hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
@@ -42,7 +42,7 @@ body{background:#241509;color:var(--ink);overflow:hidden; /* v70fix：渐变改�
 .side-btn:active{transform:scale(.92)}
 .side-btn .icon-img{width:64px;height:64px;object-fit:contain;object-position:center;pointer-events:none}
 /* ── 底部工具条（V21 原位；装修模式/底边栏展开时下沉隐藏） ── */
-.dock{position:absolute;left:50%;bottom:env(safe-area-inset-bottom, 20px);transform:translateX(-50%); /* v108dock：env 加默认值兜底——MIUI 等内核可能不识别 env()（返回空=小米 17U 仍被挡），不识别时用 20px 固定避让 */
+.dock{position:absolute;left:50%;bottom:max(env(safe-area-inset-bottom), 20px);transform:translateX(-50%); /* v109dock：max 强制保底——MIUI 的 env() 存在但报 0（fallback 不触发），max 取两者大值=至少避让 20px */
   z-index:10;display:flex;gap:13px;background:none;border:none;padding:0;transition:bottom .28s cubic-bezier(.32,.72,.28,1)}
 .dock-btn{position:relative;width:74px;height:64px;border-radius:16px;display:grid;place-items:center;
   background:none;border:none;transition:transform .15s ease,filter .15s ease}
