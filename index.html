@@ -4012,12 +4012,12 @@ function calRender(){
     var lg=document.querySelector(".clegend");lg.style.top= /* v93fix：clegend 是 class 非 id，$("clegend") 返回 null（jsdom 实测 calRender 崩+静默中断渲染链） */(document.querySelector(".ctabs").offsetHeight+6+vm.offsetHeight+2)+"px"; /* v94cal：图例上移 2px（老板原话） */
     var mm=document.querySelector(".memo"); /* v95cal：memo 是 class 非 id（同 clegend 教训）；顶=图例底+10、底钉面板 6%——拉伸高度自适应，间隙恒 10px */
     if(calView==="month"){mm.style.top=(lg.offsetTop+lg.offsetHeight+10)+"px";mm.style.height="auto";}
-    else{mm.style.top="";mm.style.height="";}
   }else{vm.style.height="";$("vmFoot").style.display="none";var lg2=document.querySelector(".clegend");lg2.style.top=(document.querySelector(".ctabs").offsetHeight+6+vm.offsetHeight+2)+"px";} /* v94cal：图例上移 2px */
 }
 /* 备忘卡：v22cal10 按视图域取数——月视图=月域 EVM[月键]（标题「X月备忘」）；日视图=日域 EV[selKey]；周视图无备忘板 */
 function memoRows(){return calView==="month"?(EVM[mkKey()]||[]):(EV[selKey]||[])}
 function renderMemo(){
+  if(calView!=="month"){var mm0=document.querySelector(".memo");mm0.style.top="";mm0.style.height="";} /* v97fix：memo 是 class 非 id（二次踩坑自纠） */ /* v97fix：非月视图清 inline 定位残留——v95 把清逻辑错放在 calRender 的 month 分支，切日视图不执行=「10月5日」刊头带月视图位置跑到底下（时好时坏） */
   if(calView==="week")return; /* v22cal10：周视图备忘板不生成（display:contents），列表走周卡内嵌 */
   var d,p,kp=selKey.split("-");
   if(calView==="month"){d=new Date(Y,M,1)}else{d=new Date(+kp[0],(+kp[1]||1)-1,(+kp[2])||1)} /* v22fix：从 selKey 三段构造日期，跨月 stepDay 不再回滚到当前月 */
