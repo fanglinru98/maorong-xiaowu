@@ -2870,7 +2870,7 @@ $("dSaveE").addEventListener("click",function(){ /* v22cal11：「保 存」→�
   draft.body="";draft.mood=-1; /* v22cal11：保存后草稿清空 */
   var i=ENTRIES.findIndex(function(x){return x.key===e.key});
   if(i>=0)ENTRIES[i]=e;else ENTRIES.push(e);
-  saveAll();renderList();closeDiary();
+  saveAll();renderList();setView("list"); /* v114diary：保存后留在日记内、回到册页列表（原行为关书回主界面，老板改为留页） */
   toast(e.key===todayKey()?"日记已收进册子":"日记已更新");
 });
 function saveAll(){
