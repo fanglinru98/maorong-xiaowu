@@ -112,7 +112,7 @@ body.barOpen #decoBar{transform:translateY(0)}
 .card .theme3 i{flex:1}
 .card .cname{flex:0 0 auto;width:100%;font-size:12px;font-weight:700;color:var(--ink);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* 面板外右上三圆钮（面板展开时才出现） */
-#quickBtns{position:absolute;right:10px;bottom:calc(min(390px,100vw)*0.7796 + 10px);display:flex;gap:8px;z-index:30;
+#quickBtns{position:absolute;right:10px;bottom:calc(100vw*0.7796 + 10px); /* v96fab：去掉 390 钳——v80 全屏后面板宽=100vw（iOS 414 屏被钳到 390 差 18px=按钮压面板，安卓屏未触发钳制故正常），与面板 aspect 同公式锚定 */display:flex;gap:8px;z-index:30;
   /* 修按钮压页签（图二）：面板实际高=宽×1751/2246（aspect-ratio 驱动），--barH 的 36.1% 是屏高近似在矮屏/大屏失真，改按同款公式锚定 */
   opacity:0;pointer-events:none;transform:translateY(12px);transition:all .28s}
 body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
