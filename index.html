@@ -21,21 +21,21 @@
   --font-display:"Alibaba PuHuiTi","PingFang SC","Source Han Sans SC","Microsoft YaHei UI",sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer} /* v22bar2b：全局按钮重置（照装修底边栏demo 第22行），去 UA 灰底黑边 */
-html,body{height:100%}
+html,body{height:100vh} /* v110full：外层容器统一 100vh（案例二的关键补刀——100% 以 WebKit 可视区为基准在 iOS PWA 撑不到屏底，混用会漏） */
 html{background:#241509} /* v70fix：兜底色统一=壳色（原 #332416 比壳 #3a2a1b 深→iPhone Air PWA 底部露深色带，老板真机截图确认） */
 body{background:#241509;color:var(--ink);overflow:hidden; /* v70fix：渐变改壳同色纯色——壳外露边（大屏 letterbox/小屏留边）与画面融为一体；老板审美口径=平面纯色 */
   display:flex;align-items:center;justify-content:center;
   font:15px/1.6 var(--font-display)}
 /* ═══ 游戏界面壳（期1.5 批1）：390×844 · HUD 原位（照正式版 V21） ═══ */
-.screen{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden; /* v109full：撤 lvh 回 dvh（iOS 26 PWA 的 env(safe-area-inset-top) 报 0=系统报告缺陷，lvh 铺满后顶部 HUD 被状态栏遮且无法可靠避让——老板真机实测，权衡后保顶部弃消留白） */
+.screen{position:relative;width:100vw;height:100vh;overflow:hidden; /* v110full：回归纯 100vh——iOS PWA(standalone) 下=整屏高度，其他网站满屏的同款做法（dvh/lvh 的排除安全区口径才是留白根因）；顶部 HUD 用 max(env,47px) 固定兜底避让灵动岛 */
   background:#241509;box-shadow:0 12px 48px rgba(0,0,0,.5)}
 /* ── 顶部 HUD：头像组合（金框+头像+Lv+进度条，UI 升级批：图一样式，屋名/心情文字按用户要求移除） ── */
 .hud-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;
-  justify-content:flex-start;padding:calc(12px + env(safe-area-inset-top)) 16px 0;pointer-events:none}
+  justify-content:flex-start;padding:calc(12px + max(env(safe-area-inset-top), 47px)) 16px 0; /* v110full：iOS 26 PWA env 报 0（实测），max 兜底 47px=灵动岛状态栏保守值 */pointer-events:none}
 .avatar-stack{position:relative;width:72px;pointer-events:auto} /* v43：头像=单张成品图（框+脸+Lv+进度条烧图），av-frame/av-face/av-lv/av-bar 四层合成退役（老板指令：直接删掉所有，替换成这张png） */
 .avatar-stack .av-badge{width:100%;display:block}
 /* ── 右侧功能列（V21 原位） ── */
-.menu-right{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top) + 10px);z-index:10;
+.menu-right{position:absolute;right:12px;top:calc(12px + max(env(safe-area-inset-top), 47px) + 10px); /* v110full：同上 */z-index:10;
   display:flex;flex-direction:column;gap:16px}
 .side-btn{position:relative;width:64px;height:64px;background:none;border:none;display:grid;place-items:center;
   transition:transform .15s ease,filter .15s ease}
@@ -384,7 +384,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   #rowImport{position:relative} /* v52②：恢复存档覆盖层定位基准 */
   #fileRestore{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:2} /* v52②：真实铺满整行，直点即弹（iOS/微信不再依赖程序性 click） */
   body.fsHide .hud-top,body.fsHide .menu-right,body.fsHide .dock{display:none!important} /* v52④ 全屏显示：隐藏所有 icon */
-  #fsExit{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:60;width:34px;height:34px;padding:0;border-radius:50%;border:1.5px solid rgba(233,195,106,.8);background:rgba(60,30,15,.55);color:#f2e3c2;font-size:15px;line-height:1;align-items:center;justify-content:center}
+  #fsExit{display:none;position:fixed;top:calc(10px + max(env(safe-area-inset-top), 47px)); /* v110full：同上 */right:12px;z-index:60;width:34px;height:34px;padding:0;border-radius:50%;border:1.5px solid rgba(233,195,106,.8);background:rgba(60,30,15,.55);color:#f2e3c2;font-size:15px;line-height:1;align-items:center;justify-content:center}
   body.fsHide #fsExit{display:flex} /* v52④：全屏时右上角返回钮 */
 .set-row input[type=range]{flex:1;margin:0 10px 0 4px;accent-color:#c9a55c;height:26px;background:none}
 .volval{flex:none;min-width:30px;text-align:right;font-size:13px;color:#7c2a20;font-weight:700}
