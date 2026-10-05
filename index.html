@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="color-scheme" content="light"> <!-- v76dark：声明页面仅浅色，拒绝手机系统/浏览器的强制深色反色（老板深色模式实测 UI 被染深） -->
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"> <!-- v113kbd：maximum-scale=1 阻止 iOS 聚焦 <16px 输入框时的自动页面放大（日记手帐 12.5px 字号触发，老板报「键盘弹 出页面放大无法缩小」）；场景缩放为 JS 内部实现不受影响 -->
 <title>彻子小屋</title>
 <!-- PWA 全屏支持（V21 同款方案）：加到主屏幕后全屏运行 -->
 <meta name="theme-color" content="#1c1c1c"> <!-- v65：状态栏碳黑（老板拍板「直接改成碳黑色不需要再改变」；#922723 是 manifest background_color，只管系统闪屏，另案）） -->
