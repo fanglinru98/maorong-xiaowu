@@ -889,10 +889,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
     <button class="btn-mini" id="btnReload">立即刷新</button>
   </div>
   <button class="btn-danger" id="btnClear">清空本地存档</button>
-  <div class="about-box">
-    毛茸小屋 V22 demo · 等距房间+装修底边栏+换装+日记+相册。家具图在 <code>assets/2.5d/</code>，家具清单在脚本顶部 <code>FURN_DEF</code> 里改；衣服在 <code>WARDROBE</code>，各面板存档各自独立在 localStorage。
-  </div>
-</div>
+</div> <!-- v118fix：移除面向开发者的 about-box 说明块（玩家不该看到内部实现说明，老板反馈） -->
 <button id="fsExit" aria-label="退出全屏">✕</button>
 <!-- 卡4：恢复存档选择器已并入 #rowImport（v52②） -->
 <!-- v45③：hidden 属性(display:none) 在 iOS/微信内核对 f.click() 经常不弹文件选择器(=老板报「恢复存档按了没反应」)→改 1px 透明占位，程序性 click 全内核可用 -->
