@@ -135,6 +135,8 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 #fab button{width:34px;height:34px;border:1.5px solid var(--gold-deep);background:#fffdf4;border-radius:50%;
   color:var(--ink2);font-size:15px;cursor:pointer;line-height:1;box-shadow:0 2px 8px rgba(58,40,24,.25);padding:0}
 #fab button.fabb{border:none;background:none} /* v89fab：徽章自带金边红底，去掉米白圆底 */
+#fab.moving button:not(.fabb-move){opacity:0;pointer-events:none} /* v122fab：移动模式=只留手柄（拖拽时整排按钮跟手会怪，老板反馈），松手恢复 */
+#fab button.fabb-move{touch-action:none} /* v122fab：手柄禁用浏览器默认触摸行为，保证拖拽不被打断 */
 #fab button.fabb img{display:block;width:34px;height:34px;pointer-events:none} /* v89fab：与原钮同尺寸 34px */
 #fab button.fabb:active{transform:scale(.9)}
 #fab button:active{transform:scale(.9)}
@@ -722,7 +724,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- ═══ 等距房间引擎（V22 装修 demo 底座） ═══ -->
 <div id="stage">
   <div id="scene"><canvas id="roomIso"></canvas>
-    <div id="fab"><button id="fabMove" class="fabb" title="按住我拖动家具"><img src="assets/ui/fab-move.webp" alt=""></button><button id="fabFlip" class="fabb" title="水平镜像（左右翻转）"><img src="assets/ui/fab-flip.webp" alt=""></button> <!-- v121fab：移动手柄钮（老板指令：小家具点不中，按住手柄拖动） --><button id="fabCopy" class="fabb" title="复制一件（落在原格旁边的空位/台面空格）"><img src="assets/ui/fab-copy.webp" alt=""></button><button id="fabGlow" title="光效（只给灯用：哥特提灯 / 壁灯 / 落地灯 / 宝石）" class="fabb"><img src="assets/ui/lamp-off.webp" alt=""></button> <!-- v101glow：✨ 换老板 icon，随这盏灯的开/关状态切换（updateGlowUI 同步） --><button id="fabDel" title="删除选中家具" class="fabb"><img src="assets/ui/fab-del.webp" alt=""></button></div> <!-- v89fab：三钮换老板徽章切图（转向/复制/删除），光效钮保持原样待切图 -->
+    <div id="fab"><button id="fabMove" class="fabb fabb-move" title="按住我拖动家具"><img src="assets/ui/fab-move.webp" alt=""></button><button id="fabFlip" class="fabb" title="水平镜像（左右翻转）"><img src="assets/ui/fab-flip.webp" alt=""></button> <!-- v121fab：移动手柄钮（老板指令：小家具点不中，按住手柄拖动） --><button id="fabCopy" class="fabb" title="复制一件（落在原格旁边的空位/台面空格）"><img src="assets/ui/fab-copy.webp" alt=""></button><button id="fabGlow" title="光效（只给灯用：哥特提灯 / 壁灯 / 落地灯 / 宝石）" class="fabb"><img src="assets/ui/lamp-off.webp" alt=""></button> <!-- v101glow：✨ 换老板 icon，随这盏灯的开/关状态切换（updateGlowUI 同步） --><button id="fabDel" title="删除选中家具" class="fabb"><img src="assets/ui/fab-del.webp" alt=""></button></div> <!-- v89fab：三钮换老板徽章切图（转向/复制/删除），光效钮保持原样待切图 -->
     <div id="glowRow">
       <button id="glOn" title="开/关这盏灯的光效">光效开</button>
       <button id="glBr" title="呼吸感（明暗缓慢起伏）">呼吸</button>
@@ -2551,11 +2553,13 @@ window.addEventListener("pointerup",function(e){
       toast("这里摆不下（会压到别的家具），已弹回原位");
     }
   }
-  drag=null;saveSoon();SHOT_VALID=false;render(); /* v66 失效点4：落定重拍（覆盖重叠弹回 t.gx/t.gy 改位路径） */
+  drag=null;var fmb=$("fabMove");if(fmb)fmb.classList.remove("moving"); /* v122fab：退出移动模式，其余按钮回归 */
+  saveSoon();SHOT_VALID=false;render(); /* v66 失效点4：落定重拍（覆盖重叠弹回 t.gx/t.gy 改位路径） */
 });
 window.addEventListener("pointercancel",function(){
   if(calD){calD=null;render();return;} /* v22fix：触摸被系统手势接管时同样收尾，否则 calD/drag 悬挂 → 无按键 mousemove 跟着光标漂移 */
-  drag=null;tapCand=null;render();
+  drag=null;tapCand=null;var fmb2=$("fabMove");if(fmb2)fmb2.classList.remove("moving"); /* v122fab：取消也退出移动模式 */
+  render();
 });
 /* v22fab：浮动三钮（尺寸/翻转/删除）接线 */
 function copySelected(){ /* v22copy：复制选中件（占格/大小%/翻转/微调/光效/台面高/小物标记 全带走），优先落在原格或台面空格 */
@@ -2616,6 +2620,7 @@ $("fabMove").addEventListener("pointerdown",function(e){ /* v121fab：手柄拖�
   e.stopPropagation();e.preventDefault();
   var c0=contentBox(SEL);
   drag={it:SEL,ox:c0.mx,oy:c0.T+c0.dh,gx:effGX(SEL),gy:effGY(SEL)};
+  this.classList.add("moving"); /* v122fab：进入移动模式——其余按钮淡出，只剩手柄 */
   try{$("roomIso").setPointerCapture(e.pointerId);}catch(err){}
 },false);
 $("fabGlow").addEventListener("click",function(){
