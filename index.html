@@ -2618,9 +2618,9 @@ function glowTouch(){ updateGlowUI();saveSoon();render(); }
 $("fabMove").addEventListener("pointerdown",function(e){ /* v121fab：手柄拖拽——按住即进入现有 drag 管道（起点=家具内容盒中心），手指移动带动家具吸附移动，松手走统一落格 */
   if(!SEL||decoMode===undefined)return;
   e.stopPropagation();e.preventDefault();
-  var c0=contentBox(SEL);
-  drag={it:SEL,ox:c0.mx,oy:c0.T+c0.dh,gx:effGX(SEL),gy:effGY(SEL)};
-  this.classList.add("moving"); /* v122fab：进入移动模式——其余按钮淡出，只剩手柄 */
+  var p0=sceneXY(e);
+  drag={it:SEL,ox:p0[0],oy:p0[1],gx:effGX(SEL),gy:effGY(SEL)}; /* v123fix：拖拽基准=手指捕获点（v122 用家具中心，而手指按在手柄上偏离家具=起步瞬移不跟手） */
+  $("fab").classList.add("moving"); /* v123fix：moving 类加到 #fab 容器（v122 误加到按钮自身=CSS #fab.moving 永不匹配=按钮不消失） */
   try{$("roomIso").setPointerCapture(e.pointerId);}catch(err){}
 },false);
 $("fabGlow").addEventListener("click",function(){
