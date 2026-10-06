@@ -722,7 +722,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- ═══ 等距房间引擎（V22 装修 demo 底座） ═══ -->
 <div id="stage">
   <div id="scene"><canvas id="roomIso"></canvas>
-    <div id="fab"><button id="fabFlip" class="fabb" title="水平镜像（左右翻转）"><img src="assets/ui/fab-flip.webp" alt=""></button><button id="fabCopy" class="fabb" title="复制一件（落在原格旁边的空位/台面空格）"><img src="assets/ui/fab-copy.webp" alt=""></button><button id="fabGlow" title="光效（只给灯用：哥特提灯 / 壁灯 / 落地灯 / 宝石）" class="fabb"><img src="assets/ui/lamp-off.webp" alt=""></button> <!-- v101glow：✨ 换老板 icon，随这盏灯的开/关状态切换（updateGlowUI 同步） --><button id="fabDel" title="删除选中家具" class="fabb"><img src="assets/ui/fab-del.webp" alt=""></button></div> <!-- v89fab：三钮换老板徽章切图（转向/复制/删除），光效钮保持原样待切图 -->
+    <div id="fab"><button id="fabMove" class="fabb" title="按住我拖动家具"><img src="assets/ui/fab-move.webp" alt=""></button><button id="fabFlip" class="fabb" title="水平镜像（左右翻转）"><img src="assets/ui/fab-flip.webp" alt=""></button> <!-- v121fab：移动手柄钮（老板指令：小家具点不中，按住手柄拖动） --><button id="fabCopy" class="fabb" title="复制一件（落在原格旁边的空位/台面空格）"><img src="assets/ui/fab-copy.webp" alt=""></button><button id="fabGlow" title="光效（只给灯用：哥特提灯 / 壁灯 / 落地灯 / 宝石）" class="fabb"><img src="assets/ui/lamp-off.webp" alt=""></button> <!-- v101glow：✨ 换老板 icon，随这盏灯的开/关状态切换（updateGlowUI 同步） --><button id="fabDel" title="删除选中家具" class="fabb"><img src="assets/ui/fab-del.webp" alt=""></button></div> <!-- v89fab：三钮换老板徽章切图（转向/复制/删除），光效钮保持原样待切图 -->
     <div id="glowRow">
       <button id="glOn" title="开/关这盏灯的光效">光效开</button>
       <button id="glBr" title="呼吸感（明暗缓慢起伏）">呼吸</button>
@@ -2611,6 +2611,13 @@ function glowEnsure(){ /* 打开面板时若该件还没光效，先给一套默
   return SEL.glow;
 }
 function glowTouch(){ updateGlowUI();saveSoon();render(); }
+$("fabMove").addEventListener("pointerdown",function(e){ /* v121fab：手柄拖拽——按住即进入现有 drag 管道（起点=家具内容盒中心），手指移动带动家具吸附移动，松手走统一落格 */
+  if(!SEL||decoMode===undefined)return;
+  e.stopPropagation();e.preventDefault();
+  var c0=contentBox(SEL);
+  drag={it:SEL,ox:c0.mx,oy:c0.T+c0.dh,gx:effGX(SEL),gy:effGY(SEL)};
+  try{$("roomIso").setPointerCapture(e.pointerId);}catch(err){}
+},false);
 $("fabGlow").addEventListener("click",function(){
   var r=$("glowRow");
   if(!r||!SEL)return;
