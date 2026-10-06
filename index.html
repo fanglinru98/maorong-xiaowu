@@ -2622,8 +2622,20 @@ $("fabMove").addEventListener("pointerdown",function(e){ /* v121fab：手柄拖�
   e.stopPropagation();e.preventDefault();
   var p0=sceneXY(e);
   drag={it:SEL,ox:p0[0],oy:p0[1],gx:effGX(SEL),gy:effGY(SEL)}; /* v123fix：拖拽基准=手指捕获点（v122 用家具中心，而手指按在手柄上偏离家具=起步瞬移不跟手） */
-  $("fab").classList.add("moving"); /* v123fix：moving 类加到 #fab 容器（v122 误加到按钮自身=CSS #fab.moving 永不匹配=按钮不消失） */
-  try{stage.setPointerCapture(e.pointerId);}catch(err){} /* v127fix：capture 挂 stage（原 roomIso）——iOS WebKit capture 后 pointerup 派发路径受限，挂 stage 与 pointerup 监听器同源必达 */
+  var others=f.querySelectorAll("button:not(#fabMove)"); /* v128fab：直接内联隐藏其余钮（绕开 CSS 类/选择器/优先级一切变量） */
+  for(var oi=0;oi<others.length;oi++)others[oi].style.display="none";
+  var done=function(){ /* v128fab：自管收尾——window 捕获阶段一次性监听 pointerup/cancel，事件必经，按钮强制回归+跟随 */
+    window.removeEventListener("pointerup",fin,true);
+    window.removeEventListener("pointercancel",fin,true);
+    var f2=$("fab");if(!f2)return;
+    var others2=f2.querySelectorAll("button:not(#fabMove)");
+    for(var oj=0;oj<others2.length;oj++)others2[oj].style.display="";
+    if(SEL){f2.style.display="flex";updateSelChip();}
+  };
+  var fin=function(ev){done();};
+  window.addEventListener("pointerup",fin,true);
+  window.addEventListener("pointercancel",fin,true);
+  try{stage.setPointerCapture(e.pointerId);}catch(err){}
 },false);
 $("fabGlow").addEventListener("click",function(){
   var r=$("glowRow");
