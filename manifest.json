@@ -6,12 +6,24 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "display_override": [
+    "fullscreen",
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
-  "background_color": "#922926", /* v117：闪屏底色=logo 主红（老板指令） */
+  "background_color": "#922926",
   "theme_color": "#1c1c1c",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
