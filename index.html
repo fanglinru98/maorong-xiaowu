@@ -2554,12 +2554,13 @@ window.addEventListener("pointerup",function(e){
     }
   }
   drag=null;var fmb=$("fabMove");if(fmb)fmb.classList.remove("moving"); /* v122fab：退出移动模式，其余按钮回归 */
-  updateSelChip(); /* v125fab：按钮组跟随落格后的家具新位置（v122 起缺失此调用=拖远后按钮留在旧位不回归，老板反馈） */
+  var fc=$("fab");if(fc&&SEL)fc.style.display="flex"; /* v127fab：强制显示兜底（防 capture/事件路径差异导致 updateSelChip 未达） */
+  updateSelChip(); /* v125fab：按钮组跟随落格后的家具新位置 */
   saveSoon();SHOT_VALID=false;render(); /* v66 失效点4：落定重拍（覆盖重叠弹回 t.gx/t.gy 改位路径） */
 });
 window.addEventListener("pointercancel",function(){
   if(calD){calD=null;render();return;} /* v22fix：触摸被系统手势接管时同样收尾，否则 calD/drag 悬挂 → 无按键 mousemove 跟着光标漂移 */
-  drag=null;tapCand=null;var fmb2=$("fabMove");if(fmb2)fmb2.classList.remove("moving");updateSelChip(); /* v126fab：取消路径同样按钮跟随（iOS pointercancel 高频=松手按钮不回来真凶之一） */
+  drag=null;tapCand=null;var fmb2=$("fabMove");if(fmb2)fmb2.classList.remove("moving");var fc2=$("fab");if(fc2&&SEL)fc2.style.display="flex";updateSelChip(); /* v127fab：取消路径同兜底 */
   render();
 });
 /* v22fab：浮动三钮（尺寸/翻转/删除）接线 */
@@ -2622,7 +2623,7 @@ $("fabMove").addEventListener("pointerdown",function(e){ /* v121fab：手柄拖�
   var p0=sceneXY(e);
   drag={it:SEL,ox:p0[0],oy:p0[1],gx:effGX(SEL),gy:effGY(SEL)}; /* v123fix：拖拽基准=手指捕获点（v122 用家具中心，而手指按在手柄上偏离家具=起步瞬移不跟手） */
   $("fab").classList.add("moving"); /* v123fix：moving 类加到 #fab 容器（v122 误加到按钮自身=CSS #fab.moving 永不匹配=按钮不消失） */
-  try{$("roomIso").setPointerCapture(e.pointerId);}catch(err){}
+  try{stage.setPointerCapture(e.pointerId);}catch(err){} /* v127fix：capture 挂 stage（原 roomIso）——iOS WebKit capture 后 pointerup 派发路径受限，挂 stage 与 pointerup 监听器同源必达 */
 },false);
 $("fabGlow").addEventListener("click",function(){
   var r=$("glowRow");
