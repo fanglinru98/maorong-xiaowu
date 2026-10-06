@@ -2313,9 +2313,10 @@ function itemAt(sx,sy){
     }
     if(fi&&fi.img){ /* 已加载：按内容包围盒判定（与 drawItem 同锚点） */
       dw=Math.max(minPx(),ROOM.cw*(it.w+it.d)*S*0.92*it.scale)*(fi.tw/fi.w);dh=dw*fi.th/fi.tw;
+      dw=Math.max(dw,44);dh=Math.max(dh,44); /* v120hit：命中区保底 44×44（触屏指尖标准，老板反馈小家具点不到）；仅扩判定不改渲染，选中框提示走 drawSelBox 足迹框不受影响 */
       by=py(effGX(it)+effW(it),effGY(it)+effD(it))-liftOf(it)+ho3[1]; /* v22shelf：台面上的小物按抬高后的位置判定；v22rot：按转向后占格 */
       mx+=oxOf(it)*dw;by+=oyOf(it)*dh; /* v22sync：命中盒跟着 ox/oy 微调走 */
-      if(sx>=mx-dw/2-4&&sx<=mx+dw/2+4&&sy>=by-dh-4&&sy<=by+4)return it;
+      if(sx>=mx-dw/2&&sx<=mx+dw/2&&sy>=by-dh&&sy<=by)return it; /* v120hit：±4 余量并入保底 44 不再另加 */
     }else{ /* 未加载：按足迹菱形包围盒判定 */
       by=py(effGX(it),effGY(it))-liftOf(it);
       if(sx>=px(effGX(it),effGY(it)+effD(it))-4&&sx<=px(effGX(it)+effW(it),effGY(it))+4&&sy>=by-4&&sy<=py(effGX(it)+effW(it),effGY(it)+effD(it))-liftOf(it)+4)return it;
