@@ -2559,7 +2559,7 @@ window.addEventListener("pointerup",function(e){
 });
 window.addEventListener("pointercancel",function(){
   if(calD){calD=null;render();return;} /* v22fix：触摸被系统手势接管时同样收尾，否则 calD/drag 悬挂 → 无按键 mousemove 跟着光标漂移 */
-  drag=null;tapCand=null;var fmb2=$("fabMove");if(fmb2)fmb2.classList.remove("moving"); /* v122fab：取消也退出移动模式 */
+  drag=null;tapCand=null;var fmb2=$("fabMove");if(fmb2)fmb2.classList.remove("moving");updateSelChip(); /* v126fab：取消路径同样按钮跟随（iOS pointercancel 高频=松手按钮不回来真凶之一） */
   render();
 });
 /* v22fab：浮动三钮（尺寸/翻转/删除）接线 */
@@ -3864,7 +3864,7 @@ function bootCollect(){
   var sv=null;try{sv=JSON.parse(localStorage.getItem("maoor-v22-state-v2")||"null")}catch(e){}
   if(sv&&typeof sv==="object"){ /* v98boot：预载玩家存档的贴图——原清单只含默认贴图，玩家装修的主题（存档贴图）进游戏要现加载几秒=老板报的「进游戏先初始样子几秒」；缓存键 key|src 与 restoreState 后完全一致，掀开即命中 */
     var svtx=[["floor",sv.floor],["roof",sv.roof],["border",sv.border],["wallBack",sv.wallB],["wallLeft",sv.wallL]];
-    for(var si=0;si<svtx.length;si++){var svt=svtx[si][1];if(svt&&svt.indexOf&&svt.indexOf("/")>=0)tx.push([svtx[si][0],svt]);}
+    for(var si=0;si<svtx.length;si++){var svt=svtx[si][1];if(svt&&svt.indexOf&&svt.indexOf("/")>=0){tx.push([svtx[si][0],svt]);BOOT_TEX.push(svtx[si]);}} /* v126boot：存档贴图走 BOOT_TEX 预热槽（不计入进度分母）——存档含失效贴图地址时 404 不卡进度条等 45s 兜底 */
   }
   var ex=PACKTEX.extra||[];
   for(i=0;i<ex.length;i++){var x=ex[i];if(!x||!x.src)continue;
