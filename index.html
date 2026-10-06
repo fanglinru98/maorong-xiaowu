@@ -2554,6 +2554,7 @@ window.addEventListener("pointerup",function(e){
     }
   }
   drag=null;var fmb=$("fabMove");if(fmb)fmb.classList.remove("moving"); /* v122fab：退出移动模式，其余按钮回归 */
+  updateSelChip(); /* v125fab：按钮组跟随落格后的家具新位置（v122 起缺失此调用=拖远后按钮留在旧位不回归，老板反馈） */
   saveSoon();SHOT_VALID=false;render(); /* v66 失效点4：落定重拍（覆盖重叠弹回 t.gx/t.gy 改位路径） */
 });
 window.addEventListener("pointercancel",function(){
