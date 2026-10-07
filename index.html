@@ -418,18 +418,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 .btn-mini{height:34px;padding:0 14px;flex:none;border-radius:10px;border:1.5px solid #7f9b6a;
   background:#f4f9ee;color:#3f5c31;font-size:12.5px;font-weight:800;transition:transform .12s}
 .btn-mini:active{transform:scale(.93)}
-/* 存档码小面板（z-48：设置抽屉之上、换装之下） */
-#codeSheet{position:absolute;left:50%;top:50%;width:min(88%,340px);z-index:48;
-  transform:translate(-50%,-46%) scale(.94);opacity:0;pointer-events:none;transition:all .24s cubic-bezier(.22,.9,.32,1);
-  background:linear-gradient(#fbf3e0,#f2e5c7);border:1px solid #d9c39a;border-radius:16px;
-  box-shadow:0 18px 50px rgba(20,12,4,.5),inset 0 0 0 2px rgba(255,252,240,.65);padding:14px 14px 12px}
-#codeSheet.show{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
-#codeSheet h3{font-size:15px;color:#5a4632;margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
-#codeSheet textarea{width:100%;box-sizing:border-box;height:64px;border:1.5px solid #c9a55c;border-radius:10px;
-  background:#fffdf8;padding:6px 8px;font-size:11px;line-height:1.5;color:#4a3826;resize:none;outline:none;font-family:Consolas,monospace}
-#codeOut{background:#f6ecd4}
-#codeSheet .chint{font-size:10.5px;color:#9a8163;margin:6px 0;line-height:1.5}
-#codeSheet .crow2{display:flex;gap:8px;margin-top:6px}
+/* v129save：存档码面板 CSS 已随面板一起退役 */
 .btn-danger{width:100%;height:46px;border:1.5px solid #cf5b4a;border-radius:12px;color:#cf5b4a;font-size:14.5px;font-weight:800;background:transparent;margin-top:14px;transition:all .15s}
 .btn-danger.confirm{background:#cf5b4a;color:#fffdf4}
 .about-box{margin-top:14px;background:#f6ecd4;border:1px solid #ead9ae;border-radius:12px;padding:10px 12px;font-size:11.5px;line-height:1.7;color:#7a6248}
@@ -859,23 +848,19 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
   </div>
   <!-- v39⑦：减弱动效/今日互动两项退役（老板指令）；setSt.calm/taps 字段保留兼容旧档 -->
   </div><!-- /kidsSound -->
-  <!-- v53⑤：存档组（导出/恢复/存档码，点击展开，老板指令） -->
-  <div class="set-row set-grp" id="grpSave" role="button" tabindex="0" aria-label="展开或收起存档设置"><span><span class="lab">💾 存档</span><span class="sub">导出 · 恢复 · 存档码</span></span><span class="set-go grp-arrow" aria-hidden="true">▸</span></div>
+  <!-- v129save：存档组（一键备份/一键恢复；存档码已退役，老板指令） -->
+  <div class="set-row set-grp" id="grpSave" role="button" tabindex="0" aria-label="展开或收起存档设置"><span><span class="lab">💾 存档</span><span class="sub">备份 · 恢复</span></span><span class="set-go grp-arrow" aria-hidden="true">▸</span></div>
   <div class="grp-kids" id="kidsSave">
   <!-- 卡4：存档导出/恢复 + 存档码 -->
-  <div class="set-row set-row-act" id="rowExport" role="button" tabindex="0" aria-label="导出存档">
-    <span><span class="lab">📤 导出存档</span><span class="sub">房间/换装/日记/相册/日历/设置 打包成一个 JSON 文件</span></span>
+  <div class="set-row set-row-act" id="rowExport" role="button" tabindex="0" aria-label="一键备份">
+    <span><span class="lab">💾 一键备份</span><span class="sub">一键备份装修/日记/相册等全部数据，下载到手机</span></span>
     <span class="set-go" aria-hidden="true">›</span>
-  </div>
-  <div class="set-row set-row-act" id="rowImport" role="button" tabindex="0" aria-label="恢复存档">
+  </div> <!-- v129save：改名（老板指令） -->
+  <div class="set-row set-row-act" id="rowImport" role="button" tabindex="0" aria-label="一键恢复">
     <input type="file" id="fileRestore" accept="application/json,.json" tabindex="-1" aria-hidden="true">
-    <span><span class="lab">📥 恢复存档</span><span class="sub">从 JSON 文件还原，恢复后需刷新生效</span></span>
+    <span><span class="lab">📥 一键恢复</span><span class="sub">选择备份文件，恢复装修/日记/相册等全部数据</span></span>
     <span class="set-go" aria-hidden="true">›</span>
-  </div>
-  <div class="set-row set-row-act" id="rowCode" role="button" tabindex="0" aria-label="存档码">
-    <span><span class="lab">🔑 存档码</span><span class="sub">复制一串文本带走进度；粘贴即可恢复（不含照片快照）</span></span>
-    <span class="set-go" aria-hidden="true">›</span>
-  </div>
+  </div> <!-- v129save：改名 -->
   </div><!-- /kidsSave -->
   <div class="set-row set-row-act" id="rowTutorial" role="button" tabindex="0" aria-label="重新查看新手引导">
     <span><span class="lab">📖 重新查看引导</span><span class="sub">再看一遍各功能的新手导览</span></span>
@@ -896,18 +881,7 @@ body.barOpen #quickBtns{opacity:1;pointer-events:auto;transform:translateY(0)}
 <!-- 卡4：恢复存档选择器已并入 #rowImport（v52②） -->
 <!-- v45③：hidden 属性(display:none) 在 iOS/微信内核对 f.click() 经常不弹文件选择器(=老板报「恢复存档按了没反应」)→改 1px 透明占位，程序性 click 全内核可用 -->
 <!-- v52②：原 fileRestore input 已移入 #rowImport 行内作真实覆盖层 -->
-<!-- 卡4：存档码面板（复制带走 / 粘贴恢复） -->
-<section id="codeSheet" aria-hidden="true" aria-label="存档码">
-  <h3>存档码 <button class="btn-mini" id="codeClose">✕</button></h3>
-  <textarea id="codeOut" readonly spellcheck="false" placeholder="点「生成存档码」显示当前进度"></textarea>
-  <div class="crow2">
-    <button class="btn-mini" id="codeGen">生成存档码</button>
-    <button class="btn-mini" id="codeCopy">复制</button>
-  </div>
-  <div class="chint">照片快照（拍照存的图）不进存档码，换设备请用「导出存档」文件版。</div>
-  <textarea id="codeIn" spellcheck="false" placeholder="把另一台设备的存档码粘贴到这里"></textarea>
-  <div class="crow2"><button class="btn-mini" id="codeApply">粘贴恢复</button></div>
-</section>
+<!-- v129save：存档码面板已退役（老板指令，一键备份/恢复取代） -->
 <!-- 拍立得（批6.6：拍照 → 房间快照拍立得 → 存入相册） -->
 <div id="flash" aria-hidden="true"></div>
 <!-- 日历面板（批6.7：照日历界面demoA 移植，点 HUD「日历」左滑入） -->
@@ -3031,7 +3005,7 @@ function openSettings(){
 }
 function closeSettings(){
   sheetEl.classList.remove("show");sheetEl.setAttribute("aria-hidden","true");
-  closeCode();resetClear();syncVeil();
+  resetClear();syncVeil(); /* v129save：存档码开关已退役 */
 }
 var btnClear=$("btnClear"),armed=false,armTimer=null;
 function resetClear(){armed=false;btnClear.classList.remove("confirm");btnClear.textContent="清空本地存档";}
@@ -3226,35 +3200,7 @@ function saveCodeParse(code){
   var v=validateSave(o);if(!v.ok)return v;
   return{ok:true,text:txt};
 }
-var codeEl=$("codeSheet");
-function openCode(){codeEl.classList.add("show");codeEl.setAttribute("aria-hidden","false");$("codeOut").value="";}
-function closeCode(){codeEl.classList.remove("show");codeEl.setAttribute("aria-hidden","true");}
-$("rowCode").addEventListener("click",openCode);
-$("codeClose").addEventListener("click",closeCode);
-$("codeGen").addEventListener("click",function(){
-  var c=saveCodeEncode();
-  if(!c){toast("生成失败：存档无法编码");return}
-  $("codeOut").value=c;
-  toast("已生成，点「复制」带走");
-});
-$("codeCopy").addEventListener("click",function(){
-  var ta=$("codeOut");if(!ta.value){toast("先点「生成存档码」");return}
-  ta.focus();ta.select();
-  var done=false;
-  try{done=document.execCommand("copy")}catch(e){}
-  if(!done&&navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(ta.value).then(function(){toast("已复制到剪贴板")},function(){toast("请手动长按全选复制")});
-    return;
-  }
-  toast(done?"已复制到剪贴板":"请手动长按全选复制");
-});
-$("codeApply").addEventListener("click",function(){
-  var p=saveCodeParse($("codeIn").value);
-  if(!p.ok){toast(p.why);return}
-  var r=applyRestore(p.text);
-  if(!r.ok){toast("恢复失败："+r.why);return}
-  showRestoreBar(r);toast("已恢复，刷新生效");
-});
+/* v129save：存档码面板已退役（老板指令，一键备份/恢复取代）；编码/解析函数保留备用 */
 /* 测试/联调钩子（与 __roomHooks 同风格） */
 window.__saveHooks={
   keys:SAVE_KEYS,app:SAVE_APP,ver:SAVE_VER,
@@ -3262,7 +3208,7 @@ window.__saveHooks={
   validate:validateSave,apply:applyRestore,
   encode:saveCodeEncode,parse:saveCodeParse,
   showBar:showRestoreBar,hideBar:hideRestoreBar,
-  openCode:openCode,closeCode:closeCode,
+  /* v129save：存档码开/关函数已随面板退役 */
   last:function(){return lastExport;},
   pending:function(){return RST_PENDING;}
 };
